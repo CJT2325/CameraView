@@ -1,7 +1,7 @@
 # CameraView
 Custom camera view（模仿微信拍照控件）
 
-![image](http://www.materialstyle.cn/video.gif)
+![image](https://github.com/CJT2325/CameraView/blob/master/assets/video.gif)
 
 ### 使用步骤
 ### Android Studio
