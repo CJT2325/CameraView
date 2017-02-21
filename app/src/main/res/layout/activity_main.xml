@@ -5,9 +5,8 @@
     android:layout_height="match_parent"
     tools:context="com.cjt2325.cameraview.MainActivity">
 
-    <com.cjt2325.cameraview.JCameraView
+    <com.cjt2325.cameralibrary.JCameraView
         android:id="@+id/cameraview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-        </com.cjt2325.cameraview.JCameraView>
+        android:layout_height="match_parent" />
 </RelativeLayout>

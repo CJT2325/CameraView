@@ -1,35 +1,26 @@
-package com.cjt2325.cameraview;
+package com.cameraview;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.Environment;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.MediaController;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -166,9 +157,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             @Override
             public void capture() {
                 JCameraView.this.capture();
-
-//                Toast.makeText(mContext,"capture",Toast.LENGTH_SHORT).show();
-
             }
 
             @Override
@@ -184,6 +172,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             @Override
             public void determine() {
                 if (cameraViewListener != null) {
+                    FileUtil.saveBitmap(pictureBitmap);
                     cameraViewListener.captureSuccess(pictureBitmap);
                 }
                 photoImageView.setVisibility(INVISIBLE);
@@ -269,11 +258,18 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             Camera.Parameters parameters = mCamera.getParameters();
             parameters.setPictureFormat(ImageFormat.JPEG);
             List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();//获取所有支持的camera尺寸
-            Camera.Size optionSize = getOptimalPreviewSize(sizeList, getWidth(), getHeight());//获取一个最为适配的camera.size
-            width = optionSize.width;
-            height = optionSize.height;
+            Iterator<Camera.Size> itor = sizeList.iterator();
+            while (itor.hasNext()) {
+                Camera.Size cur = itor.next();
+                Log.i("CJT", "所有的  width = " + cur.width + " height = " + cur.height);
+                if (cur.width >= width&& cur.height >= height) {
+                    width = cur.width;
+                    height = cur.height;
+                }
+            }
             Log.i("size", "width : height" + width + " : " + height + " ==== " + getWidth() + " : " + getHeight());
             parameters.setPreviewSize(width, height);//把camera.size赋值到parameters
+            parameters.setPictureSize(width, height);
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             camera.setParameters(parameters);
 
@@ -295,38 +291,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
     }
 
-    private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int w, int h) {
-        final double ASPECT_TOLERANCE = 0.1;
-        double targetRatio = (double) w / h;
-        if (sizes == null) return null;
-
-        Camera.Size optimalSize = null;
-        double minDiff = Double.MAX_VALUE;
-
-        int targetHeight = h;
-
-        // Try to find an size match aspect ratio and size
-        for (Camera.Size size : sizes) {
-            double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
-            if (Math.abs(size.height - targetHeight) < minDiff) {
-                optimalSize = size;
-                minDiff = Math.abs(size.height - targetHeight);
-            }
-        }
-
-        // Cannot find the one match the aspect ratio, ignore the requirement
-        if (optimalSize == null) {
-            minDiff = Double.MAX_VALUE;
-            for (Camera.Size size : sizes) {
-                if (Math.abs(size.height - targetHeight) < minDiff) {
-                    optimalSize = size;
-                    minDiff = Math.abs(size.height - targetHeight);
-                }
-            }
-        }
-        return optimalSize;
-    }
 
     //拍照
     public void capture() {
@@ -361,10 +325,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-
-
         setStartPreview(mCamera, holder);
-
         Log.i("Camera", "surfaceCreated");
     }
 
@@ -375,8 +336,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             mCamera.stopPreview();
             setStartPreview(mCamera, holder);
         }
-
-//        Log.i("Camera", "surfaceChanged");
     }
 
     @Override
