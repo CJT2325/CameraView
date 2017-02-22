@@ -1,9 +1,12 @@
 # CameraView
 Custom camera view（模仿微信拍照控件，点击拍照，长按录小视频）
-示例截图
+
+### 示例截图
+
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/65A0.tmp.jpg)
 
-git略有卡顿
+### git略有卡顿
+
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/video.gif)
 
 ### 使用步骤
