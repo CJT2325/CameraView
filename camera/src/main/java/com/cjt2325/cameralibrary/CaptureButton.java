@@ -135,10 +135,10 @@ public class CaptureButton extends View {
             paintArc.setColor(0xFF00CC00);
             paintArc.setStyle(Paint.Style.STROKE);
             paintArc.setStrokeWidth(10);
-            canvas.drawArc(btn_center_X - (btn_after_outside_radius-5),
-                              btn_center_Y - (btn_after_outside_radius-5),
-                              btn_center_X + (btn_after_outside_radius-5),
-                              btn_center_Y + (btn_after_outside_radius-5), -90, progress, false, paintArc);
+            canvas.drawArc(btn_center_X - (btn_after_outside_radius - 5),
+                    btn_center_Y - (btn_after_outside_radius - 5),
+                    btn_center_X + (btn_after_outside_radius - 5),
+                    btn_center_Y + (btn_after_outside_radius - 5), -90, progress, false, paintArc);
 
             //draw return button
             Paint paint = new Paint();
@@ -211,8 +211,7 @@ public class CaptureButton extends View {
                             event.getX() > btn_return_X - 37 &&
                             event.getX() < btn_return_X + 37) {
                         STATE_SELECTED = STATE_READYQUIT;
-                    }
-                    else if (event.getY() > btn_center_Y - btn_outside_radius &&
+                    } else if (event.getY() > btn_center_Y - btn_outside_radius &&
                             event.getY() < btn_center_Y + btn_outside_radius &&
                             event.getX() > btn_center_X - btn_outside_radius &&
                             event.getX() < btn_center_X + btn_outside_radius &&
@@ -270,7 +269,7 @@ public class CaptureButton extends View {
                         ) {
                 }
                 if (mCaptureListener != null) {
-                    mCaptureListener.scale(event.getY() - key_down_Y);
+                    mCaptureListener.scale(key_down_Y - event.getY());
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -346,7 +345,7 @@ public class CaptureButton extends View {
 
         @Override
         public void run() {
-            startAnimation(btn_before_outside_radius,btn_after_outside_radius, btn_before_inside_radius, btn_after_inside_radius);
+            startAnimation(btn_before_outside_radius, btn_after_outside_radius, btn_before_inside_radius, btn_after_inside_radius);
             STATE_SELECTED = STATE_RECORD;
         }
     }
@@ -435,7 +434,7 @@ public class CaptureButton extends View {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 btn_left_X = (float) animation.getAnimatedValue();
-                Log.i("CJT",btn_left_X+"=====");
+                Log.i("CJT", btn_left_X + "=====");
                 invalidate();
             }
 

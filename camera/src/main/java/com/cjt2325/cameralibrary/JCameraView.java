@@ -10,6 +10,7 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -39,6 +40,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private int iconWidth = 0;
     private int iconMargin = 0;
     private int iconSrc = 0;
+
+    private String saveVideoPath="";
+    private String videoFileName="";
 
 
     private MediaRecorder mediaRecorder;
@@ -106,7 +110,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             @Override
             public void determine() {
                 if (cameraViewListener != null) {
-                    FileUtil.saveBitmap(pictureBitmap);
+//                    FileUtil.saveBitmap(pictureBitmap);
                     cameraViewListener.captureSuccess(pictureBitmap);
                 }
                 photoImageView.setVisibility(INVISIBLE);
@@ -159,7 +163,15 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
             @Override
             public void scale(float scaleValue) {
-                Log.i(TAG, "scaleValue = " + scaleValue);
+                if (scaleValue >= 0) {
+                    int scaleRate = (int) (scaleValue / 50);
+                    if (scaleRate < 10 && scaleRate >= 0) {
+//                        mCamera.startSmoothZoom(scaleRate);
+                        mParam.setZoom(scaleRate);
+                        mCamera.setParameters(mParam);
+                    }
+//                        Log.i(TAG, "scaleValue = " + (int) scaleValue + " = scaleRate" + scaleRate);
+                }
             }
         });
     }
@@ -356,9 +368,11 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void startRecord() {
-        mediaRecorder = new MediaRecorder();
-        mediaRecorder.reset();
         mCamera.unlock();
+        if (mediaRecorder == null) {
+            mediaRecorder = new MediaRecorder();
+        }
+        mediaRecorder.reset();
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -375,7 +389,13 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
         mediaRecorder.setVideoFrameRate(20);
         mediaRecorder.setPreviewDisplay(mHolder.getSurface());
-        mediaRecorder.setOutputFile("/sdcard/love.mp4");
+
+        videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
+        if (saveVideoPath.equals("")) {
+            saveVideoPath = Environment.getExternalStorageDirectory().getPath();
+            Log.i("Path", saveVideoPath +"/"+ videoFileName);
+        }
+        mediaRecorder.setOutputFile(saveVideoPath +"/"+ videoFileName);
         try {
             mediaRecorder.prepare();
             mediaRecorder.start();
@@ -390,7 +410,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             mediaRecorder.release();
             mediaRecorder = null;
             releaseCamera();
-            fileName = "/sdcard/love.mp4";
+            fileName = saveVideoPath +"/"+ videoFileName;
             mVideoView.setVideoPath(fileName);
             mVideoView.start();
             mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -411,6 +431,10 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
     }
 
+
+    public void setSaveVideoPath(String saveVideoPath) {
+        this.saveVideoPath = saveVideoPath;
+    }
 
     public interface CameraViewListener {
         public void quit();
