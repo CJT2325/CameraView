@@ -1,6 +1,6 @@
 # JCameraView
 ## 控件介绍
-这是一个模仿微信拍照的开源控件，主要的功能有如下：
+这是一个模仿微信拍照的Android开源控件，主要的功能有如下：
 
 1. 点击拍照。
 
@@ -24,7 +24,7 @@
 
 ## 使用步骤
 ## Android Studio
-### 添加下列代码到project gradle
+## 添加下列代码到project gradle
 ```
 allprojects {
     repositories {
@@ -35,11 +35,11 @@ allprojects {
     }
 }
 ```
-### 添加下列代码到module gradle
+## 添加下列代码到module gradle
 ```
 compile 'cjt.library.wheel:camera:0.0.3'
 ```
-### 布局文件中添加
+## 布局文件中添加
 ```
 <com.cjt2325.cameralibrary.JCameraView
     android:id="@+id/cameraview"
@@ -108,21 +108,4 @@ protected void onPause() {
     super.onPause();
     mJCameraView.onPause();
 }
-```
-## License
-```
-JCameraView library for Android
-Copyright (c) 2017 CJT2325 (http://github.com/CJT2325).
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
 ```
