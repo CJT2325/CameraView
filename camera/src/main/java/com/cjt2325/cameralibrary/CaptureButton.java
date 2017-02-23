@@ -17,10 +17,9 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Toast;
 
 /**
- * 作者: 陈嘉桐 on 2017/2/5
- * 邮箱: 445263848@qq.com.
+ * 445263848@qq.com.
  */
-public class CaptureButtom extends View {
+public class CaptureButton extends View {
 
     public final String TAG = "CaptureButtom";
 
@@ -32,10 +31,10 @@ public class CaptureButtom extends View {
 
     private float btn_inside_radius;
     private float btn_outside_radius;
-    //半径变化前
+    //before radius
     private float btn_before_inside_radius;
     private float btn_before_outside_radius;
-    //半径变化后
+    //after radius
     private float btn_after_inside_radius;
     private float btn_after_outside_radius;
 
@@ -45,7 +44,7 @@ public class CaptureButtom extends View {
 
     private float btn_left_X, btn_right_X, btn_result_radius;
 
-    //状态
+    //state
     private int STATE_SELECTED;
     private final int STATE_LESSNESS = 0;
     private final int STATE_KEY_DOWN = 1;
@@ -65,19 +64,19 @@ public class CaptureButtom extends View {
     private ValueAnimator record_anim = ValueAnimator.ofFloat(0, 360);
     private CaptureListener mCaptureListener;
 
-    public CaptureButtom(Context context) {
+    public CaptureButton(Context context) {
         this(context, null);
     }
 
-    public CaptureButtom(Context context, AttributeSet attrs) {
+    public CaptureButton(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public CaptureButtom(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CaptureButton(Context context, AttributeSet attrs, int defStyleAttr) {
         this(context, attrs, defStyleAttr, 0);
     }
 
-    public CaptureButtom(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public CaptureButton(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
 
         mContext = context;
@@ -95,7 +94,6 @@ public class CaptureButtom extends View {
         int width = widthSize;
         Log.i(TAG, "measureWidth = " + width);
         int height = (width / 9) * 4;
-
         setMeasuredDimension(width, height);
     }
 
@@ -125,13 +123,13 @@ public class CaptureButtom extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (STATE_SELECTED == STATE_LESSNESS || STATE_SELECTED == STATE_RECORD) {
-            //绘制拍照按钮
+            //draw capture button
             mPaint.setColor(0xFFEEEEEE);
             canvas.drawCircle(btn_center_X, btn_center_Y, btn_outside_radius, mPaint);
             mPaint.setColor(Color.WHITE);
             canvas.drawCircle(btn_center_X, btn_center_Y, btn_inside_radius, mPaint);
 
-            //绘制绿色进度条
+            //draw Progress bar
             Paint paintArc = new Paint();
             paintArc.setAntiAlias(true);
             paintArc.setColor(0xFF00CC00);
@@ -142,7 +140,7 @@ public class CaptureButtom extends View {
                               btn_center_X + (btn_after_outside_radius-5),
                               btn_center_Y + (btn_after_outside_radius-5), -90, progress, false, paintArc);
 
-            //绘制返回按钮
+            //draw return button
             Paint paint = new Paint();
             paint.setAntiAlias(true);
             paint.setColor(Color.WHITE);
@@ -158,14 +156,14 @@ public class CaptureButtom extends View {
             path.lineTo(btn_return_X + btn_return_length, btn_return_Y - btn_return_length);
             canvas.drawPath(path, paint);
         } else if (STATE_SELECTED == STATE_RECORD_BROWSE || STATE_SELECTED == STATE_PICTURE_BROWSE) {
-            //拍完照或者录完视频需要绘制的内容
+
             mPaint.setColor(0xFFEEEEEE);
             canvas.drawCircle(btn_left_X, btn_center_Y, btn_result_radius, mPaint);
             mPaint.setColor(Color.WHITE);
             canvas.drawCircle(btn_right_X, btn_center_Y, btn_result_radius, mPaint);
 
 
-            //绘制左边返回按钮
+            //left button
             Paint paint = new Paint();
             paint.setAntiAlias(true);
             paint.setColor(Color.BLACK);
@@ -203,22 +201,17 @@ public class CaptureButtom extends View {
     }
 
 
-    //事件处理
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-//                Log.i("CaptureButtom", "ACTION_DOWN");
-                //空状态
                 if (STATE_SELECTED == STATE_LESSNESS) {
-                    //返回按钮被按下
                     if (event.getY() > btn_return_Y - 37 &&
                             event.getY() < btn_return_Y + 10 &&
                             event.getX() > btn_return_X - 37 &&
                             event.getX() < btn_return_X + 37) {
                         STATE_SELECTED = STATE_READYQUIT;
                     }
-                    //拍照事件按下
                     else if (event.getY() > btn_center_Y - btn_outside_radius &&
                             event.getY() < btn_center_Y + btn_outside_radius &&
                             event.getX() > btn_center_X - btn_outside_radius &&
@@ -227,6 +220,7 @@ public class CaptureButtom extends View {
                             ) {
                         key_down_Y = event.getY();
                         STATE_SELECTED = STATE_KEY_DOWN;
+
                         postCheckForLongTouch(event.getX(), event.getY());
                     }
                 } else if (STATE_SELECTED == STATE_RECORD_BROWSE || STATE_SELECTED == STATE_PICTURE_BROWSE) {
@@ -269,7 +263,6 @@ public class CaptureButtom extends View {
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-//                Log.i("CaptureButtom", "ACTION_MOVE");
                 if (event.getY() > btn_center_Y - btn_outside_radius &&
                         event.getY() < btn_center_Y + btn_outside_radius &&
                         event.getX() > btn_center_X - btn_outside_radius &&
@@ -282,7 +275,6 @@ public class CaptureButtom extends View {
                 break;
             case MotionEvent.ACTION_UP:
                 removeCallbacks(longPressRunnable);
-//                Log.i("CaptureButtom", "ACTION_UP");
                 if (STATE_SELECTED == STATE_READYQUIT) {
                     if (event.getY() > btn_return_Y - 37 &&
                             event.getY() < btn_return_Y + 10 &&
@@ -298,7 +290,6 @@ public class CaptureButtom extends View {
                             event.getY() < btn_center_Y + btn_outside_radius &&
                             event.getX() > btn_center_X - btn_outside_radius &&
                             event.getX() < btn_center_X + btn_outside_radius) {
-//                      invalidate();
                         if (mCaptureListener != null) {
                             mCaptureListener.capture();
                         }
@@ -307,14 +298,14 @@ public class CaptureButtom extends View {
                 } else if (STATE_SELECTED == STATE_RECORD) {
                     if (record_anim.getCurrentPlayTime() < 500) {
                         STATE_SELECTED = STATE_LESSNESS;
-                        Toast.makeText(mContext, "时间太短了", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(mContext, "Under time", Toast.LENGTH_SHORT).show();
                         progress = 0;
                         invalidate();
                         record_anim.cancel();
                     } else {
                         STATE_SELECTED = STATE_RECORD_BROWSE;
                         removeCallbacks(recordRunnable);
-                        Toast.makeText(mContext, "时间：" + record_anim.getCurrentPlayTime(), Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(mContext, "Time length " + record_anim.getCurrentPlayTime(), Toast.LENGTH_SHORT).show();
                         captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
                         record_anim.cancel();
                         progress = 0;
@@ -339,7 +330,6 @@ public class CaptureButtom extends View {
         captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
     }
 
-    //长按事件处理
     private void postCheckForLongTouch(float x, float y) {
         longPressRunnable.setPressLocation(x, y);
         postDelayed(longPressRunnable, 500);
@@ -357,7 +347,6 @@ public class CaptureButtom extends View {
         @Override
         public void run() {
             startAnimation(btn_before_outside_radius,btn_after_outside_radius, btn_before_inside_radius, btn_after_inside_radius);
-//            startAnimation(btn_outside_radius, btn_outside_radius + 40, btn_inside_radius, btn_inside_radius - 20);
             STATE_SELECTED = STATE_RECORD;
         }
     }
@@ -385,10 +374,8 @@ public class CaptureButtom extends View {
                         STATE_SELECTED = STATE_RECORD_BROWSE;
                         progress = 0;
                         invalidate();
-//                        Toast.makeText(mContext, "停止事件", Toast.LENGTH_SHORT).show();
                         captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
                         if (btn_outside_radius == btn_after_outside_radius && btn_inside_radius == btn_after_inside_radius) {
-//                            startAnimation(btn_outside_radius, btn_outside_radius - 40, btn_inside_radius, btn_inside_radius + 20);
                             startAnimation(btn_after_outside_radius, btn_before_outside_radius, btn_after_inside_radius, btn_before_inside_radius);
                         } else {
                             startAnimation(btn_after_outside_radius, btn_before_outside_radius, btn_after_inside_radius, btn_before_inside_radius);
@@ -471,7 +458,6 @@ public class CaptureButtom extends View {
     }
 
 
-    //回调接口
     public interface CaptureListener {
         public void capture();
 

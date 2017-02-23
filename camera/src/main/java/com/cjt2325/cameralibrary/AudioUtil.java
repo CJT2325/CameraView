@@ -3,10 +3,6 @@ package com.cjt2325.cameralibrary;
 import android.content.Context;
 import android.media.AudioManager;
 
-/**
- * 作者: 陈嘉桐 on 2017/2/12
- * 邮箱: 445263848@qq.com.
- */
 public class AudioUtil {
     public static void setAudioManage(Context context){
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="iconWidth" format="dimension" />
+    <attr name="iconMargin" format="dimension" />
+    <attr name="iconSrc" format="reference" />
+
+    <declare-styleable name="JCameraView">
+        <attr name="iconWidth" />
+        <attr name="iconMargin" />
+        <attr name="iconSrc" />
+    </declare-styleable>
+
+</resources>

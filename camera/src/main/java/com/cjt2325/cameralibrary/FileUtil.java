@@ -10,8 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * 作者: 陈嘉桐 on 2017/2/12
- * 邮箱: 445263848@qq.com.
+ * 445263848@qq.com.
  */
 public class FileUtil {
     private static final  String TAG = "FileUtil";
@@ -19,9 +18,6 @@ public class FileUtil {
     private static   String storagePath = "";
     private static final String DST_FOLDER_NAME = "PlayCamera";
 
-    /**初始化保存路径
-     * @return
-     */
     private static String initPath(){
         if(storagePath.equals("")){
             storagePath = parentPath.getAbsolutePath()+"/" + DST_FOLDER_NAME;
@@ -33,9 +29,6 @@ public class FileUtil {
         return storagePath;
     }
 
-    /**保存Bitmap到sdcard
-     * @param b
-     */
     public static void saveBitmap(Bitmap b){
 
         String path = initPath();
@@ -48,10 +41,10 @@ public class FileUtil {
             b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             bos.flush();
             bos.close();
-            Log.i(TAG, "saveBitmap成功");
+            Log.i(TAG, "saveBitmap success");
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            Log.i(TAG, "saveBitmap:失败");
+            Log.i(TAG, "saveBitmap:fail");
             e.printStackTrace();
         }
 

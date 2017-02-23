@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,5 +9,8 @@
     <com.cjt2325.cameralibrary.JCameraView
         android:id="@+id/cameraview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:iconMargin="20dp"
+        app:iconWidth="30dp"
+        app:iconSrc="@drawable/ic_camera_enhance_black_24dp"/>
 </RelativeLayout>

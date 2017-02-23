@@ -1,17 +1,18 @@
 package com.cjt2325.cameralibrary;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.hardware.Camera;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,8 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * 作者: 陈嘉桐 on 2017/2/2
- * 邮箱: 445263848@qq.com.
+ * 445263848@qq.com.
  */
 public class JCameraView extends RelativeLayout implements SurfaceHolder.Callback {
 
@@ -35,12 +35,16 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private VideoView mVideoView;
     private ImageView mImageView;
     private ImageView photoImageView;
-    private CaptureButtom mCaptureButtom;
+    private CaptureButton mCaptureButtom;
+    private int iconWidth = 0;
+    private int iconMargin = 0;
+    private int iconSrc = 0;
 
 
     private MediaRecorder mediaRecorder;
     private SurfaceHolder mHolder = null;
     private Camera mCamera;
+    private Camera.Parameters mParam;
     private int width;
     private int height;
     private String fileName;
@@ -56,9 +60,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         this.cameraViewListener = cameraViewListener;
     }
 
-    /*
-            构造函数
-             */
     public JCameraView(Context context) {
         this(context, null);
     }
@@ -74,86 +75,20 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     public JCameraView(final Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         mContext = context;
-
-        //取消提示音
-        AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-        audioManager.setStreamMute(AudioManager.STREAM_SYSTEM, true);
-        audioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, 0, 0);
-        audioManager.setStreamVolume(AudioManager.STREAM_DTMF, 0, 0);
-        audioManager.setStreamVolume(AudioManager.STREAM_NOTIFICATION, 0, 0);
-        audioManager.setStreamVolume(AudioManager.STREAM_RING, 0, 0);
-
-
+        AudioUtil.setAudioManage(mContext);
         SELECTED_CAMERA = CAMERA_POST_POSITION;
-        //设置回调
-        this.setBackgroundColor(Color.BLACK);
-        /*
-        初始化Surface
-         */
-        mVideoView = new VideoView(context);
-        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-//        videoViewParam.setMargins(10,10,10,10);
-        mVideoView.setLayoutParams(videoViewParam);
-        /*
-        初始化CaptureButtom
-         */
-        LayoutParams btnParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        btnParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
-        btnParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
-        mCaptureButtom = new CaptureButtom(context);
-        mCaptureButtom.setLayoutParams(btnParams);
+        TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.JCameraView, defStyleAttr, 0);
 
-        /*
-        初始化结果图片
-         */
-        photoImageView = new ImageView(context);
-        final LayoutParams photoImageViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        photoImageView.setLayoutParams(photoImageViewParam);
-        photoImageView.setBackgroundColor(0xFF000000);
-        photoImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        photoImageView.setVisibility(INVISIBLE);
+        iconWidth = a.getDimensionPixelSize(R.styleable.JCameraView_iconWidth, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, 35, getResources().getDisplayMetrics()));
+        iconMargin = a.getDimensionPixelSize(R.styleable.JCameraView_iconMargin, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, 15, getResources().getDisplayMetrics()));
+        iconSrc = a.getResourceId(R.styleable.JCameraView_iconSrc, R.drawable.ic_repeat_black_24dp);
 
-
-        /*
-        初始化ImageView
-         */
-        mImageView = new ImageView(context);
-        LayoutParams imageViewParam = new LayoutParams(60, 60);
-        imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-        imageViewParam.setMargins(0, 40, 40, 0);
-        mImageView.setLayoutParams(imageViewParam);
-        mImageView.setImageResource(R.drawable.ic_repeat_black_24dp);
-        mImageView.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //摄像头切换
-//                Toast.makeText(mContext, "mImageView", Toast.LENGTH_SHORT).show();
-                if (mCamera != null) {
-                    releaseCamera();
-                    if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
-                        SELECTED_CAMERA = CAMERA_FRONT_POSITION;
-                    } else {
-                        SELECTED_CAMERA = CAMERA_POST_POSITION;
-                    }
-                    mCamera = getCamera(SELECTED_CAMERA);
-                    setStartPreview(mCamera, mHolder);
-                }
-            }
-        });
-
-
-        this.addView(mVideoView);
-        this.addView(photoImageView);
-        this.addView(mCaptureButtom);
-        this.addView(mImageView);
-
+        initView();
         mHolder = mVideoView.getHolder();
         mHolder.addCallback(this);
-
-
-        mCaptureButtom.setCaptureListener(new CaptureButtom.CaptureListener() {
+        mCaptureButtom.setCaptureListener(new CaptureButton.CaptureListener() {
             @Override
             public void capture() {
                 JCameraView.this.capture();
@@ -166,7 +101,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                 releaseCamera();
                 mCamera = getCamera(SELECTED_CAMERA);
                 setStartPreview(mCamera, mHolder);
-//                Toast.makeText(mContext,"cancel",Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -212,7 +146,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
             @Override
             public void deleteRecordResult() {
-                //删除视频
+
                 File file = new File(fileName);
                 if (file.exists()) {
                     file.delete();
@@ -228,6 +162,63 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                 Log.i(TAG, "scaleValue = " + scaleValue);
             }
         });
+    }
+
+    private void initView() {
+        this.setBackgroundColor(Color.BLACK);
+        /*
+        Surface
+         */
+        mVideoView = new VideoView(mContext);
+        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        mVideoView.setLayoutParams(videoViewParam);
+        /*
+        CaptureButtom
+         */
+        LayoutParams btnParams = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        btnParams.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
+        btnParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
+        mCaptureButtom = new CaptureButton(mContext);
+        mCaptureButtom.setLayoutParams(btnParams);
+
+
+        photoImageView = new ImageView(mContext);
+        final LayoutParams photoImageViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        photoImageView.setLayoutParams(photoImageViewParam);
+        photoImageView.setBackgroundColor(0xFF000000);
+        photoImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        photoImageView.setVisibility(INVISIBLE);
+
+
+        mImageView = new ImageView(mContext);
+        Log.i("CJT", this.getMeasuredWidth() + " ==================================");
+        LayoutParams imageViewParam = new LayoutParams(iconWidth, iconWidth);
+        imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+        imageViewParam.setMargins(0, iconMargin, iconMargin, 0);
+        mImageView.setLayoutParams(imageViewParam);
+        mImageView.setImageResource(iconSrc);
+        mImageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mCamera != null) {
+                    releaseCamera();
+                    if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+                        SELECTED_CAMERA = CAMERA_FRONT_POSITION;
+                    } else {
+                        SELECTED_CAMERA = CAMERA_POST_POSITION;
+                    }
+                    mCamera = getCamera(SELECTED_CAMERA);
+                    setStartPreview(mCamera, mHolder);
+                }
+            }
+        });
+
+
+        this.addView(mVideoView);
+        this.addView(photoImageView);
+        this.addView(mCaptureButtom);
+        this.addView(mImageView);
     }
 
     @Override
@@ -252,27 +243,24 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     }
 
 
-    //启动相机浏览
     private void setStartPreview(Camera camera, SurfaceHolder holder) {
         try {
-            Camera.Parameters parameters = mCamera.getParameters();
-            parameters.setPictureFormat(ImageFormat.JPEG);
-            List<Camera.Size> sizeList = parameters.getSupportedPreviewSizes();//获取所有支持的camera尺寸
+            mParam = camera.getParameters();
+            mParam.setPictureFormat(ImageFormat.JPEG);
+            List<Camera.Size> sizeList = mParam.getSupportedPreviewSizes();
             Iterator<Camera.Size> itor = sizeList.iterator();
             while (itor.hasNext()) {
                 Camera.Size cur = itor.next();
-                Log.i("CJT", "所有的  width = " + cur.width + " height = " + cur.height);
-                if (cur.width >= width&& cur.height >= height) {
+                if (cur.width >= width && cur.height >= height) {
                     width = cur.width;
                     height = cur.height;
                 }
             }
-            Log.i("size", "width : height" + width + " : " + height + " ==== " + getWidth() + " : " + getHeight());
-            parameters.setPreviewSize(width, height);//把camera.size赋值到parameters
-            parameters.setPictureSize(width, height);
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-            camera.setParameters(parameters);
-
+            mParam.setPreviewSize(width, height);
+            mParam.setPictureSize(width, height);
+            mParam.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            camera.setParameters(mParam);
+            mParam = camera.getParameters();
             camera.setPreviewDisplay(holder);
             camera.setDisplayOrientation(90);
             camera.startPreview();
@@ -281,7 +269,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
     }
 
-    //释放资源
     private void releaseCamera() {
         if (mCamera != null) {
             mCamera.setPreviewCallback(null);
@@ -291,19 +278,33 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
     }
 
-
-    //拍照
     public void capture() {
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
-                if (success) {
+                if (SELECTED_CAMERA == CAMERA_POST_POSITION && success) {
                     mCamera.takePicture(null, null, new Camera.PictureCallback() {
                         @Override
                         public void onPictureTaken(byte[] data, Camera camera) {
                             Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                             Matrix matrix = new Matrix();
                             matrix.setRotate(90);
+                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                            pictureBitmap = bitmap;
+                            photoImageView.setImageBitmap(bitmap);
+                            photoImageView.setVisibility(VISIBLE);
+                            mImageView.setVisibility(INVISIBLE);
+                            mCaptureButtom.captureSuccess();
+                        }
+                    });
+                } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                    mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                        @Override
+                        public void onPictureTaken(byte[] data, Camera camera) {
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                            Matrix matrix = new Matrix();
+                            matrix.setRotate(270);
+                            matrix.postScale(-1, 1);   //镜像水平翻转
                             bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                             pictureBitmap = bitmap;
                             photoImageView.setImageBitmap(bitmap);
@@ -345,7 +346,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     }
 
     public void onResume() {
-        //默认启动后置摄像头
         mCamera = getCamera(SELECTED_CAMERA);
         setStartPreview(mCamera, mHolder);
     }
@@ -354,25 +354,18 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         releaseCamera();
     }
 
-    /*
-    开始录制
-     */
+
     private void startRecord() {
         mediaRecorder = new MediaRecorder();
         mediaRecorder.reset();
         mCamera.unlock();
-        // 设置录制视频源为Camera(相机)
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        // 设置录制完成后视频的封装格式THREE_GPP为3gp.MPEG_4为mp4
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        // 设置录制的视频编码h263 h264
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        // 设置视频录制的分辨率。必须放在设置编码和格式的后面，否则报错
         mediaRecorder.setVideoSize(width, height);
-        // 设置录制的视频帧率。必须放在设置编码和格式的后面，否则报错
         if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
             mediaRecorder.setOrientationHint(270);
         } else {
@@ -382,26 +375,18 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
         mediaRecorder.setVideoFrameRate(20);
         mediaRecorder.setPreviewDisplay(mHolder.getSurface());
-        // 设置视频文件输出的路径
         mediaRecorder.setOutputFile("/sdcard/love.mp4");
         try {
-            //准备录制
             mediaRecorder.prepare();
-            // 开始录制
             mediaRecorder.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /*
-    停止录制
-     */
     private void stopRecord() {
         if (mediaRecorder != null) {
-            //停止录制
             mediaRecorder.stop();
-            //释放资源
             mediaRecorder.release();
             mediaRecorder = null;
             releaseCamera();
@@ -423,7 +408,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                             mVideoView.start();
                         }
                     });
-//            Toast.makeText(mContext, mVideoView.isPlaying() + "=", Toast.LENGTH_SHORT).show();
         }
     }
 
