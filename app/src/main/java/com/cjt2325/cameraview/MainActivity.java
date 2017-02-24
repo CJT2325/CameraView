@@ -12,17 +12,17 @@ import android.widget.Toast;
 import com.cjt2325.cameralibrary.JCameraView;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private JCameraView mJCameraView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        View decorView = getWindow().getDecorView();
-//        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
-//        ActionBar actionBar = getSupportActionBar();
-//        actionBar.hide();
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN);
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
 
         //////////////////////////////////////////////////////////////////
         mJCameraView = (JCameraView) findViewById(R.id.cameraview);

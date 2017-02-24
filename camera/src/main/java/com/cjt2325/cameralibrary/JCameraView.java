@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.hardware.Camera;
+import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
@@ -398,7 +399,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
         mediaRecorder.setMaxDuration(10000);
         mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
-        mediaRecorder.setVideoFrameRate(20);
+//        mediaRecorder.setVideoFrameRate(20);
         mediaRecorder.setPreviewDisplay(mHolder.getSurface());
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
