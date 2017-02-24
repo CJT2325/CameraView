@@ -59,7 +59,7 @@ compile 'cjt.library.wheel:camera:0.0.3'
 属性 | 属性说明
 ---|---
 iconWidth | 右上角切换摄像头按钮的大小
-iconWidth | 右上角切换摄像头按钮到上、右边距
+iconMargin | 右上角切换摄像头按钮到上、右边距
 iconSrc | 右上角切换摄像头按钮图片
 
 
