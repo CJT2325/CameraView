@@ -1,5 +1,6 @@
 package com.cjt2325.cameralibrary;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -10,6 +11,7 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -73,11 +75,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     }
 
     public JCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
-    }
-
-    public JCameraView(final Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        super(context, attrs, defStyleAttr);
         mContext = context;
         AudioUtil.setAudioManage(mContext);
         SELECTED_CAMERA = CAMERA_POST_POSITION;
@@ -176,6 +174,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         });
     }
 
+
     private void initView() {
         this.setBackgroundColor(Color.BLACK);
         /*
@@ -256,6 +255,10 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void setStartPreview(Camera camera, SurfaceHolder holder) {
+        if (camera==null){
+            Log.i(TAG,"Camera is null");
+            return;
+        }
         try {
             mParam = camera.getParameters();
             mParam.setPictureFormat(ImageFormat.JPEG);
@@ -359,7 +362,11 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     public void onResume() {
         mCamera = getCamera(SELECTED_CAMERA);
-        setStartPreview(mCamera, mHolder);
+        if (mCamera!=null) {
+            setStartPreview(mCamera, mHolder);
+        }else{
+            Log.i(TAG,"Camera is null!");
+        }
     }
 
     public void onPause() {
@@ -368,6 +375,10 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void startRecord() {
+        if (mCamera==null){
+            Log.i(TAG,"Camera is null");
+            return;
+        }
         mCamera.unlock();
         if (mediaRecorder == null) {
             mediaRecorder = new MediaRecorder();

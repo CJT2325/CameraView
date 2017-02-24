@@ -57,7 +57,7 @@ public class CaptureButton extends View {
 
     private float key_down_Y;
 
-
+    private RectF rectF;
     private float progress = 0;
     private LongPressRunnable longPressRunnable = new LongPressRunnable();
     private RecordRunnable recordRunnable = new RecordRunnable();
@@ -73,12 +73,7 @@ public class CaptureButton extends View {
     }
 
     public CaptureButton(Context context, AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs, defStyleAttr, 0);
-    }
-
-    public CaptureButton(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-
+        super(context, attrs, defStyleAttr);
         mContext = context;
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -135,10 +130,12 @@ public class CaptureButton extends View {
             paintArc.setColor(0xFF00CC00);
             paintArc.setStyle(Paint.Style.STROKE);
             paintArc.setStrokeWidth(10);
-            canvas.drawArc(btn_center_X - (btn_after_outside_radius - 5),
+
+            rectF = new RectF(btn_center_X - (btn_after_outside_radius - 5),
                     btn_center_Y - (btn_after_outside_radius - 5),
                     btn_center_X + (btn_after_outside_radius - 5),
-                    btn_center_Y + (btn_after_outside_radius - 5), -90, progress, false, paintArc);
+                    btn_center_Y + (btn_after_outside_radius - 5));
+            canvas.drawArc(rectF, -90, progress, false, paintArc);
 
             //draw return button
             Paint paint = new Paint();
@@ -360,7 +357,7 @@ public class CaptureButton extends View {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
                     if (STATE_SELECTED == STATE_RECORD) {
-                        progress = (float) animation.getAnimatedValue();
+                        progress =  (float)animation.getAnimatedValue();
                     }
                     invalidate();
                 }
