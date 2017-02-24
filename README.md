@@ -36,6 +36,11 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
+### 最新版本，更新了长按录视频崩溃的BUG和兼容到Android4.0
+```
+compile 'cjt.library.wheel:camera:0.0.7'
+```
+### 旧版本
 ```
 compile 'cjt.library.wheel:camera:0.0.3'
 ```
