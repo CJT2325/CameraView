@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.cjt2325.cameralibrary.FileUtil;
 import com.cjt2325.cameralibrary.JCameraView;
 
 
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         //////////////////////////////////////////////////////////////////
         mJCameraView = (JCameraView) findViewById(R.id.cameraview);
         //设置视频保存路径（如果不设置默认为Environment.getExternalStorageDirectory().getPath()）
+        mJCameraView.setAutoFoucs(false);
         mJCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath());
         mJCameraView.setCameraViewListener(new JCameraView.CameraViewListener() {
             @Override
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
             }
             @Override
             public void captureSuccess(Bitmap bitmap) {
+                FileUtil.saveBitmap(bitmap);
                 Toast.makeText(MainActivity.this,"获取到照片Bitmap:"+bitmap.getHeight(),Toast.LENGTH_SHORT).show();
             }
             @Override

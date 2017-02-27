@@ -214,10 +214,13 @@ public class CaptureButton extends View {
                             event.getX() < btn_center_X + btn_outside_radius &&
                             event.getPointerCount() == 1
                             ) {
-                        key_down_Y = event.getY();
-                        STATE_SELECTED = STATE_KEY_DOWN;
-
-                        postCheckForLongTouch(event.getX(), event.getY());
+                        if(!FileUtil.isExternalStorageWritable()){
+                            Toast.makeText(mContext,"请插入储存卡",Toast.LENGTH_SHORT).show();
+                        }else{
+                            key_down_Y = event.getY();
+                            STATE_SELECTED = STATE_KEY_DOWN;
+                            postCheckForLongTouch();
+                        }
                     }
                 } else if (STATE_SELECTED == STATE_RECORD_BROWSE || STATE_SELECTED == STATE_PICTURE_BROWSE) {
                     if (event.getY() > btn_center_Y - btn_result_radius &&
@@ -326,24 +329,16 @@ public class CaptureButton extends View {
         captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
     }
 
-    private void postCheckForLongTouch(float x, float y) {
-        longPressRunnable.setPressLocation(x, y);
+    private void postCheckForLongTouch() {
         postDelayed(longPressRunnable, 500);
     }
 
 
     private class LongPressRunnable implements Runnable {
-        private int x, y;
-
-        public void setPressLocation(float x, float y) {
-            this.x = (int) x;
-            this.y = (int) y;
-        }
-
         @Override
         public void run() {
-            startAnimation(btn_before_outside_radius, btn_after_outside_radius, btn_before_inside_radius, btn_after_inside_radius);
-            STATE_SELECTED = STATE_RECORD;
+                startAnimation(btn_before_outside_radius, btn_after_outside_radius, btn_before_inside_radius, btn_after_inside_radius);
+                STATE_SELECTED = STATE_RECORD;
         }
     }
 
@@ -405,7 +400,7 @@ public class CaptureButton extends View {
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
                 if (STATE_SELECTED == STATE_RECORD) {
-                    postDelayed(recordRunnable, 100);
+                        postDelayed(recordRunnable, 100);
                 }
             }
         });

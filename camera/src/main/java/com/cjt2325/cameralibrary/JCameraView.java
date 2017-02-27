@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
@@ -17,10 +19,12 @@ import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
@@ -31,7 +35,7 @@ import java.util.List;
 /**
  * 445263848@qq.com.
  */
-public class JCameraView extends RelativeLayout implements SurfaceHolder.Callback {
+public class JCameraView extends RelativeLayout implements SurfaceHolder.Callback, Camera.AutoFocusCallback, CameraFocusListener {
 
     public final String TAG = "JCameraView";
 
@@ -39,13 +43,14 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private VideoView mVideoView;
     private ImageView mImageView;
     private ImageView photoImageView;
+    private FoucsView mFoucsView;
     private CaptureButton mCaptureButtom;
     private int iconWidth = 0;
     private int iconMargin = 0;
     private int iconSrc = 0;
 
-    private String saveVideoPath="";
-    private String videoFileName="";
+    private String saveVideoPath = "";
+    private String videoFileName = "";
 
 
     private MediaRecorder mediaRecorder;
@@ -54,12 +59,20 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private Camera.Parameters mParam;
     private int width;
     private int height;
+    //设置手动/自动对焦
+    private boolean autoFoucs;
+    private float screenProp;
+
     private String fileName;
     private Bitmap pictureBitmap;
 
-    private int SELECTED_CAMERA = 0;
-    private final int CAMERA_POST_POSITION = 0;
-    private final int CAMERA_FRONT_POSITION = 1;
+
+    //打开中的摄像头
+    private int SELECTED_CAMERA = 1;
+    //后置摄像头
+    private int CAMERA_POST_POSITION = 0;
+    //前置摄像头
+    private int CAMERA_FRONT_POSITION = 1;
 
     private CameraViewListener cameraViewListener;
 
@@ -79,6 +92,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         super(context, attrs, defStyleAttr);
         mContext = context;
         AudioUtil.setAudioManage(mContext);
+        findAvailableCameras();
         SELECTED_CAMERA = CAMERA_POST_POSITION;
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.JCameraView, defStyleAttr, 0);
 
@@ -173,10 +187,12 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                 }
             }
         });
+
     }
 
 
     private void initView() {
+        setWillNotDraw(false);
         this.setBackgroundColor(Color.BLACK);
         /*
         Surface
@@ -203,6 +219,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         photoImageView.setVisibility(INVISIBLE);
 
 
+
         mImageView = new ImageView(mContext);
         Log.i("CJT", this.getMeasuredWidth() + " ==================================");
         LayoutParams imageViewParam = new LayoutParams(iconWidth, iconWidth);
@@ -221,16 +238,33 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                         SELECTED_CAMERA = CAMERA_POST_POSITION;
                     }
                     mCamera = getCamera(SELECTED_CAMERA);
+                    width = height = 0;
                     setStartPreview(mCamera, mHolder);
                 }
             }
         });
 
 
+        mFoucsView = new FoucsView(mContext,120);
+        mFoucsView.setPadding(2,2,2,2);
+        mFoucsView.setVisibility(INVISIBLE);
         this.addView(mVideoView);
         this.addView(photoImageView);
         this.addView(mCaptureButtom);
         this.addView(mImageView);
+        this.addView(mFoucsView);
+
+
+        mVideoView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCamera.autoFocus(JCameraView.this);
+                Log.i(TAG, "Touch To Focus");
+            }
+        });
+
+        //初始化为自动对焦
+        autoFoucs = true;
     }
 
     @Override
@@ -256,24 +290,45 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void setStartPreview(Camera camera, SurfaceHolder holder) {
-        if (camera==null){
-            Log.i(TAG,"Camera is null");
+        if (camera == null) {
+            Log.i(TAG, "Camera is null");
             return;
         }
         try {
             mParam = camera.getParameters();
             mParam.setPictureFormat(ImageFormat.JPEG);
             List<Camera.Size> sizeList = mParam.getSupportedPreviewSizes();
+            List<Camera.Size> previewSizes = mParam.getSupportedPreviewSizes();
             Iterator<Camera.Size> itor = sizeList.iterator();
+            Iterator<Camera.Size> previewItor = previewSizes.iterator();
+            while (previewItor.hasNext()) {
+                Camera.Size cur = previewItor.next();
+                Log.i(TAG, "PreviewSize    width = " + cur.width + " height = " + cur.height);
+            }
+            float disparity = 1000;
             while (itor.hasNext()) {
                 Camera.Size cur = itor.next();
-                if (cur.width >= width && cur.height >= height) {
-                    width = cur.width;
-                    height = cur.height;
+                if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                    float prop = (float) cur.height / (float) cur.width;
+                    if (Math.abs(screenProp - prop) < disparity) {
+                        disparity = Math.abs(screenProp - prop);
+                        width = cur.width;
+                        height = cur.height;
+                    }
+                    Log.i(TAG, "width = " + cur.width + " height = " + cur.height);
+                }
+                if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+                    if (cur.width >= width && cur.height >= height) {
+                        width = cur.width;
+                        height = cur.height;
+                    }
+                    Log.i(TAG, "width = " + cur.width + " height = " + cur.height);
                 }
             }
+            Log.i(TAG, "确定后的大小 width = " + width + " height = " + height);
             mParam.setPreviewSize(width, height);
             mParam.setPictureSize(width, height);
+            mParam.setJpegQuality(100);
             mParam.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             camera.setParameters(mParam);
             mParam = camera.getParameters();
@@ -283,6 +338,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     private void releaseCamera() {
@@ -294,50 +350,75 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
     }
 
+
     public void capture() {
-        mCamera.autoFocus(new Camera.AutoFocusCallback() {
-            @Override
-            public void onAutoFocus(boolean success, Camera camera) {
-                if (SELECTED_CAMERA == CAMERA_POST_POSITION && success) {
-                    mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                        @Override
-                        public void onPictureTaken(byte[] data, Camera camera) {
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                            Matrix matrix = new Matrix();
-                            matrix.setRotate(90);
-                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                            pictureBitmap = bitmap;
-                            photoImageView.setImageBitmap(bitmap);
-                            photoImageView.setVisibility(VISIBLE);
-                            mImageView.setVisibility(INVISIBLE);
-                            mCaptureButtom.captureSuccess();
-                        }
-                    });
-                } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                    mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                        @Override
-                        public void onPictureTaken(byte[] data, Camera camera) {
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                            Matrix matrix = new Matrix();
-                            matrix.setRotate(270);
-                            matrix.postScale(-1, 1);   //镜像水平翻转
-                            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                            pictureBitmap = bitmap;
-                            photoImageView.setImageBitmap(bitmap);
-                            photoImageView.setVisibility(VISIBLE);
-                            mImageView.setVisibility(INVISIBLE);
-                            mCaptureButtom.captureSuccess();
-                        }
-                    });
-                }
+        if (autoFoucs) {//自动对焦先对焦成功后获取图片
+            mCamera.autoFocus(this);
+        } else {//手动对焦时候点击拍照按钮直接获取照片
+            if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(90);
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        pictureBitmap = bitmap;
+//                        photoImageView.setImageBitmap(bitmap);
+//                        photoImageView.setVisibility(VISIBLE);
+                        mImageView.setVisibility(INVISIBLE);
+                        mCaptureButtom.captureSuccess();
+                    }
+                });
+            } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(270);
+                        matrix.postScale(-1, 1);   //镜像水平翻转
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        pictureBitmap = bitmap;
+//                        photoImageView.setImageBitmap(bitmap);
+//                        photoImageView.setVisibility(VISIBLE);
+                        mImageView.setVisibility(INVISIBLE);
+                        mCaptureButtom.captureSuccess();
+                    }
+                });
             }
-        });
+        }
+
     }
 
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        float widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        float heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        screenProp = widthSize / heightSize;
+        Log.i(TAG, "ScreenProp = " + screenProp + " " + widthSize + " " + heightSize);
+    }
+
+    private Paint mPaint = new Paint();
+    private boolean foucsing = false;
+    private float foucs_X = 0;
+    private float foucs_Y = 0;
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        mPaint.setColor(0xFFFFFFFF);
+        mPaint.setAntiAlias(true);
+        mPaint.setStyle(Paint.Style.FILL);
+        mPaint.setStrokeWidth(3);
+        Log.i(TAG,"O======");
+        canvas.drawRect(10, 10, 20, 20, mPaint);
+        canvas.drawLine(0, 0, getWidth(), getHeight(), mPaint);
+        if (foucsing) {
+            canvas.drawRect(foucs_X - 5, foucs_Y - 5, foucs_X + 5, foucs_Y + 5, mPaint);
+        }
     }
 
     @Override
@@ -349,10 +430,10 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         mHolder = holder;
-        if (mCamera != null) {
-            mCamera.stopPreview();
-            setStartPreview(mCamera, holder);
-        }
+//        if (mCamera != null) {
+//            mCamera.stopPreview();
+//            setStartPreview(mCamera, holder);
+//        }
     }
 
     @Override
@@ -363,10 +444,10 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     public void onResume() {
         mCamera = getCamera(SELECTED_CAMERA);
-        if (mCamera!=null) {
-            setStartPreview(mCamera, mHolder);
-        }else{
-            Log.i(TAG,"Camera is null!");
+        if (mCamera != null) {
+//            setStartPreview(mCamera, mHolder);
+        } else {
+            Log.i(TAG, "Camera is null!");
         }
     }
 
@@ -376,8 +457,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void startRecord() {
-        if (mCamera==null){
-            Log.i(TAG,"Camera is null");
+        if (mCamera == null) {
+            Log.i(TAG, "Camera is null");
+            stopRecord();
             return;
         }
         mCamera.unlock();
@@ -399,30 +481,35 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
         mediaRecorder.setMaxDuration(10000);
         mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
-//        mediaRecorder.setVideoFrameRate(20);
         mediaRecorder.setPreviewDisplay(mHolder.getSurface());
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
         if (saveVideoPath.equals("")) {
             saveVideoPath = Environment.getExternalStorageDirectory().getPath();
-            Log.i("Path", saveVideoPath +"/"+ videoFileName);
         }
-        mediaRecorder.setOutputFile(saveVideoPath +"/"+ videoFileName);
+        mediaRecorder.setOutputFile(saveVideoPath + "/" + videoFileName);
         try {
             mediaRecorder.prepare();
             mediaRecorder.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void stopRecord() {
         if (mediaRecorder != null) {
-            mediaRecorder.stop();
+            mediaRecorder.setOnErrorListener(null);
+            mediaRecorder.setOnInfoListener(null);
+            mediaRecorder.setPreviewDisplay(null);
+            try {
+                mediaRecorder.stop();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
             mediaRecorder.release();
             mediaRecorder = null;
             releaseCamera();
-            fileName = saveVideoPath +"/"+ videoFileName;
+            fileName = saveVideoPath + "/" + videoFileName;
             mVideoView.setVideoPath(fileName);
             mVideoView.start();
             mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -448,11 +535,110 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         this.saveVideoPath = saveVideoPath;
     }
 
+    /**
+     * 获得可用的相机，并设置前后摄像机的ID
+     */
+    private void findAvailableCameras() {
+
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        int numCamera = Camera.getNumberOfCameras();
+        for (int i = 0; i < numCamera; i++) {
+            Camera.getCameraInfo(i, info);
+            // 找到了前置摄像头
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                CAMERA_FRONT_POSITION = info.facing;
+                Log.i(TAG, "CAMERA_FRONT_POSITION = " + CAMERA_FRONT_POSITION);
+            }
+            // 招到了后置摄像头
+            if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                CAMERA_POST_POSITION = info.facing;
+
+            }
+
+        }
+
+    }
+
+    //自动对焦
+    @Override
+    public void onAutoFocus(boolean success, Camera camera) {
+        if (autoFoucs) {
+            if (SELECTED_CAMERA == CAMERA_POST_POSITION && success) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(90);
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        pictureBitmap = bitmap;
+//                        photoImageView.setImageBitmap(bitmap);
+//                        photoImageView.setVisibility(VISIBLE);
+                        mImageView.setVisibility(INVISIBLE);
+                        mCaptureButtom.captureSuccess();
+                    }
+                });
+            } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(270);
+                        matrix.postScale(-1, 1);   //镜像水平翻转
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        pictureBitmap = bitmap;
+//                        photoImageView.setImageBitmap(bitmap);
+//                        photoImageView.setVisibility(VISIBLE);
+                        mImageView.setVisibility(INVISIBLE);
+                        mCaptureButtom.captureSuccess();
+                    }
+                });
+            }
+        }
+    }
+
+    public void setAutoFoucs(boolean autoFoucs) {
+        this.autoFoucs = autoFoucs;
+    }
+
+    //手动对焦点击的位置
+    @Override
+    public void onFocusBegin(float x, float y) {
+        mFoucsView.setVisibility(VISIBLE);
+        mFoucsView.setX(x-mFoucsView.getWidth()/2);
+        mFoucsView.setY(y-mFoucsView.getHeight()/2);
+        mCamera.autoFocus(new Camera.AutoFocusCallback() {
+            @Override
+            public void onAutoFocus(boolean success, Camera camera) {
+                if (success) {
+                    mCamera.cancelAutoFocus();
+                    onFocusEnd();
+                }
+            }
+        });
+    }
+
+    //手动对焦结束
+    @Override
+    public void onFocusEnd() {
+        mFoucsView.setVisibility(INVISIBLE);
+    }
+
     public interface CameraViewListener {
         public void quit();
 
         public void captureSuccess(Bitmap bitmap);
 
         public void recordSuccess(String url);
+    }
+
+    @Override
+    public boolean onTouchEvent(final MotionEvent event) {
+        //手动对焦
+        if (!autoFoucs) {
+            onFocusBegin(event.getX(), event.getY());
+        }
+        return super.onTouchEvent(event);
     }
 }
