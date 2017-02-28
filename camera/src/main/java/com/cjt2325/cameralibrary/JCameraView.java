@@ -42,7 +42,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private Context mContext;
     private VideoView mVideoView;
     private ImageView mImageView;
-    private ImageView photoImageView;
+//    private ImageView photoImageView;
     private FoucsView mFoucsView;
     private CaptureButton mCaptureButtom;
     private int iconWidth = 0;
@@ -113,7 +113,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
             @Override
             public void cancel() {
-                photoImageView.setVisibility(INVISIBLE);
+//                photoImageView.setVisibility(INVISIBLE);
                 mImageView.setVisibility(VISIBLE);
                 releaseCamera();
                 mCamera = getCamera(SELECTED_CAMERA);
@@ -126,7 +126,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 //                    FileUtil.saveBitmap(pictureBitmap);
                     cameraViewListener.captureSuccess(pictureBitmap);
                 }
-                photoImageView.setVisibility(INVISIBLE);
+//                photoImageView.setVisibility(INVISIBLE);
                 mImageView.setVisibility(VISIBLE);
                 releaseCamera();
                 mCamera = getCamera(SELECTED_CAMERA);
@@ -211,12 +211,12 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mCaptureButtom.setLayoutParams(btnParams);
 
 
-        photoImageView = new ImageView(mContext);
-        final LayoutParams photoImageViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        photoImageView.setLayoutParams(photoImageViewParam);
-        photoImageView.setBackgroundColor(0xFF000000);
-        photoImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        photoImageView.setVisibility(INVISIBLE);
+//        photoImageView = new ImageView(mContext);
+//        final LayoutParams photoImageViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+//        photoImageView.setLayoutParams(photoImageViewParam);
+//        photoImageView.setBackgroundColor(0xFF000000);
+//        photoImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//        photoImageView.setVisibility(INVISIBLE);
 
 
 
@@ -246,10 +246,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
         mFoucsView = new FoucsView(mContext,120);
-        mFoucsView.setPadding(2,2,2,2);
         mFoucsView.setVisibility(INVISIBLE);
         this.addView(mVideoView);
-        this.addView(photoImageView);
+//        this.addView(photoImageView);
         this.addView(mCaptureButtom);
         this.addView(mImageView);
         this.addView(mFoucsView);
@@ -364,8 +363,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                         matrix.setRotate(90);
                         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                         pictureBitmap = bitmap;
-//                        photoImageView.setImageBitmap(bitmap);
-//                        photoImageView.setVisibility(VISIBLE);
                         mImageView.setVisibility(INVISIBLE);
                         mCaptureButtom.captureSuccess();
                     }
@@ -380,17 +377,47 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                         matrix.postScale(-1, 1);   //镜像水平翻转
                         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                         pictureBitmap = bitmap;
-//                        photoImageView.setImageBitmap(bitmap);
-//                        photoImageView.setVisibility(VISIBLE);
                         mImageView.setVisibility(INVISIBLE);
                         mCaptureButtom.captureSuccess();
                     }
                 });
             }
         }
-
     }
-
+    //自动对焦
+    @Override
+    public void onAutoFocus(boolean success, Camera camera) {
+        if (autoFoucs) {
+            if (SELECTED_CAMERA == CAMERA_POST_POSITION && success) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(90);
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        pictureBitmap = bitmap;
+                        mImageView.setVisibility(INVISIBLE);
+                        mCaptureButtom.captureSuccess();
+                    }
+                });
+            } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                mCamera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] data, Camera camera) {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        Matrix matrix = new Matrix();
+                        matrix.setRotate(270);
+                        matrix.postScale(-1, 1);   //镜像水平翻转
+                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                        pictureBitmap = bitmap;
+                        mImageView.setVisibility(INVISIBLE);
+                        mCaptureButtom.captureSuccess();
+                    }
+                });
+            }
+        }
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -401,25 +428,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         Log.i(TAG, "ScreenProp = " + screenProp + " " + widthSize + " " + heightSize);
     }
 
-    private Paint mPaint = new Paint();
-    private boolean foucsing = false;
-    private float foucs_X = 0;
-    private float foucs_Y = 0;
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        mPaint.setColor(0xFFFFFFFF);
-        mPaint.setAntiAlias(true);
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setStrokeWidth(3);
-        Log.i(TAG,"O======");
-        canvas.drawRect(10, 10, 20, 20, mPaint);
-        canvas.drawLine(0, 0, getWidth(), getHeight(), mPaint);
-        if (foucsing) {
-            canvas.drawRect(foucs_X - 5, foucs_Y - 5, foucs_X + 5, foucs_Y + 5, mPaint);
-        }
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -559,44 +567,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     }
 
-    //自动对焦
-    @Override
-    public void onAutoFocus(boolean success, Camera camera) {
-        if (autoFoucs) {
-            if (SELECTED_CAMERA == CAMERA_POST_POSITION && success) {
-                mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                        Matrix matrix = new Matrix();
-                        matrix.setRotate(90);
-                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                        pictureBitmap = bitmap;
-//                        photoImageView.setImageBitmap(bitmap);
-//                        photoImageView.setVisibility(VISIBLE);
-                        mImageView.setVisibility(INVISIBLE);
-                        mCaptureButtom.captureSuccess();
-                    }
-                });
-            } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                mCamera.takePicture(null, null, new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                        Matrix matrix = new Matrix();
-                        matrix.setRotate(270);
-                        matrix.postScale(-1, 1);   //镜像水平翻转
-                        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                        pictureBitmap = bitmap;
-//                        photoImageView.setImageBitmap(bitmap);
-//                        photoImageView.setVisibility(VISIBLE);
-                        mImageView.setVisibility(INVISIBLE);
-                        mCaptureButtom.captureSuccess();
-                    }
-                });
-            }
-        }
-    }
+
 
     public void setAutoFoucs(boolean autoFoucs) {
         this.autoFoucs = autoFoucs;

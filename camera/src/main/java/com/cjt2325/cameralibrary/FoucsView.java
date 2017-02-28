@@ -13,6 +13,7 @@ public class FoucsView extends View {
     private int foucsView_size;
     private int x;
     private int y;
+    private int length;
     private Paint mPaint;
 
     public FoucsView(Context context, int size) {
@@ -33,16 +34,18 @@ public class FoucsView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        x = y = (int) (foucsView_size / 2.0);
+        length = (int) (foucsView_size / 2.0) - 2;
         setMeasuredDimension(foucsView_size, foucsView_size);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        canvas.drawRect(0+1, 0+1, getWidth(), getHeight(), mPaint);
-        canvas.drawLine(0, getHeight() / 2, foucsView_size / 10, getHeight() / 2,mPaint);
-        canvas.drawLine(getWidth(), getHeight() / 2, getWidth()-foucsView_size / 10, getHeight() / 2,mPaint);
-        canvas.drawLine(getWidth()/2, 0, getWidth()/2, foucsView_size / 10,mPaint);
-        canvas.drawLine(getWidth()/2, getHeight(), getWidth()/2, getHeight() -foucsView_size / 10,mPaint);
+        canvas.drawRect(x - length, y - length, x + length, y + length, mPaint);
+        canvas.drawLine(2, getHeight() / 2, foucsView_size / 10, getHeight() / 2, mPaint);
+        canvas.drawLine(getWidth() - 2, getHeight() / 2, getWidth() - foucsView_size / 10, getHeight() / 2, mPaint);
+        canvas.drawLine(getWidth() / 2, 2, getWidth() / 2, foucsView_size / 10, mPaint);
+        canvas.drawLine(getWidth() / 2, getHeight() - 2, getWidth() / 2, getHeight() - foucsView_size / 10, mPaint);
     }
 }
