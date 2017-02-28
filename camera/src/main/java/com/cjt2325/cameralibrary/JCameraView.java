@@ -48,6 +48,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     //    private ImageView photoImageView;
     private FoucsView mFoucsView;
     private CaptureButton mCaptureButtom;
+
     private int iconWidth = 0;
     private int iconMargin = 0;
     private int iconSrc = 0;
@@ -64,6 +65,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private int height;
 
     private boolean autoFoucs;
+    private boolean isRecorder = false;
     private float screenProp;
 
     private String fileName;
@@ -91,7 +93,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     public JCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
-        powerManager = (PowerManager)mContext.getSystemService(mContext.POWER_SERVICE);
+        powerManager = (PowerManager) mContext.getSystemService(mContext.POWER_SERVICE);
         wakeLock = this.powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "My Lock");
         AudioUtil.setAudioManage(mContext);
         findAvailableCameras();
@@ -469,6 +471,11 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void startRecord() {
+        if (isRecorder){
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+        }
         if (mCamera == null) {
             Log.i(TAG, "Camera is null");
             stopRecord();
@@ -503,7 +510,8 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         try {
             mediaRecorder.prepare();
             mediaRecorder.start();
-        } catch (Exception e) {
+            isRecorder = true;
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -515,6 +523,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             mediaRecorder.setPreviewDisplay(null);
             try {
                 mediaRecorder.stop();
+                isRecorder = false;
             } catch (IllegalStateException e) {
                 e.printStackTrace();
             }
