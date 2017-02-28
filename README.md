@@ -36,15 +36,18 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 最新版本，添加手动对焦，对焦提示器，修复切换到前置摄像头崩溃的BUG
+### 最新版本，修复对焦BUF，添加保持屏幕常亮唤醒状态
 ```
-compile 'cjt.library.wheel:camera:0.0.8'
+compile 'cjt.library.wheel:camera:0.0.9'
+//需新增权限
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
 ```
 ### 旧版本
 ```
+compile 'cjt.library.wheel:camera:0.0.8' //添加手动对焦，对焦提示器，修复切换到前置摄像头崩溃的BUG
+
 compile 'cjt.library.wheel:camera:0.0.7' //修复了长按录视频崩溃的BUG和兼容到Android4.0
-```
-```
+
 compile 'cjt.library.wheel:camera:0.0.3' 
 ```
 ## 布局文件中添加
