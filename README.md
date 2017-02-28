@@ -72,6 +72,9 @@ iconSrc | 右上角切换摄像头按钮图片
 
 ### AndroidManifest.xml中添加权限
 ```
+//0.0.9需要新增权限
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
