@@ -36,13 +36,16 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 最新版本，修复了长按录视频崩溃的BUG和兼容到Android4.0
+### 最新版本，添加手动对焦，对焦提示器，修复切换到前置摄像头崩溃的BUG
 ```
-compile 'cjt.library.wheel:camera:0.0.7'
+compile 'cjt.library.wheel:camera:0.0.8'
 ```
 ### 旧版本
 ```
-compile 'cjt.library.wheel:camera:0.0.3'
+compile 'cjt.library.wheel:camera:0.0.7' //修复了长按录视频崩溃的BUG和兼容到Android4.0
+```
+```
+compile 'cjt.library.wheel:camera:0.0.3' 
 ```
 ## 布局文件中添加
 ```
@@ -83,8 +86,10 @@ actionBar.hide();
 ## 初始化JCameraView控件
 ```
 mJCameraView = (JCameraView) findViewById(R.id.cameraview);
-//设置视频保存路径（如果不设置默认为Environment.getExternalStorageDirectory().getPath()）
+//(0.0.7+)设置视频保存路径（如果不设置默认为Environment.getExternalStorageDirectory().getPath()）
 mJCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath());
+//(0.0.8+)设置手动/自动对焦，默认为自动对焦
+mJCameraView.setAutoFoucs(false);
 mJCameraView.setCameraViewListener(new JCameraView.CameraViewListener() {
     @Override
     public void quit() {
