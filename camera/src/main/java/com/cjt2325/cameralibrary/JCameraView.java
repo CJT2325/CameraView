@@ -16,6 +16,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
+import android.os.PowerManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -39,10 +40,12 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     public final String TAG = "JCameraView";
 
+    private PowerManager powerManager = null;
+    private PowerManager.WakeLock wakeLock = null;
     private Context mContext;
     private VideoView mVideoView;
     private ImageView mImageView;
-//    private ImageView photoImageView;
+    //    private ImageView photoImageView;
     private FoucsView mFoucsView;
     private CaptureButton mCaptureButtom;
     private int iconWidth = 0;
@@ -59,7 +62,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private Camera.Parameters mParam;
     private int width;
     private int height;
-    //设置手动/自动对焦
+
     private boolean autoFoucs;
     private float screenProp;
 
@@ -67,11 +70,8 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private Bitmap pictureBitmap;
 
 
-    //打开中的摄像头
     private int SELECTED_CAMERA = 1;
-    //后置摄像头
     private int CAMERA_POST_POSITION = 0;
-    //前置摄像头
     private int CAMERA_FRONT_POSITION = 1;
 
     private CameraViewListener cameraViewListener;
@@ -91,6 +91,8 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     public JCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
+        powerManager = (PowerManager)mContext.getSystemService(mContext.POWER_SERVICE);
+        wakeLock = this.powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "My Lock");
         AudioUtil.setAudioManage(mContext);
         findAvailableCameras();
         SELECTED_CAMERA = CAMERA_POST_POSITION;
@@ -219,7 +221,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 //        photoImageView.setVisibility(INVISIBLE);
 
 
-
         mImageView = new ImageView(mContext);
         Log.i("CJT", this.getMeasuredWidth() + " ==================================");
         LayoutParams imageViewParam = new LayoutParams(iconWidth, iconWidth);
@@ -245,7 +246,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         });
 
 
-        mFoucsView = new FoucsView(mContext,120);
+        mFoucsView = new FoucsView(mContext, 120);
         mFoucsView.setVisibility(INVISIBLE);
         this.addView(mVideoView);
 //        this.addView(photoImageView);
@@ -324,7 +325,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                     Log.i(TAG, "width = " + cur.width + " height = " + cur.height);
                 }
             }
-            Log.i(TAG, "确定后的大小 width = " + width + " height = " + height);
+            Log.i(TAG, "Mmkesure width = " + width + " height = " + height);
             mParam.setPreviewSize(width, height);
             mParam.setPictureSize(width, height);
             mParam.setJpegQuality(100);
@@ -351,9 +352,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     public void capture() {
-        if (autoFoucs) {//自动对焦先对焦成功后获取图片
+        if (autoFoucs) {
             mCamera.autoFocus(this);
-        } else {//手动对焦时候点击拍照按钮直接获取照片
+        } else {
             if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
                 mCamera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
@@ -374,7 +375,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                         Matrix matrix = new Matrix();
                         matrix.setRotate(270);
-                        matrix.postScale(-1, 1);   //镜像水平翻转
+                        matrix.postScale(-1, 1);
                         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                         pictureBitmap = bitmap;
                         mImageView.setVisibility(INVISIBLE);
@@ -384,6 +385,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             }
         }
     }
+
     //自动对焦
     @Override
     public void onAutoFocus(boolean success, Camera camera) {
@@ -408,7 +410,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                         Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                         Matrix matrix = new Matrix();
                         matrix.setRotate(270);
-                        matrix.postScale(-1, 1);   //镜像水平翻转
+                        matrix.postScale(-1, 1);
                         bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                         pictureBitmap = bitmap;
                         mImageView.setVisibility(INVISIBLE);
@@ -457,10 +459,12 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         } else {
             Log.i(TAG, "Camera is null!");
         }
+        wakeLock.acquire();
     }
 
     public void onPause() {
         releaseCamera();
+        wakeLock.release();
     }
 
 
@@ -568,17 +572,15 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     }
 
 
-
     public void setAutoFoucs(boolean autoFoucs) {
         this.autoFoucs = autoFoucs;
     }
 
-    //手动对焦点击的位置
     @Override
     public void onFocusBegin(float x, float y) {
         mFoucsView.setVisibility(VISIBLE);
-        mFoucsView.setX(x-mFoucsView.getWidth()/2);
-        mFoucsView.setY(y-mFoucsView.getHeight()/2);
+        mFoucsView.setX(x - mFoucsView.getWidth() / 2);
+        mFoucsView.setY(y - mFoucsView.getHeight() / 2);
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
@@ -606,8 +608,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     @Override
     public boolean onTouchEvent(final MotionEvent event) {
-        //手动对焦
-        if (!autoFoucs) {
+        if (!autoFoucs && event.getAction() == MotionEvent.ACTION_DOWN && SELECTED_CAMERA == CAMERA_POST_POSITION) {
             onFocusBegin(event.getX(), event.getY());
         }
         return super.onTouchEvent(event);

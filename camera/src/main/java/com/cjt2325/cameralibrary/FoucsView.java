@@ -5,9 +5,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.view.View;
 
-/**
- * 作者: 陈嘉桐 on 2017/2/28
- * 邮箱: 445263848@qq.com.
+/*
+ *445263848@qq.com.
  */
 public class FoucsView extends View {
     private int foucsView_size;
