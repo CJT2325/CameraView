@@ -36,7 +36,7 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 最新版本，修复对焦BUF，添加保持屏幕常亮唤醒状态
+### 最新版本，修复对焦BUG，添加保持屏幕常亮唤醒状态
 ```
 compile 'cjt.library.wheel:camera:0.0.9'
 //需新增权限
