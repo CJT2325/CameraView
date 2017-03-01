@@ -36,13 +36,15 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 最新版本（0.1.0）更新内容修复BUG
+### 最新版本（0.1.1）更新内容：修复切换前置摄像头崩溃BUG
 ```
-compile 'cjt.library.wheel:camera:0.1.0'
+compile 'cjt.library.wheel:camera:0.1.1'
 
 ```
 ### 旧版本
 ```
+compile 'cjt.library.wheel:camera:0.1.0' //修复BUG
+
 compile 'cjt.library.wheel:camera:0.0.8' //添加保持屏幕常亮唤醒状态
 <uses-permission android:name="android.permission.WAKE_LOCK"/> //需新增权限
 
