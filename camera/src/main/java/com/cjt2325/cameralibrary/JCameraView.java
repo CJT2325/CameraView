@@ -45,7 +45,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private Context mContext;
     private VideoView mVideoView;
     private ImageView mImageView;
-    //    private ImageView photoImageView;
     private FoucsView mFoucsView;
     private CaptureButton mCaptureButtom;
 
@@ -61,10 +60,13 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private SurfaceHolder mHolder = null;
     private Camera mCamera;
     private Camera.Parameters mParam;
-    private int width;
-    private int height;
+    private int previewWidth;
+    private int previewHeight;
+    private int pictureWidth;
+    private int pictureHeight;
 
     private boolean autoFoucs;
+    private boolean isPlay = false;
     private boolean isRecorder = false;
     private float screenProp;
 
@@ -126,6 +128,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
             @Override
             public void determine() {
+
                 if (cameraViewListener != null) {
 //                    FileUtil.saveBitmap(pictureBitmap);
                     cameraViewListener.captureSuccess(pictureBitmap);
@@ -163,6 +166,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                 releaseCamera();
                 mCamera = getCamera(SELECTED_CAMERA);
                 setStartPreview(mCamera, mHolder);
+                isPlay = false;
             }
 
             @Override
@@ -176,6 +180,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                 releaseCamera();
                 mCamera = getCamera(SELECTED_CAMERA);
                 setStartPreview(mCamera, mHolder);
+                isPlay = false;
             }
 
             @Override
@@ -183,11 +188,10 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                 if (scaleValue >= 0) {
                     int scaleRate = (int) (scaleValue / 50);
                     if (scaleRate < 10 && scaleRate >= 0) {
-//                        mCamera.startSmoothZoom(scaleRate);
                         mParam.setZoom(scaleRate);
                         mCamera.setParameters(mParam);
                     }
-//                        Log.i(TAG, "scaleValue = " + (int) scaleValue + " = scaleRate" + scaleRate);
+                    Log.i(TAG, "scaleValue = " + (int) scaleValue + " = scaleRate" + scaleRate);
                 }
             }
         });
@@ -202,7 +206,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         Surface
          */
         mVideoView = new VideoView(mContext);
-        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mVideoView.setLayoutParams(videoViewParam);
         /*
@@ -213,14 +217,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         btnParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
         mCaptureButtom = new CaptureButton(mContext);
         mCaptureButtom.setLayoutParams(btnParams);
-
-
-//        photoImageView = new ImageView(mContext);
-//        final LayoutParams photoImageViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        photoImageView.setLayoutParams(photoImageViewParam);
-//        photoImageView.setBackgroundColor(0xFF000000);
-//        photoImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//        photoImageView.setVisibility(INVISIBLE);
 
 
         mImageView = new ImageView(mContext);
@@ -241,7 +237,8 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
                         SELECTED_CAMERA = CAMERA_POST_POSITION;
                     }
                     mCamera = getCamera(SELECTED_CAMERA);
-                    width = height = 0;
+                    previewWidth = previewHeight = 0;
+                    pictureWidth = pictureHeight = 0;
                     setStartPreview(mCamera, mHolder);
                 }
             }
@@ -251,7 +248,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mFoucsView = new FoucsView(mContext, 120);
         mFoucsView.setVisibility(INVISIBLE);
         this.addView(mVideoView);
-//        this.addView(photoImageView);
         this.addView(mCaptureButtom);
         this.addView(mImageView);
         this.addView(mFoucsView);
@@ -300,36 +296,38 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             mParam = camera.getParameters();
             mParam.setPictureFormat(ImageFormat.JPEG);
             List<Camera.Size> sizeList = mParam.getSupportedPreviewSizes();
-            List<Camera.Size> previewSizes = mParam.getSupportedPreviewSizes();
+            List<Camera.Size> previewSizes = mParam.getSupportedPictureSizes();
             Iterator<Camera.Size> itor = sizeList.iterator();
             Iterator<Camera.Size> previewItor = previewSizes.iterator();
-            while (previewItor.hasNext()) {
-                Camera.Size cur = previewItor.next();
-                Log.i(TAG, "PreviewSize    width = " + cur.width + " height = " + cur.height);
-            }
-            float disparity = 1000;
+            float previewDisparity = 1000;
+            float pictureDisparity = 1000;
+            //get best preview Size
             while (itor.hasNext()) {
                 Camera.Size cur = itor.next();
-                if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                    float prop = (float) cur.height / (float) cur.width;
-                    if (Math.abs(screenProp - prop) < disparity) {
-                        disparity = Math.abs(screenProp - prop);
-                        width = cur.width;
-                        height = cur.height;
-                    }
-                    Log.i(TAG, "width = " + cur.width + " height = " + cur.height);
+                float prop = (float) cur.height / (float) cur.width;
+                if (Math.abs(screenProp - prop) < previewDisparity) {
+                    previewDisparity = Math.abs(screenProp - prop);
+                    previewWidth = cur.width;
+                    previewHeight = cur.height;
                 }
-                if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
-                    if (cur.width >= width && cur.height >= height) {
-                        width = cur.width;
-                        height = cur.height;
-                    }
-                    Log.i(TAG, "width = " + cur.width + " height = " + cur.height);
-                }
+                Log.i(TAG, "width = " + cur.width + " height = " + cur.height);
             }
-            Log.i(TAG, "Mmkesure width = " + width + " height = " + height);
-            mParam.setPreviewSize(width, height);
-            mParam.setPictureSize(width, height);
+            //get best picture Size
+            while (previewItor.hasNext()) {
+                Camera.Size cur = previewItor.next();
+                float prop = (float) cur.height / (float) cur.width;
+                if (Math.abs(screenProp - prop) < pictureDisparity) {
+                    pictureDisparity = Math.abs(screenProp - prop);
+                    pictureWidth = cur.width;
+                    pictureHeight = cur.height;
+                }
+                Log.i(TAG, "picture width = " + cur.width + " height = " + cur.height);
+            }
+
+            Log.i(TAG, "Mmkesure priviewSize width = " + previewWidth + " height = " + previewHeight);
+            Log.i(TAG, "Mmkesure pictureSize width = " + pictureWidth + " height = " + pictureHeight);
+            mParam.setPreviewSize(previewWidth, previewHeight);
+            mParam.setPictureSize(pictureWidth, pictureHeight);
             mParam.setJpegQuality(100);
             mParam.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             camera.setParameters(mParam);
@@ -471,7 +469,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
 
     private void startRecord() {
-        if (isRecorder){
+        if (isRecorder) {
             mediaRecorder.stop();
             mediaRecorder.release();
             mediaRecorder = null;
@@ -492,7 +490,22 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mediaRecorder.setVideoSize(width, height);
+
+        int vedioSizeWidth = 0;
+        int vedioSizeHeight = 0;
+        List<Camera.Size> videoSizes = mParam.getSupportedVideoSizes();
+        Iterator<Camera.Size> itor = videoSizes.iterator();
+        while (itor.hasNext()) {
+            Camera.Size cur = itor.next();
+            if (cur.width >= vedioSizeWidth && cur.height >= vedioSizeHeight) {
+                vedioSizeWidth = cur.width;
+                vedioSizeHeight = cur.height;
+            }
+            Log.i(TAG, "VedioSize  width = " + cur.width + " height = " + cur.height);
+        }
+
+
+        mediaRecorder.setVideoSize(vedioSizeWidth, vedioSizeHeight);
         if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
             mediaRecorder.setOrientationHint(270);
         } else {
@@ -536,6 +549,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
+                    isPlay = true;
                     mp.start();
                     mp.setLooping(true);
                 }
@@ -617,7 +631,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
 
     @Override
     public boolean onTouchEvent(final MotionEvent event) {
-        if (!autoFoucs && event.getAction() == MotionEvent.ACTION_DOWN && SELECTED_CAMERA == CAMERA_POST_POSITION) {
+        if (!autoFoucs && event.getAction() == MotionEvent.ACTION_DOWN && SELECTED_CAMERA == CAMERA_POST_POSITION && !isPlay) {
             onFocusBegin(event.getX(), event.getY());
         }
         return super.onTouchEvent(event);
