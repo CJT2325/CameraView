@@ -45,7 +45,7 @@ compile 'cjt.library.wheel:camera:0.1.1'
 ```
 compile 'cjt.library.wheel:camera:0.1.0' //修复BUG
 
-compile 'cjt.library.wheel:camera:0.0.8' //添加保持屏幕常亮唤醒状态
+compile 'cjt.library.wheel:camera:0.0.9' //添加保持屏幕常亮唤醒状态
 <uses-permission android:name="android.permission.WAKE_LOCK"/> //需新增权限
 
 compile 'cjt.library.wheel:camera:0.0.8' //添加手动对焦，对焦提示器，修复切换到前置摄像头崩溃的BUG
