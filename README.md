@@ -36,13 +36,14 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 最新版本（0.1.1）更新内容：修复切换前置摄像头崩溃BUG
+### 最新版本（0.1.2）更新内容：
 ```
-compile 'cjt.library.wheel:camera:0.1.1'
-
+compile 'cjt.library.wheel:camera:0.1.2' //修复部分机型不支持缩放导致崩溃
 ```
 ### 旧版本
 ```
+compile 'cjt.library.wheel:camera:0.1.1' //修复切换前置摄像头崩溃BUG
+
 compile 'cjt.library.wheel:camera:0.1.0' //修复BUG
 
 compile 'cjt.library.wheel:camera:0.0.9' //添加保持屏幕常亮唤醒状态
