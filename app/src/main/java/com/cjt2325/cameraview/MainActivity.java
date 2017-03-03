@@ -1,14 +1,19 @@
 package com.cjt2325.cameraview;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.cjt2325.cameralibrary.CheckPermissionsUtil;
 import com.cjt2325.cameralibrary.FileUtil;
 import com.cjt2325.cameralibrary.JCameraView;
 
@@ -26,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
         actionBar.hide();
 
         //////////////////////////////////////////////////////////////////
+        //Andriod6.0 running permission
+        CheckPermissionsUtil checkPermissionsUtil = new CheckPermissionsUtil(this);
+        checkPermissionsUtil.requestAllPermission(this);
         mJCameraView = (JCameraView) findViewById(R.id.cameraview);
         //设置视频保存路径（如果不设置默认为Environment.getExternalStorageDirectory().getPath()）
         mJCameraView.setAutoFoucs(false);
@@ -38,15 +46,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void captureSuccess(Bitmap bitmap) {
                 FileUtil.saveBitmap(bitmap);
-                Toast.makeText(MainActivity.this,"获取到照片Bitmap:"+bitmap.getHeight(),Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "获取到照片Bitmap:" + bitmap.getHeight(), Toast.LENGTH_SHORT).show();
             }
             @Override
             public void recordSuccess(String url) {
-                Toast.makeText(MainActivity.this,"获取到视频路径:"+url,Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "获取到视频路径:" + url, Toast.LENGTH_SHORT).show();
             }
         });
         //////////////////////////////////////////////////////////////////
     }
+
 
     @Override
     protected void onResume() {

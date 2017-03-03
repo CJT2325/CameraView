@@ -1,20 +1,15 @@
 package com.cjt2325.cameralibrary;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.hardware.Camera;
-import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.util.AttributeSet;
@@ -25,7 +20,6 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.File;
@@ -74,9 +68,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     private Bitmap pictureBitmap;
 
 
-    private int SELECTED_CAMERA = 1;
-    private int CAMERA_POST_POSITION = 0;
-    private int CAMERA_FRONT_POSITION = 1;
+    private int SELECTED_CAMERA = -1;
+    private int CAMERA_POST_POSITION = -1;
+    private int CAMERA_FRONT_POSITION = -1;
 
     private CameraViewListener cameraViewListener;
 
@@ -618,16 +612,14 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             // 找到了前置摄像头
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 CAMERA_FRONT_POSITION = info.facing;
-                Log.i(TAG, "CAMERA_FRONT_POSITION = " + CAMERA_FRONT_POSITION);
+                Log.i(TAG, "POSITION = " + CAMERA_FRONT_POSITION);
             }
-            // 招到了后置摄像头
+            // 找到了后置摄像头
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
                 CAMERA_POST_POSITION = info.facing;
-
+                Log.i(TAG, "POSITION = " + CAMERA_POST_POSITION);
             }
-
         }
-
     }
 
 
