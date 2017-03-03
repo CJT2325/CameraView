@@ -289,51 +289,22 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
         try {
             mParam = camera.getParameters();
-            mParam.setPictureFormat(ImageFormat.JPEG);
-            List<Camera.Size> sizeList = mParam.getSupportedPreviewSizes();
-            List<Camera.Size> previewSizes = mParam.getSupportedPictureSizes();
-            Iterator<Camera.Size> itor = sizeList.iterator();
-            Iterator<Camera.Size> previewItor = previewSizes.iterator();
-            float previewDisparity = 1000;
-            float pictureDisparity = 1000;
-            //get best preview Size
-            while (itor.hasNext()) {
-                Camera.Size cur = itor.next();
-                if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                    float prop = (float) cur.height / (float) cur.width;
-                    if (Math.abs(screenProp - prop) < previewDisparity) {
-                        previewDisparity = Math.abs(screenProp - prop);
-                        previewWidth = cur.width;
-                        previewHeight = cur.height;
-                    }
-                }
-                if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
-                    if (cur.width >= previewWidth && cur.height >= previewHeight) {
-                        previewWidth = cur.width;
-                        previewHeight = cur.height;
-                    }
-                }
-                Log.i(TAG, "preview width = " + cur.width + " height = " + cur.height);
-            }
-            //get best picture Size
-            while (previewItor.hasNext()) {
-                Camera.Size cur = previewItor.next();
-                float prop = (float) cur.height / (float) cur.width;
-                if (Math.abs(screenProp - prop) < pictureDisparity) {
-                    pictureDisparity = Math.abs(screenProp - prop);
-                    pictureWidth = cur.width;
-                    pictureHeight = cur.height;
-                }
-                Log.i(TAG, "picture width = " + cur.width + " height = " + cur.height);
-            }
 
-            Log.i(TAG, "Mmkesure priviewSize width = " + previewWidth + " height = " + previewHeight);
-            Log.i(TAG, "Mmkesure pictureSize width = " + pictureWidth + " height = " + pictureHeight);
-            mParam.setPreviewSize(previewWidth, previewHeight);
-            mParam.setPictureSize(pictureWidth, pictureHeight);
+            Camera.Size previewSize = CameraParamUtil.getInstance().getPreviewSize(mParam.getSupportedPreviewSizes(), 1000, screenProp);
+            Camera.Size pictureSize = CameraParamUtil.getInstance().getPictureSize(mParam.getSupportedPictureSizes(), 1200, screenProp);
+
+            mParam.setPreviewSize(previewSize.width, previewSize.height);
+            mParam.setPictureSize(pictureSize.width, pictureSize.height);
+
+            if (CameraParamUtil.getInstance().isSupportedFocusMode(mParam.getSupportedFocusModes(), Camera.Parameters.FOCUS_MODE_AUTO)) {
+                mParam.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            }
+            if (CameraParamUtil.getInstance().isSupportedPictureFormats(mParam.getSupportedPictureFormats(), ImageFormat.JPEG)) {
+                mParam.setPictureFormat(ImageFormat.JPEG);
+            }
             mParam.setJpegQuality(100);
-            mParam.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
             camera.setParameters(mParam);
+
             mParam = camera.getParameters();
             camera.setPreviewDisplay(holder);
             camera.setDisplayOrientation(90);
@@ -429,7 +400,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         float widthSize = MeasureSpec.getSize(widthMeasureSpec);
         float heightSize = MeasureSpec.getSize(heightMeasureSpec);
-        screenProp = widthSize / heightSize;
+        screenProp = heightSize / widthSize;
         Log.i(TAG, "ScreenProp = " + screenProp + " " + widthSize + " " + heightSize);
     }
 
@@ -443,10 +414,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         mHolder = holder;
-//        if (mCamera != null) {
-//            mCamera.stopPreview();
-//            setStartPreview(mCamera, holder);
-//        }
     }
 
     @Override
@@ -494,48 +461,12 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 
-        int vedioSizeWidth = 0;
-        int vedioSizeHeight = 0;
-
         if (mParam == null) {
             mParam = mCamera.getParameters();
         }
+        Camera.Size videoSize = CameraParamUtil.getInstance().getPictureSize(mParam.getSupportedVideoSizes(), 1000, screenProp);
 
-        List<Camera.Size> sizeList = mParam.getSupportedVideoSizes();
-        Iterator<Camera.Size> itor = sizeList.iterator();
-        float previewDisparity = 1000;
-        while (itor.hasNext()) {
-            Camera.Size cur = itor.next();
-            if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                float prop = (float) cur.height / (float) cur.width;
-                if (Math.abs(screenProp - prop) < previewDisparity) {
-                    previewDisparity = Math.abs(screenProp - prop);
-                    vedioSizeWidth = cur.width;
-                    vedioSizeHeight = cur.height;
-                }
-            }
-            if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
-                if (cur.width >= vedioSizeWidth && cur.height >= vedioSizeHeight) {
-                    vedioSizeWidth = cur.width;
-                    vedioSizeHeight = cur.height;
-                }
-            }
-            Log.i(TAG, "preview width = " + cur.width + " height = " + cur.height);
-        }
-//
-//        List<Camera.Size> videoSizes = mParam.getSupportedVideoSizes();
-//        Iterator<Camera.Size> itor = videoSizes.iterator();
-//        while (itor.hasNext()) {
-//            Camera.Size cur = itor.next();
-//            if (cur.width >= vedioSizeWidth && cur.height >= vedioSizeHeight) {
-//                vedioSizeWidth = cur.width;
-//                vedioSizeHeight = cur.height;
-//            }
-//            Log.i(TAG, "VedioSize  width = " + cur.width + " height = " + cur.height);
-//        }
-
-
-        mediaRecorder.setVideoSize(vedioSizeWidth, vedioSizeHeight);
+        mediaRecorder.setVideoSize(videoSize.width, videoSize.height);
         if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
             mediaRecorder.setOrientationHint(270);
         } else {
