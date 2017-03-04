@@ -289,7 +289,7 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         }
         try {
             mParam = camera.getParameters();
-
+//
             Camera.Size previewSize = CameraParamUtil.getInstance().getPreviewSize(mParam.getSupportedPreviewSizes(), 1000, screenProp);
             Camera.Size pictureSize = CameraParamUtil.getInstance().getPictureSize(mParam.getSupportedPictureSizes(), 1200, screenProp);
 
@@ -301,10 +301,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             }
             if (CameraParamUtil.getInstance().isSupportedPictureFormats(mParam.getSupportedPictureFormats(), ImageFormat.JPEG)) {
                 mParam.setPictureFormat(ImageFormat.JPEG);
+                mParam.setJpegQuality(100);
             }
-            mParam.setJpegQuality(100);
             camera.setParameters(mParam);
-
             mParam = camera.getParameters();
             camera.setPreviewDisplay(holder);
             camera.setDisplayOrientation(90);
