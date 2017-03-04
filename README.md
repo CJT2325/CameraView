@@ -36,12 +36,14 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 最新版本（0.1.2）更新内容：
+### 最新版本（0.1.6）更新内容：修复部分机型切换前置摄像头崩溃问题和添加动态权限申请
 ```
-compile 'cjt.library.wheel:camera:0.1.2' //修复部分机型不支持缩放导致崩溃
+compile 'cjt.library.wheel:camera:0.1.6' 
 ```
 ### 旧版本
 ```
+compile 'cjt.library.wheel:camera:0.1.2' //修复部分机型不支持缩放导致崩溃
+
 compile 'cjt.library.wheel:camera:0.1.1' //修复切换前置摄像头崩溃BUG
 
 compile 'cjt.library.wheel:camera:0.1.0' //修复BUG
@@ -96,6 +98,10 @@ actionBar.hide();
 ```
 ## 初始化JCameraView控件
 ```
+//(0.1.4+)动态权限获取
+CheckPermissionsUtil checkPermissionsUtil = new CheckPermissionsUtil(this);
+checkPermissionsUtil.requestAllPermission(this);
+
 mJCameraView = (JCameraView) findViewById(R.id.cameraview);
 //(0.0.7+)设置视频保存路径（如果不设置默认为Environment.getExternalStorageDirectory().getPath()）
 mJCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath());
