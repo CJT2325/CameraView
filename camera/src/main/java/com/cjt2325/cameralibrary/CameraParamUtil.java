@@ -6,6 +6,7 @@ import android.util.Log;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class CameraParamUtil {
             i++;
         }
         if (i == list.size()) {
-            return getPreviewSize(list, 0, rate);
+            return getBestSize(list, rate);
         } else {
             return list.get(i);
         }
@@ -59,11 +60,26 @@ public class CameraParamUtil {
             i++;
         }
         if (i == list.size()) {
-            return getPictureSize(list, 0, rate);
+            return getBestSize(list, rate);
         } else {
             return list.get(i);
         }
     }
+
+    public Size getBestSize(List<Camera.Size> list, float rate) {
+        float previewDisparity = 100;
+        int index = 0;
+        for (int i = 0; i < list.size(); i++) {
+            Size cur = list.get(i);
+            float prop = (float) cur.width / (float) cur.height;
+            if (Math.abs(rate - prop) < previewDisparity) {
+                previewDisparity = Math.abs(rate - prop);
+                index = i;
+            }
+        }
+        return list.get(index);
+    }
+
 
     public boolean equalRate(Size s, float rate) {
         float r = (float) (s.width) / (float) (s.height);
