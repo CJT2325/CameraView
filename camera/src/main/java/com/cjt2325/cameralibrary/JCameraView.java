@@ -181,12 +181,13 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             public void scale(float scaleValue) {
                 if (scaleValue >= 0) {
                     int scaleRate = (int) (scaleValue / 50);
-                    if (scaleRate < 10 && scaleRate >= 0 && mParam.isSmoothZoomSupported()) {
 
+                    if (scaleRate < 10 && scaleRate >= 0 && mParam != null && mCamera != null && mParam.isSmoothZoomSupported()) {
+                        mParam = mCamera.getParameters();
                         mParam.setZoom(scaleRate);
                         mCamera.setParameters(mParam);
                     }
-                    Log.i(TAG, "scaleValue = " + (int) scaleValue + " = scaleRate" + scaleRate);
+//                    Log.i(TAG, "scaleValue = " + (int) scaleValue + " = scaleRate" + scaleRate);
                 }
             }
         });
