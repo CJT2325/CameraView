@@ -91,7 +91,6 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
         mContext = context;
         powerManager = (PowerManager) mContext.getSystemService(mContext.POWER_SERVICE);
         wakeLock = this.powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "My Lock");
-        AudioUtil.setAudioManage(mContext);
         findAvailableCameras();
         SELECTED_CAMERA = CAMERA_POST_POSITION;
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.JCameraView, defStyleAttr, 0);
@@ -594,5 +593,9 @@ public class JCameraView extends RelativeLayout implements SurfaceHolder.Callbac
             onFocusBegin(event.getX(), event.getY());
         }
         return super.onTouchEvent(event);
+    }
+
+    public void cancelAudio(){
+        AudioUtil.setAudioManage(mContext);
     }
 }
