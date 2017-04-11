@@ -102,10 +102,6 @@ actionBar.hide();
 ```
 ## 初始化JCameraView控件
 ```
-//(0.1.4+)动态权限获取
-CheckPermissionsUtil checkPermissionsUtil = new CheckPermissionsUtil(this);
-checkPermissionsUtil.requestAllPermission(this);
-
 mJCameraView = (JCameraView) findViewById(R.id.cameraview);
 //(0.0.7+)设置视频保存路径（如果不设置默认为Environment.getExternalStorageDirectory().getPath()）
 mJCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath());
