@@ -1,10 +1,18 @@
-package com.cjt2325.cameralibrary;
+package com.cjt2325.cameralibrary.util;
 
 import android.content.Context;
 import android.media.AudioManager;
 
+/**
+ * =====================================
+ * 作    者: 陈嘉桐
+ * 版    本：1.1.4
+ * 创建日期：2017/4/26
+ * 描    述：
+ * =====================================
+ */
 public class AudioUtil {
-    public static void setAudioManage(Context context){
+    public static void setAudioManage(Context context) {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         audioManager.setStreamMute(AudioManager.STREAM_SYSTEM, true);
         audioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);

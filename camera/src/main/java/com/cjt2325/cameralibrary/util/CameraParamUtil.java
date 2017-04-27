@@ -1,18 +1,20 @@
-package com.cjt2325.cameralibrary;
+package com.cjt2325.cameralibrary.util;
 
 import android.hardware.Camera;
-import android.hardware.Camera.Size;
 import android.util.Log;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 
 /**
- * 445263848@qq.com.
+ * =====================================
+ * 作    者: 陈嘉桐
+ * 版    本：1.1.4
+ * 创建日期：2017/4/25
+ * 描    述：
+ * =====================================
  */
-
 public class CameraParamUtil {
     private static final String TAG = "JCameraView";
     private CameraSizeComparator sizeComparator = new CameraSizeComparator();
@@ -31,10 +33,10 @@ public class CameraParamUtil {
         }
     }
 
-    public Size getPreviewSize(List<Camera.Size> list, int th, float rate) {
+    public Camera.Size getPreviewSize(List<Camera.Size> list, int th, float rate) {
         Collections.sort(list, sizeComparator);
         int i = 0;
-        for (Size s : list) {
+        for (Camera.Size s : list) {
             if ((s.width > th) && equalRate(s, rate)) {
                 Log.i(TAG, "MakeSure Preview :w = " + s.width + " h = " + s.height);
                 break;
@@ -48,11 +50,11 @@ public class CameraParamUtil {
         }
     }
 
-    public Size getPictureSize(List<Camera.Size> list, int th, float rate) {
+    public Camera.Size getPictureSize(List<Camera.Size> list, int th, float rate) {
         Collections.sort(list, sizeComparator);
 
         int i = 0;
-        for (Size s : list) {
+        for (Camera.Size s : list) {
             if ((s.width > th) && equalRate(s, rate)) {
                 Log.i(TAG, "MakeSure Picture :w = " + s.width + " h = " + s.height);
                 break;
@@ -66,11 +68,11 @@ public class CameraParamUtil {
         }
     }
 
-    public Size getBestSize(List<Camera.Size> list, float rate) {
+    private Camera.Size getBestSize(List<Camera.Size> list, float rate) {
         float previewDisparity = 100;
         int index = 0;
         for (int i = 0; i < list.size(); i++) {
-            Size cur = list.get(i);
+            Camera.Size cur = list.get(i);
             float prop = (float) cur.width / (float) cur.height;
             if (Math.abs(rate - prop) < previewDisparity) {
                 previewDisparity = Math.abs(rate - prop);
@@ -81,13 +83,9 @@ public class CameraParamUtil {
     }
 
 
-    public boolean equalRate(Size s, float rate) {
+    private boolean equalRate(Camera.Size s, float rate) {
         float r = (float) (s.width) / (float) (s.height);
-        if (Math.abs(r - rate) <= 0.2) {
-            return true;
-        } else {
-            return false;
-        }
+        return Math.abs(r - rate) <= 0.2;
     }
 
     public boolean isSupportedFocusMode(List<String> focusList, String focusMode) {
@@ -112,8 +110,8 @@ public class CameraParamUtil {
         return false;
     }
 
-    public class CameraSizeComparator implements Comparator<Size> {
-        public int compare(Size lhs, Size rhs) {
+    private class CameraSizeComparator implements Comparator<Camera.Size> {
+        public int compare(Camera.Size lhs, Camera.Size rhs) {
             if (lhs.width == rhs.width) {
                 return 0;
             } else if (lhs.width > rhs.width) {

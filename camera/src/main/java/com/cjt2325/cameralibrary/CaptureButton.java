@@ -5,354 +5,195 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RectF;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
-import android.widget.Toast;
+
+import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
+
 
 /**
+ * create by CJT2325
  * 445263848@qq.com.
  */
-public class CaptureButton extends View {
 
-    public final String TAG = "CaptureButtom";
+public class CaptureButton extends View {
+    private static final String TAG = "CJT";
+
+    public static final int STATE_NULL = 0x000;
+    //public static final int STATE_UNPRESS_CLICK = 0X002;
+
+
+    public static final int STATE_PRESS_CLICK = 0X001;
+
+    public static final int STATE_PRESS_LONG_CLICK = 0x003;
+    public static final int STATE_UNPRESS_LONG_CLICK = 0x004;
+
+
+    private LongPressRunnable longPressRunnable;
+    private RecordRunnable recordRunnable;
+    private ValueAnimator record_anim = ValueAnimator.ofFloat(0, 362);
+
+    private int state;
 
     private Paint mPaint;
-    private Context mContext;
+    private float strokeWidth;
+    private int outside_add_size;
+    private int inside_reduce_size;
 
-    private float btn_center_Y;
-    private float btn_center_X;
+    private float center_X;
+    private float center_Y;
+    private float button_radius;
 
-    private float btn_inside_radius;
-    private float btn_outside_radius;
-    //before radius
-    private float btn_before_inside_radius;
-    private float btn_before_outside_radius;
-    //after radius
-    private float btn_after_inside_radius;
-    private float btn_after_outside_radius;
+    private float button_outside_radius;
+    private float button_inside_radius;
 
-    private float btn_return_length;
-    private float btn_return_X;
-    private float btn_return_Y;
 
-    private float btn_left_X, btn_right_X, btn_result_radius;
-
-    //state
-    private int STATE_SELECTED;
-    private final int STATE_LESSNESS = 0;
-    private final int STATE_KEY_DOWN = 1;
-    private final int STATE_CAPTURED = 2;
-    private final int STATE_RECORD = 3;
-    private final int STATE_PICTURE_BROWSE = 4;
-    private final int STATE_RECORD_BROWSE = 5;
-    private final int STATE_READYQUIT = 6;
-    private final int STATE_RECORDED = 7;
-
-    private float key_down_Y;
-
+    private int button_size;
+    private float progress;
     private RectF rectF;
-    private float progress = 0;
-    private LongPressRunnable longPressRunnable = new LongPressRunnable();
-    private RecordRunnable recordRunnable = new RecordRunnable();
-    private ValueAnimator record_anim = ValueAnimator.ofFloat(0, 360);
-    private CaptureListener mCaptureListener;
+    private int duration;
+
+
+    private CaptureLisenter captureLisenter;
 
     public CaptureButton(Context context) {
-        this(context, null);
+        super(context);
     }
 
-    public CaptureButton(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
+    //customize construction method
+    public CaptureButton(Context context, int size) {
+        super(context);
+        this.button_size = size;
+        button_radius = size / 2.0f;
 
-    public CaptureButton(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        mContext = context;
+        button_outside_radius = button_radius;
+        button_inside_radius = button_radius * 0.7f;
+
+        strokeWidth = size / 15;
+        outside_add_size = size / 5;
+        inside_reduce_size = size / 8;
+
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
-        STATE_SELECTED = STATE_LESSNESS;
+
+        progress = 0;
+
+        //init longPress runnable
+        longPressRunnable = new LongPressRunnable();
+        recordRunnable = new RecordRunnable();
+        //set default state;
+        this.state = STATE_NULL;
+
+        //set max record duration,default 10*1000
+        duration = 10 * 1000;
+        center_X = (button_size + outside_add_size * 2) / 2;
+        center_Y = (button_size + outside_add_size * 2) / 2;
+
+        rectF = new RectF(
+                center_X - (button_radius + outside_add_size - strokeWidth / 2),
+                center_Y - (button_radius + outside_add_size - strokeWidth / 2),
+                center_X + (button_radius + outside_add_size - strokeWidth / 2),
+                center_Y + (button_radius + outside_add_size - strokeWidth / 2));
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-        int width = widthSize;
-        Log.i(TAG, "measureWidth = " + width);
-        int height = (width / 9) * 4;
-        setMeasuredDimension(width, height);
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-        btn_center_X = getWidth() / 2;
-        btn_center_Y = getHeight() / 2;
-
-        btn_outside_radius = (float) (getWidth() / 9);
-        btn_inside_radius = (float) (btn_outside_radius * 0.75);
-
-        btn_before_outside_radius = (float) (getWidth() / 9);
-        btn_before_inside_radius = (float) (btn_outside_radius * 0.75);
-        btn_after_outside_radius = (float) (getWidth() / 6);
-        btn_after_inside_radius = (float) (btn_outside_radius * 0.6);
-
-        btn_return_length = (float) (btn_outside_radius * 0.35);
-//        btn_result_radius = 80;
-        btn_result_radius = (float) (getWidth() / 9);
-        btn_left_X = getWidth() / 2;
-        btn_right_X = getWidth() / 2;
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setMeasuredDimension(button_size + outside_add_size * 2, button_size + outside_add_size * 2);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        if (STATE_SELECTED == STATE_LESSNESS || STATE_SELECTED == STATE_RECORD) {
-            //draw capture button
-            mPaint.setColor(0xFFEEEEEE);
-            canvas.drawCircle(btn_center_X, btn_center_Y, btn_outside_radius, mPaint);
-            mPaint.setColor(Color.WHITE);
-            canvas.drawCircle(btn_center_X, btn_center_Y, btn_inside_radius, mPaint);
+        mPaint.setStyle(Paint.Style.FILL);
+        /**
+         * out_side_circle
+         */
+        mPaint.setColor(0xFFDDDDDD);
+        canvas.drawCircle(center_X, center_Y, button_outside_radius, mPaint);
 
-            //draw Progress bar
-            Paint paintArc = new Paint();
-            paintArc.setAntiAlias(true);
-            paintArc.setColor(0xFF00CC00);
-            paintArc.setStyle(Paint.Style.STROKE);
-            paintArc.setStrokeWidth(10);
+        /**
+         * in_side_circle
+         */
+        mPaint.setColor(0xFFFFFFFF);
+        canvas.drawCircle(center_X, center_Y, button_inside_radius, mPaint);
 
-            rectF = new RectF(btn_center_X - (btn_after_outside_radius - 5),
-                    btn_center_Y - (btn_after_outside_radius - 5),
-                    btn_center_X + (btn_after_outside_radius - 5),
-                    btn_center_Y + (btn_after_outside_radius - 5));
-            canvas.drawArc(rectF, -90, progress, false, paintArc);
-
-            //draw return button
-            Paint paint = new Paint();
-            paint.setAntiAlias(true);
-            paint.setColor(Color.WHITE);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(4);
-            Path path = new Path();
-
-            btn_return_X = ((getWidth() / 2) - btn_outside_radius) / 2;
-            btn_return_Y = (getHeight() / 2 + 10);
-
-            path.moveTo(btn_return_X - btn_return_length, btn_return_Y - btn_return_length);
-            path.lineTo(btn_return_X, btn_return_Y);
-            path.lineTo(btn_return_X + btn_return_length, btn_return_Y - btn_return_length);
-            canvas.drawPath(path, paint);
-        } else if (STATE_SELECTED == STATE_RECORD_BROWSE || STATE_SELECTED == STATE_PICTURE_BROWSE) {
-
-            mPaint.setColor(0xFFEEEEEE);
-            canvas.drawCircle(btn_left_X, btn_center_Y, btn_result_radius, mPaint);
-            mPaint.setColor(Color.WHITE);
-            canvas.drawCircle(btn_right_X, btn_center_Y, btn_result_radius, mPaint);
-
-
-            //left button
-            Paint paint = new Paint();
-            paint.setAntiAlias(true);
-            paint.setColor(Color.BLACK);
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setStrokeWidth(3);
-            Path path = new Path();
-
-            path.moveTo(btn_left_X - 2, btn_center_Y + 14);
-            path.lineTo(btn_left_X + 14, btn_center_Y + 14);
-            path.arcTo(new RectF(btn_left_X, btn_center_Y - 14, btn_left_X + 28, btn_center_Y + 14), 90, -180);
-            path.lineTo(btn_left_X - 14, btn_center_Y - 14);
-            canvas.drawPath(path, paint);
-
-
-            paint.setStyle(Paint.Style.FILL);
-            path.reset();
-            path.moveTo(btn_left_X - 14, btn_center_Y - 22);
-            path.lineTo(btn_left_X - 14, btn_center_Y - 6);
-            path.lineTo(btn_left_X - 23, btn_center_Y - 14);
-            path.close();
-            canvas.drawPath(path, paint);
-
-
-            paint.setStyle(Paint.Style.STROKE);
-            paint.setColor(0xFF00CC00);
-            paint.setStrokeWidth(4);
-            path.reset();
-            path.moveTo(btn_right_X - 28, btn_center_Y);
-            path.lineTo(btn_right_X - 8, btn_center_Y + 22);
-            path.lineTo(btn_right_X + 30, btn_center_Y - 20);
-            path.lineTo(btn_right_X - 8, btn_center_Y + 18);
-            path.close();
-            canvas.drawPath(path, paint);
+        /**
+         * draw Progress bar
+         */
+        if (state == STATE_PRESS_LONG_CLICK) {
+            mPaint.setAntiAlias(true);
+            mPaint.setColor(0x9900CC00);
+            mPaint.setStyle(Paint.Style.STROKE);
+            mPaint.setStrokeWidth(strokeWidth);
+            canvas.drawArc(rectF, -90, progress, false, mPaint);
         }
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (STATE_SELECTED == STATE_LESSNESS) {
-                    if (event.getY() > btn_return_Y - 37 &&
-                            event.getY() < btn_return_Y + 10 &&
-                            event.getX() > btn_return_X - 37 &&
-                            event.getX() < btn_return_X + 37) {
-                        STATE_SELECTED = STATE_READYQUIT;
-                    } else if (event.getY() > btn_center_Y - btn_outside_radius &&
-                            event.getY() < btn_center_Y + btn_outside_radius &&
-                            event.getX() > btn_center_X - btn_outside_radius &&
-                            event.getX() < btn_center_X + btn_outside_radius &&
-                            event.getPointerCount() == 1
-                            ) {
-                        if(!FileUtil.isExternalStorageWritable()){
-                            Toast.makeText(mContext,"请插入储存卡",Toast.LENGTH_SHORT).show();
-                        }else{
-                            key_down_Y = event.getY();
-                            STATE_SELECTED = STATE_KEY_DOWN;
-                            postCheckForLongTouch();
-                        }
-                    }
-                } else if (STATE_SELECTED == STATE_RECORD_BROWSE || STATE_SELECTED == STATE_PICTURE_BROWSE) {
-                    if (event.getY() > btn_center_Y - btn_result_radius &&
-                            event.getY() < btn_center_Y + btn_result_radius &&
-                            event.getX() > btn_left_X - btn_result_radius &&
-                            event.getX() < btn_left_X + btn_result_radius &&
-                            event.getPointerCount() == 1
-                            ) {
-                        if (mCaptureListener != null) {
-
-                            if (STATE_SELECTED == STATE_RECORD_BROWSE) {
-                                mCaptureListener.deleteRecordResult();
-                            } else if (STATE_SELECTED == STATE_PICTURE_BROWSE) {
-                                mCaptureListener.cancel();
-                            }
-                        }
-                        STATE_SELECTED = STATE_LESSNESS;
-                        btn_left_X = btn_center_X;
-                        btn_right_X = btn_center_X;
-                        invalidate();
-                    } else if (event.getY() > btn_center_Y - btn_result_radius &&
-                            event.getY() < btn_center_Y + btn_result_radius &&
-                            event.getX() > btn_right_X - btn_result_radius &&
-                            event.getX() < btn_right_X + btn_result_radius &&
-                            event.getPointerCount() == 1
-                            ) {
-                        if (mCaptureListener != null) {
-                            if (STATE_SELECTED == STATE_RECORD_BROWSE) {
-                                mCaptureListener.getRecordResult();
-                            } else if (STATE_SELECTED == STATE_PICTURE_BROWSE) {
-                                mCaptureListener.determine();
-                            }
-                        }
-                        STATE_SELECTED = STATE_LESSNESS;
-                        btn_left_X = btn_center_X;
-                        btn_right_X = btn_center_X;
-                        invalidate();
-                    }
-                }
+                state = STATE_PRESS_CLICK;
+                postDelayed(longPressRunnable, 500);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (event.getY() > btn_center_Y - btn_outside_radius &&
-                        event.getY() < btn_center_Y + btn_outside_radius &&
-                        event.getX() > btn_center_X - btn_outside_radius &&
-                        event.getX() < btn_center_X + btn_outside_radius
-                        ) {
-                }
-                if (mCaptureListener != null) {
-                    mCaptureListener.scale(key_down_Y - event.getY());
-                }
+                Log.i(TAG, "");
                 break;
             case MotionEvent.ACTION_UP:
-                removeCallbacks(longPressRunnable);
-                if (STATE_SELECTED == STATE_READYQUIT) {
-                    if (event.getY() > btn_return_Y - 37 &&
-                            event.getY() < btn_return_Y + 10 &&
-                            event.getX() > btn_return_X - 37 &&
-                            event.getX() < btn_return_X + 37) {
-                        STATE_SELECTED = STATE_LESSNESS;
-                        if (mCaptureListener != null) {
-                            mCaptureListener.quit();
-                        }
-                    }
-                } else if (STATE_SELECTED == STATE_KEY_DOWN) {
-                    if (event.getY() > btn_center_Y - btn_outside_radius &&
-                            event.getY() < btn_center_Y + btn_outside_radius &&
-                            event.getX() > btn_center_X - btn_outside_radius &&
-                            event.getX() < btn_center_X + btn_outside_radius) {
-                        if (mCaptureListener != null) {
-                            mCaptureListener.capture();
-                        }
-                        STATE_SELECTED = STATE_PICTURE_BROWSE;
-                    }
-                } else if (STATE_SELECTED == STATE_RECORD) {
-                    if (record_anim.getCurrentPlayTime() < 500) {
-                        STATE_SELECTED = STATE_LESSNESS;
-//                        Toast.makeText(mContext, "Under time", Toast.LENGTH_SHORT).show();
-                        progress = 0;
-                        invalidate();
-                        record_anim.cancel();
-                    } else {
-                        STATE_SELECTED = STATE_RECORD_BROWSE;
-                        removeCallbacks(recordRunnable);
-//                        Toast.makeText(mContext, "Time length " + record_anim.getCurrentPlayTime(), Toast.LENGTH_SHORT).show();
-                        captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
-                        record_anim.cancel();
-                        progress = 0;
-                        invalidate();
-                        if (mCaptureListener != null) {
-                            mCaptureListener.rencodEnd();
-                        }
-                    }
-                    if (btn_outside_radius == btn_after_outside_radius && btn_inside_radius == btn_after_inside_radius) {
-//                            startAnimation(btn_outside_radius, btn_outside_radius - 40, btn_inside_radius, btn_inside_radius + 20);
-                        startAnimation(btn_after_outside_radius, btn_before_outside_radius, btn_after_inside_radius, btn_before_inside_radius);
-                    } else {
-                        startAnimation(btn_after_outside_radius, btn_before_outside_radius, btn_after_inside_radius, btn_before_inside_radius);
-                    }
-                }
+                handlerUnpressByState();
                 break;
         }
         return true;
     }
 
-    public void captureSuccess() {
-        captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
+    /**
+     * handler MotionEvent.ACTION_UP by state
+     */
+    private void handlerUnpressByState() {
+        removeCallbacks(longPressRunnable);
+        switch (state) {
+            case STATE_PRESS_CLICK:
+                if (captureLisenter != null) {
+                    captureLisenter.takePictures();
+                }
+                break;
+            case STATE_PRESS_LONG_CLICK:
+                state = STATE_UNPRESS_LONG_CLICK;
+                removeCallbacks(recordRunnable);
+                recordEnd(false);
+                break;
+        }
+        this.state = STATE_NULL;
     }
 
-    private void postCheckForLongTouch() {
-        postDelayed(longPressRunnable, 500);
-    }
-
-
+    /**
+     * LongPressRunnable
+     */
     private class LongPressRunnable implements Runnable {
         @Override
         public void run() {
-                startAnimation(btn_before_outside_radius, btn_after_outside_radius, btn_before_inside_radius, btn_after_inside_radius);
-                STATE_SELECTED = STATE_RECORD;
+            state = STATE_PRESS_LONG_CLICK;
+            startAnimation(button_outside_radius, button_outside_radius + outside_add_size, button_inside_radius,
+                    button_inside_radius - inside_reduce_size);
         }
     }
 
+    /**
+     * record runnable
+     */
     private class RecordRunnable implements Runnable {
         @Override
         public void run() {
-            if (mCaptureListener != null) {
-                mCaptureListener.record();
-            }
             record_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-                    if (STATE_SELECTED == STATE_RECORD) {
-                        progress =  (float)animation.getAnimatedValue();
+                    if (state == STATE_PRESS_LONG_CLICK) {
+                        progress = (float) animation.getAnimatedValue();
                     }
                     invalidate();
                 }
@@ -361,36 +202,45 @@ public class CaptureButton extends View {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
-                    if (STATE_SELECTED == STATE_RECORD) {
-                        STATE_SELECTED = STATE_RECORD_BROWSE;
-                        progress = 0;
-                        invalidate();
-                        captureAnimation(getWidth() / 5, (getWidth() / 5) * 4);
-                        if (btn_outside_radius == btn_after_outside_radius && btn_inside_radius == btn_after_inside_radius) {
-                            startAnimation(btn_after_outside_radius, btn_before_outside_radius, btn_after_inside_radius, btn_before_inside_radius);
-                        } else {
-                            startAnimation(btn_after_outside_radius, btn_before_outside_radius, btn_after_inside_radius, btn_before_inside_radius);
-                        }
-                        if (mCaptureListener != null) {
-                            mCaptureListener.rencodEnd();
-                        }
+                    if (state == STATE_PRESS_LONG_CLICK) {
+                        recordEnd(true);
                     }
                 }
             });
             record_anim.setInterpolator(new LinearInterpolator());
-            record_anim.setDuration(10000);
+            record_anim.setDuration(duration);
             record_anim.start();
         }
     }
 
-    private void startAnimation(float outside_start, float outside_end, float inside_start, float inside_end) {
+    //record end
+    private void recordEnd(boolean finish) {
+        state = STATE_UNPRESS_LONG_CLICK;
+        if (captureLisenter != null) {
+            if (record_anim.getCurrentPlayTime() < 1000 && !finish) {
+                captureLisenter.recordShort(record_anim.getCurrentPlayTime());
+            } else {
+                if (finish) {
+                    captureLisenter.recordEnd(duration);
+                } else {
+                    captureLisenter.recordEnd(record_anim.getCurrentPlayTime());
+                }
+            }
+        }
+        record_anim.cancel();
+        progress = 0;
+        invalidate();
+        startAnimation(button_outside_radius, button_radius, button_inside_radius, button_radius * 0.7f);
+    }
 
+    //capture button outside and inside resize animation
+    private void startAnimation(float outside_start, float outside_end, float inside_start, float inside_end) {
         ValueAnimator outside_anim = ValueAnimator.ofFloat(outside_start, outside_end);
         ValueAnimator inside_anim = ValueAnimator.ofFloat(inside_start, inside_end);
         outside_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                btn_outside_radius = (float) animation.getAnimatedValue();
+                button_outside_radius = (float) animation.getAnimatedValue();
                 invalidate();
             }
 
@@ -399,15 +249,18 @@ public class CaptureButton extends View {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
-                if (STATE_SELECTED == STATE_RECORD) {
-                        postDelayed(recordRunnable, 100);
+                if (state == STATE_PRESS_LONG_CLICK) {
+                    if (captureLisenter != null) {
+                        captureLisenter.recordStart();
+                    }
+                    post(recordRunnable);
                 }
             }
         });
         inside_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                btn_inside_radius = (float) animation.getAnimatedValue();
+                button_inside_radius = (float) animation.getAnimatedValue();
                 invalidate();
             }
         });
@@ -417,55 +270,14 @@ public class CaptureButton extends View {
         inside_anim.start();
     }
 
-    private void captureAnimation(float left, float right) {
-//        Toast.makeText(mContext,left+ " = "+right,Toast.LENGTH_SHORT).show();
-        Log.i("CaptureButtom", left + "==" + right);
-        ValueAnimator left_anim = ValueAnimator.ofFloat(btn_left_X, left);
-        ValueAnimator right_anim = ValueAnimator.ofFloat(btn_right_X, right);
-        left_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                btn_left_X = (float) animation.getAnimatedValue();
-                Log.i("CJT", btn_left_X + "=====");
-                invalidate();
-            }
-
-        });
-        right_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                btn_right_X = (float) animation.getAnimatedValue();
-                invalidate();
-            }
-        });
-        left_anim.setDuration(200);
-        right_anim.setDuration(200);
-        left_anim.start();
-        right_anim.start();
+    /**
+     * set record duration
+     */
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 
-    public void setCaptureListener(CaptureListener mCaptureListener) {
-        this.mCaptureListener = mCaptureListener;
-    }
-
-
-    public interface CaptureListener {
-        public void capture();
-
-        public void cancel();
-
-        public void determine();
-
-        public void quit();
-
-        public void record();
-
-        public void rencodEnd();
-
-        public void getRecordResult();
-
-        public void deleteRecordResult();
-
-        public void scale(float scaleValue);
+    public void setCaptureLisenter(CaptureLisenter captureLisenter) {
+        this.captureLisenter = captureLisenter;
     }
 }
