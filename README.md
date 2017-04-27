@@ -43,6 +43,7 @@ compile 'cjt.library.wheel:camera:1.0.0'
 //修复频繁切换摄像头崩溃的问题
 //修复获取不到supportedVideoSizes的问题
 //可以设置最长录像时间
+//修复按钮错乱BUG
 ```
 ### 旧版本
 ```
@@ -211,4 +212,5 @@ Copyright 2017 CJT2325
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
    http://www.apache.org/licenses/LICENSE-2.0
+   
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
