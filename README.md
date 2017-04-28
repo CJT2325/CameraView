@@ -36,6 +36,12 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
+### 测试版本（1.0.1）更新内容:
+```
+compile 'cjt.library.wheel:camera:1.0.1'
+//替换 VideoView 为 TextureView
+```
+
 ### 最新版本（1.0.0）更新内容：
 ```
 compile 'cjt.library.wheel:camera:1.0.0'
