@@ -6,9 +6,9 @@
 
 2. 前后摄像头的切换。
 
-3. 长按录视频（视频长度为10秒内）。
+3. 长按录视频（视频长度可设置）。
 
-4. 长按录视频的时候，手指上滑可以放大视频。
+4. 长按录视频的时候，手指上滑可以放大视频。（暂时取消该功能）
 
 5. 录制完视频可以浏览并且重复播放。
 
@@ -36,13 +36,14 @@ allprojects {
 }
 ```
 ## 添加下列代码到module gradle
-### 测试版本（1.0.1）更新内容:
-```
-compile 'cjt.library.wheel:camera:1.0.1'
-//替换 VideoView 为 TextureView
-```
 
-### 最新版本（1.0.0）更新内容：
+### 最新版本（1.0.2）更新内容：
+```
+compile 'cjt.library.wheel:camera:1.0.2'
+//TextureView替换VideoView
+//根据手机拍照方向旋转图片（仅后置摄像头）
+```
+### 旧版本
 ```
 compile 'cjt.library.wheel:camera:1.0.0'
 //代码重构
@@ -50,9 +51,7 @@ compile 'cjt.library.wheel:camera:1.0.0'
 //修复获取不到supportedVideoSizes的问题
 //可以设置最长录像时间
 //修复按钮错乱BUG
-```
-### 旧版本
-```
+
 compile 'cjt.library.wheel:camera:0.1.9' //修复BUG
 
 compile 'cjt.library.wheel:camera:0.1.7' //修复无法获取最佳分辨率导致的StackOverFlowError
