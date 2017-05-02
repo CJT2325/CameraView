@@ -1,18 +1,25 @@
 package com.cjt2325.cameralibrary;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
-import android.view.SurfaceHolder;
+import android.view.Surface;
 
+import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 
 import java.io.File;
@@ -28,7 +35,8 @@ import java.util.List;
  * 描    述：
  * =====================================
  */
-class CameraInterface {
+@SuppressWarnings("deprecation")
+public class CameraInterface {
 
     private static final String TAG = "CJT";
 
@@ -46,7 +54,7 @@ class CameraInterface {
     private int CAMERA_POST_POSITION = -1;
     private int CAMERA_FRONT_POSITION = -1;
 
-    private SurfaceHolder holder = null;
+    private SurfaceTexture mSurface = null;
     private float screenProp = -1.0f;
 
     private boolean isRecorder = false;
@@ -54,6 +62,31 @@ class CameraInterface {
     private String videoFileName;
     private String saveVideoPath;
     private String videoFileAbsPath;
+
+
+    private int preview_width;
+    private int preview_height;
+
+
+    private int angle = 0;
+    private SensorManager sm = null;
+    private SensorEventListener sensorEventListener = new SensorEventListener() {
+        public void onSensorChanged(SensorEvent event) {
+            if (Sensor.TYPE_ACCELEROMETER != event.sensor.getType()) {
+                return;
+            }
+            float[] values = event.values;
+            angle = AngleUtil.getSensorAngle(values[0], values[1]);
+//            float ax = values[0];
+//            float ay = values[1];
+//            float az = values[2];
+//            Log.i("CJT", "x = " + ax + " y = " + ay);
+//            Log.i("CJT", "现在的角度为 = " + AngleUtil.getSensorAngle(ax, ay));
+        }
+
+        public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        }
+    };
 
 
     public void setSaveVideoPath(String saveVideoPath) {
@@ -74,7 +107,7 @@ class CameraInterface {
         saveVideoPath = "";
     }
 
-    static synchronized CameraInterface getInstance() {
+    public static synchronized CameraInterface getInstance() {
         if (mCameraInterface == null) {
             mCameraInterface = new CameraInterface();
         }
@@ -102,20 +135,20 @@ class CameraInterface {
         }
         doStopCamera();
         mCamera = Camera.open(SELECTED_CAMERA);
-        doStartPreview(holder, screenProp);
+        doStartPreview(mSurface, screenProp);
     }
 
     /**
      * doStartPreview
      */
-    void doStartPreview(SurfaceHolder holder, float screenProp) {
+    void doStartPreview(SurfaceTexture surface, float screenProp) {
         if (this.screenProp < 0) {
             this.screenProp = screenProp;
         }
-        if (holder == null) {
+        if (surface == null) {
             return;
         }
-        this.holder = holder;
+        this.mSurface = surface;
         if (isPreviewing) {
             mCamera.stopPreview();
             return;
@@ -129,6 +162,10 @@ class CameraInterface {
                         .getSupportedPictureSizes(), 1200, screenProp);
 
                 mParams.setPreviewSize(previewSize.width, previewSize.height);
+
+                preview_width = previewSize.width;
+                preview_height = previewSize.height;
+
                 mParams.setPictureSize(pictureSize.width, pictureSize.height);
 
                 if (CameraParamUtil.getInstance().isSupportedFocusMode(mParams.getSupportedFocusModes(), Camera
@@ -142,7 +179,9 @@ class CameraInterface {
                 }
                 mCamera.setParameters(mParams);
                 mParams = mCamera.getParameters();
-                mCamera.setPreviewDisplay(holder);
+                surface.setDefaultBufferSize(previewSize.width, previewSize.height);
+                mCamera.setPreviewTexture(surface);
+
                 mCamera.setDisplayOrientation(90);
                 mCamera.startPreview();
                 isPreviewing = true;
@@ -158,12 +197,16 @@ class CameraInterface {
      */
     void doStopCamera() {
         if (null != mCamera) {
-            mCamera.setPreviewCallback(null);
-            mCamera.stopPreview();
-            isPreviewing = false;
-            mCamera.release();
-            mCamera = null;
-            Log.i(TAG, "=== Stop Camera ===");
+            try {
+                mCamera.setPreviewTexture(null);
+                mCamera.stopPreview();
+                isPreviewing = false;
+                mCamera.release();
+                mCamera = null;
+                Log.i(TAG, "=== Stop Camera ===");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -173,13 +216,14 @@ class CameraInterface {
      */
 
     void takePicture(final TakePictureCallback callback) {
+        final int nowAngle = (angle + 90) % 360;
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
                 Matrix matrix = new Matrix();
                 if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
-                    matrix.setRotate(90);
+                    matrix.setRotate(nowAngle);
                 } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
                     matrix.setRotate(270);
                     matrix.postScale(-1, 1);
@@ -194,6 +238,8 @@ class CameraInterface {
 
 
     void startRecord() {
+        int nowAngle = (angle + 90) % 360;
+
         if (mCamera == null) {
             return;
         }
@@ -204,8 +250,6 @@ class CameraInterface {
         if (isRecorder) {
             return;
         }
-//        mediaRecorder.stop();
-//        mediaRecorder.release();
         mediaRecorder.reset();
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
@@ -225,15 +269,23 @@ class CameraInterface {
             videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedVideoSizes(), 1000,
                     screenProp);
         }
-
-        mediaRecorder.setVideoSize(videoSize.width, videoSize.height);
+        List<String> focusModes = mParams.getSupportedFocusModes();
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+            mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        }
+        Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
+        if (videoSize.width == videoSize.height) {
+            mediaRecorder.setVideoSize(preview_width, preview_height);
+        } else {
+            mediaRecorder.setVideoSize(videoSize.width, videoSize.height);
+        }
         if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
             mediaRecorder.setOrientationHint(270);
         } else {
-            mediaRecorder.setOrientationHint(90);
+            mediaRecorder.setOrientationHint(nowAngle);
         }
         mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
-        mediaRecorder.setPreviewDisplay(holder.getSurface());
+        mediaRecorder.setPreviewDisplay(new Surface(mSurface));
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
         if (saveVideoPath.equals("")) {
@@ -251,7 +303,7 @@ class CameraInterface {
     }
 
     void stopRecord(boolean isShort, StopRecordCallback callback) {
-        if (!isRecorder){
+        if (!isRecorder) {
             return;
         }
         if (mediaRecorder != null && isRecorder) {
@@ -316,6 +368,9 @@ class CameraInterface {
         }
         final String currentFocusMode = params.getFocusMode();
         params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+
+        Log.i(TAG, "width = " + params.getPreviewSize().width + "height = " + params.getPreviewSize().height);
+
         mCamera.setParameters(params);
 
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
@@ -371,4 +426,21 @@ class CameraInterface {
     interface FocusCallback {
         void focusSuccess();
     }
+
+
+    public void registerSensorManager(Context context) {
+        if (sm == null) {
+            sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        }
+        sm.registerListener(sensorEventListener, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager
+                .SENSOR_DELAY_NORMAL);
+    }
+
+    public void unregisterSensorManager(Context context) {
+        if (sm == null) {
+            sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        }
+        sm.unregisterListener(sensorEventListener);
+    }
+
 }
