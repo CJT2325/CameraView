@@ -29,6 +29,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         jCameraView = (JCameraView) findViewById(R.id.jcameraview);
         /**
+         * 关闭声音
+         */
+        jCameraView.forbiddenAudio(true);
+        /**
          * 设置视频保存路径
          */
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
