@@ -22,7 +22,7 @@
 
 ## 使用步骤（Android Studio）
 **添加下列代码到 project gradle**
-```
+```gradle
 allprojects {
     repositories {
         jcenter()
@@ -35,13 +35,13 @@ allprojects {
 **添加下列代码到 module gradle**
 
 ### 最新版本（1.0.3）更新内容：
-```
+```gradle
 compile 'cjt.library.wheel:camera:1.0.3'
 //换回VideoView
 //摄像上滑放大
 ```
 ### 旧版本
-```
+```gradle
 compile 'cjt.library.wheel:camera:1.0.2'
 //TextureView替换VideoView
 //根据手机拍照方向旋转图片（仅后置摄像头）
@@ -75,16 +75,16 @@ compile 'cjt.library.wheel:camera:0.0.7' //修复了长按录视频崩溃的BUG�
 compile 'cjt.library.wheel:camera:0.0.3' 
 ```
 ## 布局文件中添加
-```
-    //1.0.0+
-    <com.cjt2325.cameralibrary.JCameraView
-        android:id="@+id/jcameraview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:duration_max="10000"
-        app:iconMargin="20dp"
-        app:iconSize="30dp"
-        app:iconSrc="@drawable/ic_camera_enhance_black_24dp"/>
+```xml
+//1.0.0+
+<com.cjt2325.cameralibrary.JCameraView
+    android:id="@+id/jcameraview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:duration_max="10000"
+    app:iconMargin="20dp"
+    app:iconSize="30dp"
+    app:iconSrc="@drawable/ic_camera_enhance_black_24dp"/>
 ```
 ### （1.0.0+）
 属性 | 属性说明
@@ -95,7 +95,7 @@ iconSrc | 右上角切换摄像头按钮图片
 duration_max | 设置最长录像时间（毫秒）
 
 ### AndroidManifest.xml中添加权限
-```
+```xml
 <uses-feature android:name="android.hardware.camera" />
 <uses-feature android:name="android.hardware.camera.autofocus" />
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -104,24 +104,24 @@ duration_max | 设置最长录像时间（毫秒）
 <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 ```
 ### Activity全屏设置
-```
-        if (Build.VERSION.SDK_INT >= 19) {
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                            | View.SYSTEM_UI_FLAG_FULLSCREEN
-                            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-        } else {
-            View decorView = getWindow().getDecorView();
-            int option = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            decorView.setSystemUiVisibility(option);
-        }
+```java
+if (Build.VERSION.SDK_INT >= 19) {
+    View decorView = getWindow().getDecorView();
+    decorView.setSystemUiVisibility(
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            | View.SYSTEM_UI_FLAG_FULLSCREEN
+            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+} else {
+    View decorView = getWindow().getDecorView();
+    int option = View.SYSTEM_UI_FLAG_FULLSCREEN;
+    decorView.setSystemUiVisibility(option);
+}
 ```
 ### 初始化JCameraView控件
-```
+```java
 //1.0.0
 jCameraView = (JCameraView) findViewById(R.id.jcameraview);
 /**
@@ -156,7 +156,7 @@ jCameraView.setJCameraLisenter(new JCameraLisenter() {
 });
 ```
 ### JCameraView生命周期
-```
+```java
 @Override
 protected void onResume() {
     super.onResume();
@@ -168,7 +168,7 @@ protected void onPause() {
     mJCameraView.onPause();
 }
 ```
-## LICENSE
+### LICENSE
 Copyright 2017 CJT2325
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
