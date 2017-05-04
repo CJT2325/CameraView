@@ -170,8 +170,11 @@ protected void onPause() {
 }
 ```
 ### APK Demo
+扫码下载
 
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/QRcode.png)
+
+二维码显示不出请点击 [下载Demo](http://119.29.146.52/camerademo.apk)
 
 ### LICENSE
 Copyright 2017 CJT2325
