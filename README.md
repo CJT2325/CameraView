@@ -169,6 +169,10 @@ protected void onPause() {
     mJCameraView.onPause();
 }
 ```
+### APK Demo
+
+![image](https://github.com/CJT2325/CameraView/blob/master/assets/QRcode.png)
+
 ### LICENSE
 Copyright 2017 CJT2325
 
