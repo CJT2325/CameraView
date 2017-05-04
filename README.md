@@ -17,6 +17,7 @@
 
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_0.jpg)
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_1.jpg)
+![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_2.jpg)
 
 ### GIF图略有卡顿
 

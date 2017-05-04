@@ -165,7 +165,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 if (isBorrow) {
                     return;
                 }
-                Log.i("CJT", String.valueOf(isBorrow));
+//                Log.i("CJT", String.valueOf(isBorrow));
                 new Thread() {
                     /**
                      * switch camera
@@ -234,7 +234,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                     return;
                 }
                 stopping = true;
-                Log.i(TAG, "time = " + time);
+//                Log.i(TAG, "time = " + time);
                 mCaptureLayout.setTextWithAnimation();
                 postDelayed(new Runnable() {
                     @Override
@@ -292,13 +292,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                                         onVideoSizeChanged(MediaPlayer mp, int width, int height) {
                                             updateVideoViewSize(mMediaPlayer.getVideoWidth(), mMediaPlayer
                                                     .getVideoHeight());
-//                                            mVideoWidth = mMediaPlayer.getVideoWidth();
-//                                            mVideoHeight = mMediaPlayer.getVideoHeight();
-
-
-                                            Log.i("CJT", "video = " + mMediaPlayer.getVideoWidth() + " + " +
-                                                    mMediaPlayer.getVideoHeight());
-                                            Log.i("CJT", "surface = " + width + " + " + height);
                                         }
                                     });
                                     mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
@@ -473,7 +466,9 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 if (confirm && captureBitmap != null) {
                     jCameraLisenter.captureSuccess(captureBitmap);
                 } else {
-                    captureBitmap.recycle();
+                    if (captureBitmap != null) {
+                        captureBitmap.recycle();
+                    }
                     captureBitmap = null;
                 }
                 break;
@@ -486,7 +481,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                      */
                     File file = new File(videoUrl);
                     if (file.exists()) {
-                        file.delete();
+                        file.delete() ;
                     }
                 }
                 LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,

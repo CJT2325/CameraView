@@ -115,7 +115,7 @@ public class CameraInterface {
                 mParams.setZoom(scaleRate);
                 mCamera.setParameters(mParams);
                 nowScaleRate = scaleRate;
-                Log.i("CJT", "zoom = " + nowScaleRate);
+//                Log.i("CJT", "zoom = " + nowScaleRate);
             }
         }
     }
@@ -309,7 +309,7 @@ public class CameraInterface {
                     screenProp);
         }
 
-        Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
+//        Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
         if (videoSize.width == videoSize.height) {
             mediaRecorder.setVideoSize(preview_width, preview_height);
         } else {

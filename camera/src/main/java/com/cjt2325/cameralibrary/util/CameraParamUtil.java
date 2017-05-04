@@ -85,7 +85,7 @@ public class CameraParamUtil {
 
     private boolean equalRate(Camera.Size s, float rate) {
         float r = (float) (s.width) / (float) (s.height);
-        return Math.abs(r - rate) <= 0.1;
+        return Math.abs(r - rate) <= 0.2;
     }
 
     public boolean isSupportedFocusMode(List<String> focusList, String focusMode) {
