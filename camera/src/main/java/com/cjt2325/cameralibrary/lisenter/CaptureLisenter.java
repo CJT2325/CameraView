@@ -13,4 +13,6 @@ public interface CaptureLisenter {
     void recordStart();
 
     void recordEnd(long time);
+
+    void recordZoom(float zoom);
 }

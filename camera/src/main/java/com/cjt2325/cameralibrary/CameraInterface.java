@@ -97,6 +97,29 @@ public class CameraInterface {
         }
     }
 
+    int nowScaleRate = 0;
+
+    public void setZoom(float zoom) {
+        if (!isRecorder || mCamera == null) {
+            return;
+        }
+        if (mParams == null) {
+            mParams = mCamera.getParameters();
+        }
+        if (!mParams.isZoomSupported()) {
+            return;
+        }
+        if (zoom >= 0) {
+            int scaleRate = (int) (zoom / 50);
+            if (scaleRate < mParams.getMaxZoom() && scaleRate >= 0 && nowScaleRate != scaleRate) {
+                mParams.setZoom(scaleRate);
+                mCamera.setParameters(mParams);
+                nowScaleRate = scaleRate;
+                Log.i("CJT", "zoom = " + nowScaleRate);
+            }
+        }
+    }
+
     interface CamOpenOverCallback {
         void cameraHasOpened();
     }
@@ -211,8 +234,8 @@ public class CameraInterface {
     void doStopCamera() {
         if (null != mCamera) {
             try {
-                mCamera.setPreviewDisplay(null);
                 mCamera.stopPreview();
+                mCamera.setPreviewDisplay(null);
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;

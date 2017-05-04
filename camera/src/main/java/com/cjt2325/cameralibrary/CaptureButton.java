@@ -134,15 +134,20 @@ public class CaptureButton extends View {
         }
     }
 
+    float event_Y;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                event_Y = event.getY();
                 state = STATE_PRESS_CLICK;
                 postDelayed(longPressRunnable, 500);
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.i(TAG, "");
+                if (captureLisenter != null) {
+                    captureLisenter.recordZoom(event_Y - event.getY());
+                }
                 break;
             case MotionEvent.ACTION_UP:
                 handlerUnpressByState();

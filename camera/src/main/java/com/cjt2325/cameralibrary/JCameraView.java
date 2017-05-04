@@ -317,6 +317,11 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                     }
                 });
             }
+
+            @Override
+            public void recordZoom(float zoom) {
+                CameraInterface.getInstance().setZoom(zoom);
+            }
         });
         mCaptureLayout.setTypeLisenter(new TypeLisenter() {
             @Override
@@ -494,9 +499,11 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         isBorrow = false;
         CAMERA_STATE = STATE_IDLE;
     }
+
     public void setSaveVideoPath(String path) {
         CameraInterface.getInstance().setSaveVideoPath(path);
     }
+
     /**
      * TextureView resize
      */

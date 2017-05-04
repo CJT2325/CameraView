@@ -176,6 +176,13 @@ public class CaptureLayout extends RelativeLayout {
                 startAlphaAnimation();
                 startTypeBtnAnimator();
             }
+
+            @Override
+            public void recordZoom(float zoom) {
+                if (captureLisenter != null) {
+                    captureLisenter.recordZoom(zoom);
+                }
+            }
         });
 
         /**
