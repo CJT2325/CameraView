@@ -63,7 +63,7 @@ public class TypeButton extends View implements View.OnClickListener {
         super.onDraw(canvas);
         if (button_type == TYPE_CANCEL) {
             mPaint.setAntiAlias(true);
-            mPaint.setColor(0xFFEEEEEE);
+            mPaint.setColor(0xEECCCCCC);
             mPaint.setStyle(Paint.Style.FILL);
             canvas.drawCircle(center_X, center_Y, button_radius, mPaint);
 

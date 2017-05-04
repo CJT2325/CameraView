@@ -7,7 +7,6 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -18,6 +17,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
+import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
@@ -54,7 +54,7 @@ public class CameraInterface {
     private int CAMERA_POST_POSITION = -1;
     private int CAMERA_FRONT_POSITION = -1;
 
-    private SurfaceTexture mSurface = null;
+    private SurfaceHolder mHolder = null;
     private float screenProp = -1.0f;
 
     private boolean isRecorder = false;
@@ -119,12 +119,16 @@ public class CameraInterface {
      */
     void doOpenCamera(CamOpenOverCallback callback) {
         if (mCamera == null) {
-            mCamera = Camera.open(SELECTED_CAMERA);
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                mCamera.enableShutterSound(false);
-            }
+            openCamera(SELECTED_CAMERA);
         }
         callback.cameraHasOpened();
+    }
+
+    private void openCamera(int id) {
+        mCamera = Camera.open(id);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            mCamera.enableShutterSound(false);
+        }
     }
 
     public synchronized void switchCamera() {
@@ -135,20 +139,20 @@ public class CameraInterface {
         }
         doStopCamera();
         mCamera = Camera.open(SELECTED_CAMERA);
-        doStartPreview(mSurface, screenProp);
+        doStartPreview(mHolder, screenProp);
     }
 
     /**
      * doStartPreview
      */
-    void doStartPreview(SurfaceTexture surface, float screenProp) {
+    void doStartPreview(SurfaceHolder holder, float screenProp) {
         if (this.screenProp < 0) {
             this.screenProp = screenProp;
         }
-        if (surface == null) {
+        if (holder == null) {
             return;
         }
-        this.mSurface = surface;
+        this.mHolder = holder;
         if (isPreviewing) {
             mCamera.stopPreview();
             return;
@@ -179,8 +183,17 @@ public class CameraInterface {
                 }
                 mCamera.setParameters(mParams);
                 mParams = mCamera.getParameters();
-                surface.setDefaultBufferSize(previewSize.width, previewSize.height);
-                mCamera.setPreviewTexture(surface);
+
+                /**
+                 * SurfaceView
+                 */
+                mCamera.setPreviewDisplay(holder);
+
+                /**
+                 * TextureView
+                 */
+//                surface.setDefaultBufferSize(previewSize.width, previewSize.height);
+//                mCamera.setPreviewTexture(holder);
 
                 mCamera.setDisplayOrientation(90);
                 mCamera.startPreview();
@@ -198,7 +211,7 @@ public class CameraInterface {
     void doStopCamera() {
         if (null != mCamera) {
             try {
-                mCamera.setPreviewTexture(null);
+                mCamera.setPreviewDisplay(null);
                 mCamera.stopPreview();
                 isPreviewing = false;
                 mCamera.release();
@@ -236,20 +249,26 @@ public class CameraInterface {
         });
     }
 
-
-    void startRecord() {
-        int nowAngle = (angle + 90) % 360;
-
-        if (mCamera == null) {
-            return;
-        }
-        mCamera.unlock();
-        if (mediaRecorder == null) {
-            mediaRecorder = new MediaRecorder();
-        }
+    void startRecord(Surface surface) {
         if (isRecorder) {
             return;
         }
+        int nowAngle = (angle + 90) % 360;
+        if (mCamera == null) {
+            openCamera(SELECTED_CAMERA);
+        }
+        if (mediaRecorder == null) {
+            mediaRecorder = new MediaRecorder();
+        }
+        if (mParams == null) {
+            mParams = mCamera.getParameters();
+        }
+        List<String> focusModes = mParams.getSupportedFocusModes();
+        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+            mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+        }
+        mCamera.setParameters(mParams);
+        mCamera.unlock();
         mediaRecorder.reset();
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
@@ -258,9 +277,6 @@ public class CameraInterface {
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
-        if (mParams == null) {
-            mParams = mCamera.getParameters();
-        }
         Camera.Size videoSize = null;
         if (mParams.getSupportedVideoSizes() == null) {
             videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedPreviewSizes(), 1000,
@@ -269,10 +285,7 @@ public class CameraInterface {
             videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedVideoSizes(), 1000,
                     screenProp);
         }
-        List<String> focusModes = mParams.getSupportedFocusModes();
-        if (focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-            mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-        }
+
         Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
         if (videoSize.width == videoSize.height) {
             mediaRecorder.setVideoSize(preview_width, preview_height);
@@ -283,9 +296,12 @@ public class CameraInterface {
             mediaRecorder.setOrientationHint(270);
         } else {
             mediaRecorder.setOrientationHint(nowAngle);
+//            mediaRecorder.setOrientationHint(90);
         }
+
         mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
-        mediaRecorder.setPreviewDisplay(new Surface(mSurface));
+//        mediaRecorder.setPreviewDisplay(new Surface(textureView.getSurfaceTexture()));
+        mediaRecorder.setPreviewDisplay(surface);
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
         if (saveVideoPath.equals("")) {
@@ -299,6 +315,7 @@ public class CameraInterface {
             isRecorder = true;
         } catch (IOException e) {
             e.printStackTrace();
+            mediaRecorder.stop();
         }
     }
 
