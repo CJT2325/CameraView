@@ -1,22 +1,22 @@
 # JCameraView
-## 控件介绍
-这是一个模仿微信拍照的Android开源控件，主要的功能有如下：
+这是一个模仿微信拍照的Android开源控件
 
-1. 点击拍照。
+- 点击拍照
 
-2. 前后摄像头的切换。
+- 长按录视频（视频长度可设置）
 
-3. 长按录视频（视频长度可设置）。
+- 长按录视频的时候，手指上滑可以放大视频
 
-4. 长按录视频的时候，手指上滑可以放大视频。（暂时取消该功能）
+- 录制完视频可以浏览并且重复播放
 
-5. 录制完视频可以浏览并且重复播放。
+- 前后摄像头的切换
 
-6. 可以设置小视频保存路径。
+- 可以设置小视频保存路径
 
 ## 示例截图
 
-![image](https://github.com/CJT2325/CameraView/blob/master/assets/65A0.tmp.jpg)
+![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_0.jpg)
+![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_1.jpg)
 
 ### GIF图略有卡顿
 
