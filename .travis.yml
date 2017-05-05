@@ -4,10 +4,17 @@ sudo: false
 
 android:
   components:
-  - build-tools-23.0.3
-  - android-23
-  - extra-android-m2repository
-  - extra-android-support
+    - tools
+    - build-tools-25.0.1
+    - platform-tools
+    - extra-android-m2repository
+    - extra-android-support
+
+    # The SDK version used to compile your project
+    - android-16
+    - android-21
+    - android-22
+    - android-25
 
 before_install:
  - chmod +x gradlew
