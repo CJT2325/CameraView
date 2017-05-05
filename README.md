@@ -22,10 +22,19 @@
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/video.gif)
 
 ## 使用步骤（Android Studio）
-**添加下列代码到 project gradle**
+
+**添加下列代码到 module gradle**
+
+> 最新版本（1.0.4）更新内容：
+```gradle
+compile 'cjt.library.wheel:camera:1.0.4'
+//换回VideoView
+//摄像上滑放大
+```
+**如果获取依赖失败则添加下列代码到 project gradle**
 ```gradle
 allprojects {
-    repositories {
+    repositories {
         jcenter()
         maven {
             url 'https://dl.bintray.com/cjt/maven'
@@ -33,14 +42,7 @@ allprojects {
     }
 }
 ```
-**添加下列代码到 module gradle**
 
-### 最新版本（1.0.4）更新内容：
-```gradle
-compile 'cjt.library.wheel:camera:1.0.4'
-//换回VideoView
-//摄像上滑放大
-```
 ### 旧版本
 ```gradle
 compile 'cjt.library.wheel:camera:1.0.2'
