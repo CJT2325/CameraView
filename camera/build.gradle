@@ -82,19 +82,25 @@ artifacts {
     archives javadocJar
     archives sourcesJar
 }
-Properties properties = new Properties()
-//读取properties的配置信息，当然直接把信息写到代码里也是可以的
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = "maven"          //这个应该是传到maven的仓库的
-        name = "cameraView"    //发布的项目名字
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = ["Apache-2.0"]
-        publish = true
+
+File localProps = project.rootProject.file('local.properties')
+
+if (localProps.exists()) {
+    Properties properties = new Properties()
+    properties.load(localProps.newDataInputStream())
+
+    bintray {
+        user = properties.getProperty("bintray.user")
+        key = properties.getProperty("bintray.apikey")
+        configurations = ['archives']
+        pkg {
+            repo = "maven"          //这个应该是传到maven的仓库的
+            name = "cameraView"    //发布的项目名字
+            websiteUrl = siteUrl
+            vcsUrl = gitUrl
+            licenses = ["Apache-2.0"]
+            publish = true
+        }
     }
 }
+
