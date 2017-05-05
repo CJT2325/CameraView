@@ -135,7 +135,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
          * VideoView
          */
         mVideoView = new VideoView(mContext);
-        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mVideoView.setLayoutParams(videoViewParam);
 //        mVideoView.setBackgroundColor(0xff000000);
@@ -524,6 +524,8 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        Log.i("CJT","surfaceCreated");
+        CameraInterface.getInstance().doStartPreview(holder,screenProp);
     }
 
     @Override
@@ -532,5 +534,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        Log.i("CJT","surfaceDestroyed");
+        CameraInterface.getInstance().doStopCamera();
     }
 }
