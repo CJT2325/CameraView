@@ -1,6 +1,7 @@
 # JCameraView
 
 [![Build Status](https://travis-ci.org/CJT2325/CameraView.svg?branch=master)](https://travis-ci.org/CJT2325/CameraView)
+ [![Download](https://api.bintray.com/packages/cjt/maven/cameraView/images/download.svg)](https://bintray.com//cjt/maven/cameraView/_latestVersion)
 
 这是一个模仿微信拍照的Android开源控件
 
