@@ -95,7 +95,7 @@ public class CaptureLayout extends RelativeLayout {
         btn_confirm.setVisibility(INVISIBLE);
     }
 
-    private void startTypeBtnAnimator() {
+    public void startTypeBtnAnimator() {
 
         btn_capture.setVisibility(INVISIBLE);
         btn_return.setVisibility(INVISIBLE);
@@ -121,7 +121,7 @@ public class CaptureLayout extends RelativeLayout {
 
     private boolean isFirst = true;
 
-    private void startAlphaAnimation() {
+    public void startAlphaAnimation() {
         if (isFirst) {
             ObjectAnimator animator_txt_tip = ObjectAnimator.ofFloat(txt_tip, "alpha", 1f, 0f);
             animator_txt_tip.setDuration(500);
@@ -148,8 +148,6 @@ public class CaptureLayout extends RelativeLayout {
                 if (captureLisenter != null) {
                     captureLisenter.takePictures();
                 }
-                startAlphaAnimation();
-                startTypeBtnAnimator();
             }
 
             @Override

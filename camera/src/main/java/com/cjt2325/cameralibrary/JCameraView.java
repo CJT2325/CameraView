@@ -72,6 +72,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
 
     private boolean stopping = false;
     private boolean isBorrow = false;
+    private boolean takePictureing = false;
 
     /**
      * switch buttom param
@@ -138,7 +139,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mVideoView.setLayoutParams(videoViewParam);
-//        mVideoView.setBackgroundColor(0xff000000);
 
         /**
          * mPhoto
@@ -210,10 +210,12 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mCaptureLayout.setCaptureLisenter(new CaptureLisenter() {
             @Override
             public void takePictures() {
-                if (CAMERA_STATE != STATE_IDLE) {
+                if (CAMERA_STATE != STATE_IDLE || takePictureing) {
                     return;
                 }
                 CAMERA_STATE = STATE_RUNNING;
+                takePictureing = true;
+                mFoucsView.setVisibility(INVISIBLE);
                 CameraInterface.getInstance().takePicture(new CameraInterface.TakePictureCallback() {
                     @Override
                     public void captureResult(Bitmap bitmap) {
@@ -224,6 +226,10 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         CAMERA_STATE = STATE_WAIT;
                         mPhoto.setImageBitmap(bitmap);
                         mPhoto.setVisibility(VISIBLE);
+                        mCaptureLayout.startAlphaAnimation();
+                        mCaptureLayout.startTypeBtnAnimator();
+                        takePictureing = false;
+                        mSwitchCamera.setVisibility(INVISIBLE);
                     }
                 });
             }
@@ -346,7 +352,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mCaptureLayout.setReturnLisenter(new ReturnLisenter() {
             @Override
             public void onReturn() {
-                if (jCameraLisenter != null) {
+                if (jCameraLisenter != null && !takePictureing) {
                     jCameraLisenter.quit();
                 }
             }
@@ -381,6 +387,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 @Override
                 public void run() {
                     CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+                    CameraInterface.getInstance().setSwitchView(mSwitchCamera);
                 }
             }.start();
         }
@@ -481,7 +488,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                      */
                     File file = new File(videoUrl);
                     if (file.exists()) {
-                        file.delete() ;
+                        file.delete();
                     }
                 }
                 LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
@@ -492,6 +499,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 break;
         }
         isBorrow = false;
+        mSwitchCamera.setVisibility(VISIBLE);
         CAMERA_STATE = STATE_IDLE;
     }
 
@@ -524,8 +532,8 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.i("CJT","surfaceCreated");
-        CameraInterface.getInstance().doStartPreview(holder,screenProp);
+        Log.i("CJT", "surfaceCreated");
+        CameraInterface.getInstance().doStartPreview(holder, screenProp);
     }
 
     @Override
@@ -534,7 +542,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        Log.i("CJT","surfaceDestroyed");
-        CameraInterface.getInstance().doStopCamera();
+        Log.i("CJT", "surfaceDestroyed");
+        CameraInterface.getInstance().doDestroyCamera();
     }
 }

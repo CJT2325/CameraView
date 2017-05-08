@@ -1,5 +1,6 @@
 package com.cjt2325.cameralibrary;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.widget.ImageView;
 
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
@@ -63,12 +65,19 @@ public class CameraInterface {
     private String saveVideoPath;
     private String videoFileAbsPath;
 
+    private ImageView mSwitchView;
+
+    public void setSwitchView(ImageView mSwitchView) {
+        this.mSwitchView = mSwitchView;
+    }
+
 
     private int preview_width;
     private int preview_height;
 
 
     private int angle = 0;
+    private int rotation = 0;
     private SensorManager sm = null;
     private SensorEventListener sensorEventListener = new SensorEventListener() {
         public void onSensorChanged(SensorEvent event) {
@@ -77,16 +86,73 @@ public class CameraInterface {
             }
             float[] values = event.values;
             angle = AngleUtil.getSensorAngle(values[0], values[1]);
-//            float ax = values[0];
-//            float ay = values[1];
-//            float az = values[2];
-//            Log.i("CJT", "x = " + ax + " y = " + ay);
-//            Log.i("CJT", "现在的角度为 = " + AngleUtil.getSensorAngle(ax, ay));
+            rotationAnimation();
         }
 
         public void onAccuracyChanged(Sensor sensor, int accuracy) {
         }
     };
+
+    private void rotationAnimation() {
+        Log.i("CJT", "angle = " + angle);
+        if (mSwitchView == null) {
+            return;
+        }
+        if (rotation != angle) {
+            int start_rotaion = 0;
+            int end_rotation = 0;
+            switch (rotation) {
+                case 0:
+                    start_rotaion = 0;
+                    switch (angle) {
+                        case 90:
+                            end_rotation = -90;
+                            break;
+                        case 270:
+                            end_rotation = 90;
+                            break;
+                    }
+                    break;
+                case 90:
+                    start_rotaion = -90;
+                    switch (angle) {
+                        case 0:
+                            end_rotation = 0;
+                            break;
+                        case 180:
+                            end_rotation = -180;
+                            break;
+                    }
+                    break;
+                case 180:
+                    start_rotaion = 180;
+                    switch (angle) {
+                        case 90:
+                            end_rotation = 270;
+                            break;
+                        case 270:
+                            end_rotation = 90;
+                            break;
+                    }
+                    break;
+                case 270:
+                    start_rotaion = 90;
+                    switch (angle) {
+                        case 0:
+                            end_rotation = 0;
+                            break;
+                        case 180:
+                            end_rotation = 180;
+                            break;
+                    }
+                    break;
+            }
+            ObjectAnimator anim = ObjectAnimator.ofFloat(mSwitchView, "rotation", start_rotaion, end_rotation);
+            anim.setDuration(500);
+            anim.start();
+            rotation = angle;
+        }
+    }
 
 
     public void setSaveVideoPath(String saveVideoPath) {
@@ -211,13 +277,6 @@ public class CameraInterface {
                  * SurfaceView
                  */
                 mCamera.setPreviewDisplay(holder);
-
-                /**
-                 * TextureView
-                 */
-//                surface.setDefaultBufferSize(previewSize.width, previewSize.height);
-//                mCamera.setPreviewTexture(holder);
-
                 mCamera.setDisplayOrientation(90);
                 mCamera.startPreview();
                 isPreviewing = true;
@@ -236,6 +295,22 @@ public class CameraInterface {
             try {
                 mCamera.stopPreview();
                 mCamera.setPreviewDisplay(null);
+                isPreviewing = false;
+                mCamera.release();
+                mCamera = null;
+                Log.i(TAG, "=== Stop Camera ===");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    void doDestroyCamera() {
+        if (null != mCamera) {
+            try {
+                mCamera.stopPreview();
+                mCamera.setPreviewDisplay(null);
+                mHolder = null;
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;
