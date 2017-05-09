@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * =====================================
  * 作    者: 陈嘉桐
- * 版    本：1.1.4
+ * 版    本：1.0.4
  * 创建日期：2017/4/25
  * 描    述：
  * =====================================
@@ -93,8 +93,8 @@ public class CameraInterface {
         }
     };
 
+    //切换摄像头icon跟随手机角度进行旋转
     private void rotationAnimation() {
-        Log.i("CJT", "angle = " + angle);
         if (mSwitchView == null) {
             return;
         }
@@ -155,6 +155,7 @@ public class CameraInterface {
     }
 
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public void setSaveVideoPath(String saveVideoPath) {
         this.saveVideoPath = saveVideoPath;
         File file = new File(saveVideoPath);
@@ -163,7 +164,7 @@ public class CameraInterface {
         }
     }
 
-    int nowScaleRate = 0;
+    private int nowScaleRate = 0;
 
     public void setZoom(float zoom) {
         if (!isRecorder || mCamera == null) {
@@ -347,7 +348,7 @@ public class CameraInterface {
         });
     }
 
-    void startRecord(Surface surface) {
+    void  startRecord(Surface surface) {
         if (isRecorder) {
             return;
         }
@@ -409,11 +410,14 @@ public class CameraInterface {
         mediaRecorder.setOutputFile(videoFileAbsPath);
         try {
             mediaRecorder.prepare();
+            Thread.sleep(1000);
             mediaRecorder.start();
             isRecorder = true;
         } catch (IOException e) {
             e.printStackTrace();
             mediaRecorder.stop();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

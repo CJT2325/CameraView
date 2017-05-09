@@ -7,6 +7,8 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -33,7 +35,7 @@ import java.io.IOException;
 /**
  * =====================================
  * 作    者: 陈嘉桐
- * 版    本：1.1.4
+ * 版    本：1.0.4
  * 创建日期：2017/4/25
  * 描    述：
  * =====================================
@@ -102,9 +104,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     public JCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
-        /**
-         * get AttributeSet
-         */
+        //get AttributeSet
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.JCameraView, defStyleAttr, 0);
         iconSize = a.getDimensionPixelSize(R.styleable.JCameraView_iconSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, 35, getResources().getDisplayMetrics()));
@@ -123,8 +123,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         manager.getDefaultDisplay().getMetrics(outMetrics);
         layout_width = outMetrics.widthPixels;
         fouce_size = layout_width / 4;
-
-
         CAMERA_STATE = STATE_IDLE;
     }
 
@@ -132,17 +130,13 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     private void initView() {
         setWillNotDraw(false);
         this.setBackgroundColor(0xff000000);
-        /**
-         * VideoView
-         */
+        //VideoView
         mVideoView = new VideoView(mContext);
         LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mVideoView.setLayoutParams(videoViewParam);
 
-        /**
-         * mPhoto
-         */
+        //mPhoto
         mPhoto = new ImageView(mContext);
         LayoutParams photoParam = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
                 .MATCH_PARENT);
@@ -150,9 +144,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mPhoto.setLayoutParams(photoParam);
         mPhoto.setBackgroundColor(0xff000000);
         mPhoto.setVisibility(INVISIBLE);
-        /**
-         * switchCamera
-         */
+        //switchCamera
         mSwitchCamera = new ImageView(mContext);
         LayoutParams imageViewParam = new LayoutParams(iconSize, iconSize);
         imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
@@ -165,7 +157,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 if (isBorrow) {
                     return;
                 }
-//                Log.i("CJT", String.valueOf(isBorrow));
                 new Thread() {
                     /**
                      * switch camera
@@ -178,9 +169,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
             }
         });
 
-        /**
-         * CaptureLayout
-         */
+        //CaptureLayout
         mCaptureLayout = new CaptureLayout(mContext);
         LayoutParams layout_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         layout_param.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
@@ -188,25 +177,21 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mCaptureLayout.setLayoutParams(layout_param);
         mCaptureLayout.setDuration(duration);
 
-        /**
-         * mFoucsView
-         */
+        //mFoucsView
+
         mFoucsView = new FoucsView(mContext, fouce_size);
         LayoutParams foucs_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         mFoucsView.setLayoutParams(foucs_param);
         mFoucsView.setVisibility(INVISIBLE);
 
-        /**
-         * add view to ParentLayout
-         */
+        //add view to ParentLayout
+
         this.addView(mVideoView);
         this.addView(mPhoto);
         this.addView(mSwitchCamera);
         this.addView(mCaptureLayout);
         this.addView(mFoucsView);
-        /**
-         * START >>>>>>> captureLayout lisenter callback
-         */
+        //START >>>>>>> captureLayout lisenter callback
         mCaptureLayout.setCaptureLisenter(new CaptureLisenter() {
             @Override
             public void takePictures() {
@@ -278,6 +263,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         videoUrl = url;
                         type = TYPE_VIDEO;
                         new Thread(new Runnable() {
+                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
                             @Override
                             public void run() {
                                 try {
@@ -357,10 +343,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 }
             }
         });
-        /**
-         * END >>>>>>> captureLayout lisenter callback
-         */
-//        mTextureView.setSurfaceTextureListener(this);
+        //END >>>>>>> captureLayout lisenter callback
         mVideoView.getHolder().addCallback(this);
     }
 
@@ -462,7 +445,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         this.jCameraLisenter = jCameraLisenter;
     }
 
-
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     private void handlerPictureOrVideo(int type, boolean confirm) {
         if (jCameraLisenter == null || type == -1) {
             return;
@@ -483,9 +466,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 if (confirm) {
                     jCameraLisenter.recordSuccess(videoUrl);
                 } else {
-                    /**
-                     * delete video file
-                     */
+                    //delete video file
                     File file = new File(videoUrl);
                     if (file.exists()) {
                         file.delete();
@@ -510,7 +491,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     /**
      * TextureView resize
      */
-
     public void updateVideoViewSize(float videoWidth, float videoHeight) {
         if (videoWidth > videoHeight) {
             LayoutParams videoViewParam;
@@ -523,11 +503,10 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         }
     }
 
-
-    public void forbiddenAudio(boolean forbidden) {
-        if (forbidden) {
-            AudioUtil.setAudioManage(mContext);
-        }
+    /**
+     * forbidden audio
+     */
+    public void enableshutterSound(boolean enable) {
     }
 
     @Override

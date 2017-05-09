@@ -133,9 +133,8 @@ public class CaptureLayout extends RelativeLayout {
     private void initView() {
         setWillNotDraw(false);
 
-        /**
-         * btn_capture
-         */
+        //btn_capture
+
         btn_capture = new CaptureButton(getContext(), button_size);
         LayoutParams btn_capture_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         btn_capture_param.addRule(CENTER_IN_PARENT, TRUE);
@@ -183,9 +182,8 @@ public class CaptureLayout extends RelativeLayout {
             }
         });
 
-        /**
-         * btn_cancel
-         */
+        //btn_cancel
+
         btn_cancel = new TypeButton(getContext(), TypeButton.TYPE_CANCEL, button_size);
         final LayoutParams btn_cancel_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         btn_cancel_param.addRule(CENTER_VERTICAL, TRUE);
@@ -206,9 +204,8 @@ public class CaptureLayout extends RelativeLayout {
             }
         });
 
-        /**
-         * btn_confirm
-         */
+        //btn_confirm
+
         btn_confirm = new TypeButton(getContext(), TypeButton.TYPE_CONFIRM, button_size);
         LayoutParams btn_confirm_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         btn_confirm_param.addRule(CENTER_VERTICAL, TRUE);
@@ -229,9 +226,7 @@ public class CaptureLayout extends RelativeLayout {
             }
         });
 
-        /**
-         * btn_return
-         */
+        //btn_return
         btn_return = new ReturnButton(getContext(), button_size / 2);
         LayoutParams btn_return_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         btn_return_param.addRule(CENTER_VERTICAL, TRUE);
@@ -248,9 +243,8 @@ public class CaptureLayout extends RelativeLayout {
             }
         });
 
-        /**
-         * txt_tip
-         */
+        //txt_tip
+
         txt_tip = new TextView(getContext());
         LayoutParams txt_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         txt_param.setMargins(0, 0, 0, 0);
