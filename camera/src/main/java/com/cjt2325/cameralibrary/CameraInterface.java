@@ -173,7 +173,7 @@ public class CameraInterface {
         if (mParams == null) {
             mParams = mCamera.getParameters();
         }
-        if (!mParams.isZoomSupported()) {
+        if (!mParams.isZoomSupported() || !mParams.isSmoothZoomSupported()) {
             return;
         }
         if (zoom >= 0) {
@@ -182,7 +182,6 @@ public class CameraInterface {
                 mParams.setZoom(scaleRate);
                 mCamera.setParameters(mParams);
                 nowScaleRate = scaleRate;
-//                Log.i("CJT", "zoom = " + nowScaleRate);
             }
         }
     }
@@ -296,6 +295,7 @@ public class CameraInterface {
             try {
                 mCamera.stopPreview();
                 mCamera.setPreviewDisplay(null);
+                mHolder = null;
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;
@@ -348,7 +348,7 @@ public class CameraInterface {
         });
     }
 
-    void  startRecord(Surface surface) {
+    void startRecord(Surface surface) {
         if (isRecorder) {
             return;
         }
@@ -410,14 +410,11 @@ public class CameraInterface {
         mediaRecorder.setOutputFile(videoFileAbsPath);
         try {
             mediaRecorder.prepare();
-            Thread.sleep(1000);
             mediaRecorder.start();
             isRecorder = true;
         } catch (IOException e) {
             e.printStackTrace();
             mediaRecorder.stop();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 
