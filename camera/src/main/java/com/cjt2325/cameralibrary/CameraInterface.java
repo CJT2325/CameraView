@@ -295,7 +295,6 @@ public class CameraInterface {
             try {
                 mCamera.stopPreview();
                 mCamera.setPreviewDisplay(null);
-                mHolder = null;
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;

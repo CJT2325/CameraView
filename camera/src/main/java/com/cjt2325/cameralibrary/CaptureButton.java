@@ -7,7 +7,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -113,7 +112,7 @@ public class CaptureButton extends View {
         /**
          * out_side_circle
          */
-        mPaint.setColor(0xFFDDDDDD);
+        mPaint.setColor(0xEECCCCCC);
         canvas.drawCircle(center_X, center_Y, button_outside_radius, mPaint);
 
         /**

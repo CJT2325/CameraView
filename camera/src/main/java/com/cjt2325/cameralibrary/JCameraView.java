@@ -26,7 +26,6 @@ import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
-import com.cjt2325.cameralibrary.util.AudioUtil;
 
 import java.io.File;
 import java.io.IOException;
