@@ -19,14 +19,20 @@ import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
 
 
 /**
- * create by CJT2325
- * 445263848@qq.com.
+ * =====================================
+ * 作    者: 陈嘉桐 445263848@qq.com
+ * 版    本：1.0.4
+ * 创建日期：2017/4/26
+ * 描    述：集成各个控件的布局
+ * =====================================
  */
 
 public class CaptureLayout extends RelativeLayout {
-
+    //拍照按钮监听
     private CaptureLisenter captureLisenter;
+    //拍照或录制后接结果按钮监听
     private TypeLisenter typeLisenter;
+    //退出按钮监听
     private ReturnLisenter returnLisenter;
 
     public void setTypeLisenter(TypeLisenter typeLisenter) {
@@ -91,12 +97,13 @@ public class CaptureLayout extends RelativeLayout {
     }
 
     public void initEvent() {
+        //默认Typebutton为隐藏
         btn_cancel.setVisibility(INVISIBLE);
         btn_confirm.setVisibility(INVISIBLE);
     }
 
     public void startTypeBtnAnimator() {
-
+        //拍照录制结果后的动画
         btn_capture.setVisibility(INVISIBLE);
         btn_return.setVisibility(INVISIBLE);
         btn_cancel.setVisibility(VISIBLE);
@@ -134,7 +141,6 @@ public class CaptureLayout extends RelativeLayout {
         setWillNotDraw(false);
 
         //btn_capture
-
         btn_capture = new CaptureButton(getContext(), button_size);
         LayoutParams btn_capture_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         btn_capture_param.addRule(CENTER_IN_PARENT, TRUE);

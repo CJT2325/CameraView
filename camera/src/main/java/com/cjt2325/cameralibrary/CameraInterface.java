@@ -34,7 +34,7 @@ import java.util.List;
  * 作    者: 陈嘉桐
  * 版    本：1.0.4
  * 创建日期：2017/4/25
- * 描    述：
+ * 描    述：camera操作单例
  * =====================================
  */
 @SuppressWarnings("deprecation")
@@ -164,10 +164,13 @@ public class CameraInterface {
         }
     }
 
+    public static final int TYPE_RECORDER = 0x090;
+    public static final int TYPE_CAPTURE = 0x091;
     private int nowScaleRate = 0;
+    private int recordScleRate = 0;
 
-    public void setZoom(float zoom) {
-        if (!isRecorder || mCamera == null) {
+    public void setZoom(float zoom, int type) {
+        if (mCamera == null) {
             return;
         }
         if (mParams == null) {
@@ -176,14 +179,39 @@ public class CameraInterface {
         if (!mParams.isZoomSupported() || !mParams.isSmoothZoomSupported()) {
             return;
         }
-        if (zoom >= 0) {
-            int scaleRate = (int) (zoom / 50);
-            if (scaleRate < mParams.getMaxZoom() && scaleRate >= 0 && nowScaleRate != scaleRate) {
-                mParams.setZoom(scaleRate);
-                mCamera.setParameters(mParams);
-                nowScaleRate = scaleRate;
-            }
+        switch (type) {
+            case TYPE_RECORDER:
+                //如果不是录制视频中，上滑不会缩放
+                if (!isRecorder) {
+                    return;
+                }
+                if (zoom >= 0) {
+                    //每移动50个像素缩放一个级别
+                    int scaleRate = (int) (zoom / 50);
+                    if (scaleRate <= mParams.getMaxZoom() && scaleRate >= nowScaleRate && recordScleRate != scaleRate) {
+                        mParams.setZoom(scaleRate);
+                        mCamera.setParameters(mParams);
+                        recordScleRate = scaleRate;
+                    }
+                }
+                break;
+            case TYPE_CAPTURE:
+                //每移动50个像素缩放一个级别
+                int scaleRate = (int) (zoom / 50);
+                if (scaleRate < mParams.getMaxZoom()) {
+                    nowScaleRate += scaleRate;
+                    if (nowScaleRate < 0) {
+                        nowScaleRate = 0;
+                    } else if (nowScaleRate > mParams.getMaxZoom()) {
+                        nowScaleRate = mParams.getMaxZoom();
+                    }
+                    mParams.setZoom(nowScaleRate);
+                    mCamera.setParameters(mParams);
+                }
+                Log.i("CJT", "nowScaleRate = " + nowScaleRate);
+                break;
         }
+
     }
 
     interface CamOpenOverCallback {
@@ -540,6 +568,7 @@ public class CameraInterface {
 
     interface FocusCallback {
         void focusSuccess();
+
     }
 
 

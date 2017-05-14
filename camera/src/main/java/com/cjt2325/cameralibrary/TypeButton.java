@@ -7,14 +7,16 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.view.View;
-import android.widget.Toast;
 
 /**
- * create by CJT2325
- * 445263848@qq.com.
+ * =====================================
+ * 作    者: 陈嘉桐 445263848@qq.com
+ * 版    本：1.0.4
+ * 创建日期：2017/4/26
+ * 描    述：拍照或录制完成后弹出的确认和返回按钮
+ * =====================================
  */
-
-public class TypeButton extends View implements View.OnClickListener {
+public class TypeButton extends View{
     public static final int TYPE_CANCEL = 0x001;
     public static final int TYPE_CONFIRM = 0x002;
     private int button_type;
@@ -48,8 +50,6 @@ public class TypeButton extends View implements View.OnClickListener {
         strokeWidth = size / 50f;
         index = button_size / 12f;
         rectF = new RectF(center_X, center_Y - index, center_X + index * 2, center_Y + index);
-
-        this.setOnClickListener(this);
     }
 
     @Override
@@ -61,6 +61,7 @@ public class TypeButton extends View implements View.OnClickListener {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        //如果类型为取消，则绘制内部为返回箭头
         if (button_type == TYPE_CANCEL) {
             mPaint.setAntiAlias(true);
             mPaint.setColor(0xEECCCCCC);
@@ -86,6 +87,7 @@ public class TypeButton extends View implements View.OnClickListener {
             canvas.drawPath(path, mPaint);
 
         }
+        //如果类型为确认，则绘制绿色勾
         if (button_type == TYPE_CONFIRM) {
             mPaint.setAntiAlias(true);
             mPaint.setColor(0xFFFFFFFF);
@@ -102,19 +104,6 @@ public class TypeButton extends View implements View.OnClickListener {
             path.lineTo(center_X - button_size / 21.2f, center_Y + button_size / 9.4f);
             path.close();
             canvas.drawPath(path, mPaint);
-        }
-    }
-
-
-    @Override
-    public void onClick(View view) {
-        switch (button_type){
-            case TYPE_CANCEL:
-                Toast.makeText(TypeButton.this.getContext(), "取消", Toast.LENGTH_SHORT).show();
-                break;
-            case TYPE_CONFIRM:
-                Toast.makeText(TypeButton.this.getContext(), "确定", Toast.LENGTH_SHORT).show();
-                break;
         }
     }
 }
