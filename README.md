@@ -23,6 +23,8 @@
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_1.jpg)
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/screenshot_2.jpg)
 
+## GIF图（播放速度有点慢，求解）
+
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/video.gif)
 
 ## 使用步骤（Android Studio）
