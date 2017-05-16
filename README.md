@@ -31,11 +31,12 @@
 
 **添加下列代码到 module gradle**
 
-> 最新版本（1.0.4）更新内容：
+> 最新版本（1.0.5）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.0.4'
-//换回VideoView
-//摄像上滑放大
+compile 'cjt.library.wheel:camera:1.0.5'
+//浏览界面能使用两根手指进行缩放
+//切换摄像头的按钮会根据手持手机方向进行旋转
+//修复内存泄露
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
 ```gradle
@@ -51,6 +52,10 @@ allprojects {
 
 ### 旧版本
 ```gradle
+compile 'cjt.library.wheel:camera:1.0.4'
+//换回VideoView
+//摄像上滑放大
+
 compile 'cjt.library.wheel:camera:1.0.2'
 //TextureView替换VideoView
 //根据手机拍照方向旋转图片（仅后置摄像头）
