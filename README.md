@@ -187,7 +187,7 @@ protected void onPause() {
 
 ![image](https://github.com/CJT2325/CameraView/blob/master/assets/QRcode.png)
 
-二维码显示不出请点击 [下载Demo](http://119.29.146.52/camerademo.apk)
+二维码显示不出请点击 [下载Demo](http://fir.im/8xnw)
 
 ### LICENSE
 Copyright 2017 CJT2325
