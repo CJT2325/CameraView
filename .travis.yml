@@ -16,8 +16,8 @@ android:
     - android-22
     - android-25
 
-#before_install:
- #- chmod +x gradlew
+before_install:
+ - chmod +x gradlew
 
 #script:
  #- ./gradlew assembleRelease
