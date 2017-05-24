@@ -188,6 +188,10 @@ protected void onPause() {
 
 二维码显示不出请点击 [下载Demo](http://fir.im/8xnw)
 
+## 感谢
+
+感谢程序媛大姐姐 - [YanJingW](https://github.com/YanJingW) 修复首次录视频弹出获取录音权限Diglog导致Touch事件失效的BUG:relaxed:
+
 ### LICENSE
 Copyright 2017 CJT2325
 
