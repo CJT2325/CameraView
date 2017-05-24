@@ -76,6 +76,7 @@ public class CaptureButton extends View {
 
     //按钮回调接口
     private CaptureLisenter captureLisenter;
+    private boolean hasWindowFocus = true;
 
     public CaptureButton(Context context) {
         super(context);
@@ -219,6 +220,15 @@ public class CaptureButton extends View {
     private class RecordRunnable implements Runnable {
         @Override
         public void run() {
+            if (!hasWindowFocus){
+                //移除录制视频的Runnable
+                removeCallbacks(recordRunnable);
+                resetRecordAnim();
+                //制空当前状态
+                state = STATE_NULL;
+                return;
+            }
+
             record_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -245,6 +255,13 @@ public class CaptureButton extends View {
         }
     }
 
+
+    @Override
+    public void onWindowFocusChanged(boolean hasWindowFocus) {
+        super.onWindowFocusChanged(hasWindowFocus);
+        this.hasWindowFocus = hasWindowFocus;
+    }
+
     /**
      * 录制结束
      * @param finish 是否录制满时间
@@ -263,6 +280,10 @@ public class CaptureButton extends View {
                 }
             }
         }
+        resetRecordAnim();
+    }
+
+    private void resetRecordAnim() {
         //取消动画
         record_anim.cancel();
         //重制进度
