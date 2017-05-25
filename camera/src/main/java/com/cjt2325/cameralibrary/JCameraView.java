@@ -65,7 +65,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     private String videoUrl;
     private int type = -1;
 
-
     private int CAMERA_STATE = -1;
     private static final int STATE_IDLE = 0x010;
     private static final int STATE_RUNNING = 0x020;
@@ -153,16 +152,17 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mSwitchCamera.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isBorrow) {
+                if (isBorrow || switching) {
                     return;
                 }
+                switching = true;
                 new Thread() {
                     /**
                      * switch camera
                      */
                     @Override
                     public void run() {
-                        CameraInterface.getInstance().switchCamera();
+                        CameraInterface.getInstance().switchCamera(JCameraView.this);
                     }
                 }.start();
             }
@@ -172,19 +172,18 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mCaptureLayout = new CaptureLayout(mContext);
         LayoutParams layout_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         layout_param.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        layout_param.addRule(RelativeLayout.CENTER_HORIZONTAL);
         layout_param.setMargins(0, 0, 0, 40);
         mCaptureLayout.setLayoutParams(layout_param);
         mCaptureLayout.setDuration(duration);
 
         //mFoucsView
-
         mFoucsView = new FoucsView(mContext, fouce_size);
         LayoutParams foucs_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         mFoucsView.setLayoutParams(foucs_param);
         mFoucsView.setVisibility(INVISIBLE);
 
         //add view to ParentLayout
-
         this.addView(mVideoView);
         this.addView(mPhoto);
         this.addView(mSwitchCamera);
@@ -224,7 +223,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                     return;
                 }
                 stopping = true;
-//                Log.i(TAG, "time = " + time);
                 mCaptureLayout.setTextWithAnimation();
                 postDelayed(new Runnable() {
                     @Override
@@ -234,6 +232,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                                     @Override
                                     public void recordResult(String url) {
                                         Log.i(TAG, "stopping ...");
+                                        mCaptureLayout.isRecord(false);
                                         CAMERA_STATE = STATE_IDLE;
                                         stopping = false;
                                         isBorrow = false;
@@ -248,6 +247,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 if (CAMERA_STATE != STATE_IDLE && stopping) {
                     return;
                 }
+                mCaptureLayout.isRecord(true);
                 isBorrow = true;
                 CAMERA_STATE = STATE_RUNNING;
                 mFoucsView.setVisibility(INVISIBLE);
@@ -360,6 +360,13 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
     }
 
+    private boolean switching = false;
+
+    @Override
+    public void cameraSwitchSuccess() {
+        switching = false;
+    }
+
     /**
      * start preview
      */
@@ -415,19 +422,17 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                     float point_2_X = event.getX(1);
                     float point_2_Y = event.getY(1);
 
-                    float result = (float) Math.sqrt(Math.pow(point_1_X - point_2_X, 2) + Math.pow(point_1_Y - point_2_Y, 2));
+                    float result = (float) Math.sqrt(Math.pow(point_1_X - point_2_X, 2) + Math.pow(point_1_Y -
+                            point_2_Y, 2));
 
                     if (firstTouch) {
                         firstTouchLength = result;
                         firstTouch = false;
                     }
-
                     if ((int) (result - firstTouchLength) / 50 != 0) {
                         firstTouch = true;
                         CameraInterface.getInstance().setZoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
                     }
-
-
                     Log.i("CJT", "result = " + (result - firstTouchLength));
                 }
                 break;
@@ -435,7 +440,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 firstTouch = true;
                 break;
         }
-//        return super.onTouchEvent(event);
         return true;
     }
 
@@ -462,7 +466,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         if (y > mCaptureLayout.getTop() - mFoucsView.getWidth() / 2) {
             y = mCaptureLayout.getTop() - mFoucsView.getWidth() / 2;
         }
-        CameraInterface.getInstance().handleFocus(x, y, new CameraInterface.FocusCallback() {
+        CameraInterface.getInstance().handleFocus(mContext, x, y, new CameraInterface.FocusCallback() {
             @Override
             public void focusSuccess() {
                 mFoucsView.setVisibility(INVISIBLE);
@@ -513,6 +517,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         file.delete();
                     }
                 }
+                mCaptureLayout.isRecord(false);
                 LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
                         LayoutParams.MATCH_PARENT);
                 videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout

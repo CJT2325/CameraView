@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -72,7 +73,12 @@ public class CaptureLayout extends RelativeLayout {
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         manager.getDefaultDisplay().getMetrics(outMetrics);
-        layout_width = outMetrics.widthPixels;
+
+        if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            layout_width = outMetrics.widthPixels;
+        } else {
+            layout_width = outMetrics.widthPixels / 2;
+        }
         button_size = (int) (layout_width / 4.5f);
         layout_height = button_size + (button_size / 5) * 2 + 80;
 
@@ -270,7 +276,7 @@ public class CaptureLayout extends RelativeLayout {
     public void setTextWithAnimation() {
         txt_tip.setText("录制时间过短");
         ObjectAnimator animator_txt_tip = ObjectAnimator.ofFloat(txt_tip, "alpha", 0f, 1f, 1f, 0f);
-        animator_txt_tip.setDuration(3000);
+        animator_txt_tip.setDuration(2500);
         animator_txt_tip.start();
     }
 
@@ -278,4 +284,7 @@ public class CaptureLayout extends RelativeLayout {
         btn_capture.setDuration(duration);
     }
 
+    public void isRecord(boolean record) {
+        btn_capture.isRecord(record);
+    }
 }

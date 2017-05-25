@@ -145,6 +145,7 @@ public class CaptureButton extends View {
             canvas.drawArc(rectF, -90, progress, false, mPaint);
         }
     }
+
     //Touch_Event_Down时候记录的Y值
     float event_Y;
 
@@ -157,11 +158,14 @@ public class CaptureButton extends View {
                 event_Y = event.getY();
                 //修改当前状态为点击按下
                 state = STATE_PRESS_CLICK;
-                //同时延长500启动长按后处理的逻辑Runnable
-                postDelayed(longPressRunnable, 500);
+                //当前状态能否录制
+                if (!isRecorder) {
+                    //同时延长500启动长按后处理的逻辑Runnable
+                    postDelayed(longPressRunnable, 500);
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (captureLisenter != null) {
+                if (captureLisenter != null && state == STATE_PRESS_LONG_CLICK) {
                     //记录当前Y值与按下时候Y值的差值，调用缩放回调接口
                     captureLisenter.recordZoom(event_Y - event.getY());
                 }
@@ -200,6 +204,15 @@ public class CaptureButton extends View {
         this.state = STATE_NULL;
     }
 
+    private boolean isRecorder = false;
+
+    /**
+     * 当前能否录视频
+     */
+    public void isRecord(boolean record) {
+        isRecorder = record;
+    }
+
     /**
      * LongPressRunnable
      */
@@ -209,8 +222,12 @@ public class CaptureButton extends View {
             //如果按下后经过500毫秒则会修改当前状态为长按状态
             state = STATE_PRESS_LONG_CLICK;
             //启动按钮动画，外圆变大，内圆缩小
-            startAnimation(button_outside_radius, button_outside_radius + outside_add_size, button_inside_radius,
-                    button_inside_radius - inside_reduce_size);
+            startAnimation(
+                    button_outside_radius,
+                    button_outside_radius + outside_add_size,
+                    button_inside_radius,
+                    button_inside_radius - inside_reduce_size
+            );
         }
     }
 
@@ -264,6 +281,7 @@ public class CaptureButton extends View {
 
     /**
      * 录制结束
+     *
      * @param finish 是否录制满时间
      */
     private void recordEnd(boolean finish) {
@@ -290,7 +308,12 @@ public class CaptureButton extends View {
         progress = 0;
         invalidate();
         //还原按钮初始状态动画
-        startAnimation(button_outside_radius, button_radius, button_inside_radius, button_radius * 0.75f);
+        startAnimation(
+                button_outside_radius,
+                button_radius,
+                button_inside_radius,
+                button_radius * 0.75f
+        );
     }
 
     //capture button outside and inside resize animation
