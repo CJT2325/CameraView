@@ -23,6 +23,7 @@ import android.widget.ImageView;
 
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
+import com.cjt2325.cameralibrary.util.ScreenUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -196,6 +197,9 @@ public class CameraInterface {
                 }
                 break;
             case TYPE_CAPTURE:
+                if (isRecorder) {
+                    return;
+                }
                 //每移动50个像素缩放一个级别
                 int scaleRate = (int) (zoom / 50);
                 if (scaleRate < mParams.getMaxZoom()) {
@@ -216,6 +220,8 @@ public class CameraInterface {
 
     interface CamOpenOverCallback {
         void cameraHasOpened();
+
+        void cameraSwitchSuccess();
     }
 
     private CameraInterface() {
@@ -248,7 +254,7 @@ public class CameraInterface {
         }
     }
 
-    public synchronized void switchCamera() {
+    public synchronized void switchCamera(CamOpenOverCallback callback) {
         if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
             SELECTED_CAMERA = CAMERA_FRONT_POSITION;
         } else {
@@ -257,6 +263,7 @@ public class CameraInterface {
         doStopCamera();
         mCamera = Camera.open(SELECTED_CAMERA);
         doStartPreview(mHolder, screenProp);
+        callback.cameraSwitchSuccess();
     }
 
     /**
@@ -318,7 +325,7 @@ public class CameraInterface {
     /**
      * 停止预览，释放Camera
      */
-    void doStopCamera() {
+    public void doStopCamera() {
         if (null != mCamera) {
             try {
                 mCamera.stopPreview();
@@ -333,7 +340,7 @@ public class CameraInterface {
         }
     }
 
-    void doDestroyCamera() {
+    public void doDestroyCamera() {
         if (null != mCamera) {
             try {
                 mCamera.stopPreview();
@@ -342,7 +349,7 @@ public class CameraInterface {
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;
-                Log.i(TAG, "=== Stop Camera ===");
+                Log.i(TAG, "=== Destroy Camera ===");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -492,13 +499,13 @@ public class CameraInterface {
     }
 
 
-    public void handleFocus(final float x, final float y, final FocusCallback callback) {
+    public void handleFocus(final Context context, final float x, final float y, final FocusCallback callback) {
         if (mCamera == null) {
             return;
         }
         final Camera.Parameters params = mCamera.getParameters();
         Camera.Size previewSize = params.getPreviewSize();
-        Rect focusRect = calculateTapArea(x, y, 1f, previewSize);
+        Rect focusRect = calculateTapArea(x, y, 1f, context);
         mCamera.cancelAutoFocus();
         if (params.getMaxNumFocusAreas() > 0) {
             List<Camera.Area> focusAreas = new ArrayList<>();
@@ -512,7 +519,7 @@ public class CameraInterface {
         final String currentFocusMode = params.getFocusMode();
         params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
 
-        Log.i(TAG, "width = " + params.getPreviewSize().width + "height = " + params.getPreviewSize().height);
+//        Log.i(TAG, "width = " + params.getPreviewSize().width + "height = " + params.getPreviewSize().height);
 
         mCamera.setParameters(params);
 
@@ -525,19 +532,19 @@ public class CameraInterface {
                     camera.setParameters(params);
                     callback.focusSuccess();
                 } else {
-                    handleFocus(x, y, callback);
+                    handleFocus(context, x, y, callback);
                 }
             }
         });
     }
 
 
-    private static Rect calculateTapArea(float x, float y, float coefficient, Camera.Size previewSize) {
+    private static Rect calculateTapArea(float x, float y, float coefficient, Context context) {
         float focusAreaSize = 300;
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
-        int centerX = (int) (x / previewSize.width - 1000);
-        int centerY = (int) (y / previewSize.height - 1000);
-
+        int centerX = (int) (x / ScreenUtils.getScreenHeight(context) * 2000 - 1000);
+        int centerY = (int) (y / ScreenUtils.getScreenWidth(context) * 2000 - 1000);
+        Log.i("CJT", "FocusArea centerX = " + centerX + " , centerY = " + centerY);
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int top = clamp(centerY - areaSize / 2, -1000, 1000);
 
