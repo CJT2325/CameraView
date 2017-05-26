@@ -1,4 +1,4 @@
-# JCameraView
+# JCameraView（下载源码后运行cameraapplication这个model）
 
  [![Download](https://api.bintray.com/packages/cjt/maven/cameraView/images/download.svg)](https://bintray.com//cjt/maven/cameraView/_latestVersion) [![API 14+](https://img.shields.io/badge/API-14%2B-green.svg)](https://github.com/CJT2325/CameraView)
 
