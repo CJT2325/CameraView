@@ -288,7 +288,7 @@ public class CaptureButton extends View {
         state = STATE_UNPRESS_LONG_CLICK;
         if (captureLisenter != null) {
             //录制时间小于一秒时候则提示录制时间过短
-            if (record_anim.getCurrentPlayTime() < 1000 && !finish) {
+            if (record_anim.getCurrentPlayTime() < 1500 && !finish) {
                 captureLisenter.recordShort(record_anim.getCurrentPlayTime());
             } else {
                 if (finish) {
