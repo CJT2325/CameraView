@@ -12,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.cjt2325.cameralibrary.CameraInterface;
@@ -28,11 +29,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
-        Log.i("CJT", "onCreate");
-
+        Log.i("JCameraView", "onCreate");
         jCameraView = (JCameraView) findViewById(R.id.jcameraview);
-
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
 
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void recordSuccess(String url) {
                 //获取视频路径
-                Log.i("CJT", "url -= " + url);
+                Log.i("JCameraView", "url = " + url);
             }
 
             @Override
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i("CJT", "onStart");
+        Log.i("JCameraView", "onStart");
         //全屏显示
         if (Build.VERSION.SDK_INT >= 19) {
             View decorView = getWindow().getDecorView();
@@ -82,28 +82,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     protected void onResume() {
         super.onResume();
-//        if (granted) {
-        jCameraView.onResume();
-
-//        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            jCameraView.onResume();
+        } else {
+            if (granted) {
+                jCameraView.onResume();
+            }
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         jCameraView.onPause();
-        Log.i("CJT", "onPause");
+        Log.i("JCameraView", "onPause");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         CameraInterface.getInstance().doDestroyCamera();
-        Log.i("CJT", "onDestroy");
+        Log.i("JCameraView", "onDestroy");
     }
 
     /**
