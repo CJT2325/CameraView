@@ -329,7 +329,6 @@ public class CameraInterface {
         if (null != mCamera) {
             try {
                 mCamera.stopPreview();
-                mCamera.setPreviewCallback(null);
                 mCamera.setPreviewDisplay(null);
                 isPreviewing = false;
                 mCamera.release();
@@ -345,7 +344,6 @@ public class CameraInterface {
         if (null != mCamera) {
             try {
                 mCamera.stopPreview();
-                mCamera.setPreviewCallback(null);
                 mCamera.setPreviewDisplay(null);
                 mHolder = null;
                 isPreviewing = false;
@@ -358,9 +356,11 @@ public class CameraInterface {
         }
     }
 
+
     /**
      * 拍照
      */
+
     void takePicture(final TakePictureCallback callback) {
         final int nowAngle = (angle + 90) % 360;
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
@@ -432,7 +432,7 @@ public class CameraInterface {
 //            mediaRecorder.setOrientationHint(90);
         }
 
-        mediaRecorder.setVideoEncodingBitRate(1600000);
+        mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
 //        mediaRecorder.setPreviewDisplay(new Surface(textureView.getSurfaceTexture()));
         mediaRecorder.setPreviewDisplay(surface);
 
@@ -449,8 +449,6 @@ public class CameraInterface {
         } catch (IOException e) {
             e.printStackTrace();
             mediaRecorder.stop();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -463,8 +461,6 @@ public class CameraInterface {
                 mediaRecorder.stop();
                 isRecorder = false;
             } catch (IllegalStateException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
                 e.printStackTrace();
             }
             mediaRecorder.release();

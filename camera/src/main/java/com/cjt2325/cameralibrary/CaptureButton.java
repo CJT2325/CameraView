@@ -154,6 +154,9 @@ public class CaptureButton extends View {
         switch (event.getAction()) {
             //
             case MotionEvent.ACTION_DOWN:
+                if (event.getPointerCount() > 1) {
+                    break;
+                }
                 //记录Y值
                 event_Y = event.getY();
                 //修改当前状态为点击按下
@@ -237,7 +240,7 @@ public class CaptureButton extends View {
     private class RecordRunnable implements Runnable {
         @Override
         public void run() {
-            if (!hasWindowFocus){
+            if (!hasWindowFocus) {
                 //移除录制视频的Runnable
                 removeCallbacks(recordRunnable);
                 resetRecordAnim();

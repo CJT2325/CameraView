@@ -94,8 +94,8 @@ if (localProps.exists()) {
         key = properties.getProperty("bintray.apikey")
         configurations = ['archives']
         pkg {
-            repo = "maven"          //这个应该是传到maven的仓库的
-            name = "cameraView"    //发布的项目名字
+            repo = "maven"
+            name = "cameraView"
             websiteUrl = siteUrl
             vcsUrl = gitUrl
             licenses = ["Apache-2.0"]
