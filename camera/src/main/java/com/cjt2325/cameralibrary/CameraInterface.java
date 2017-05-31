@@ -69,7 +69,9 @@ public class CameraInterface {
     private ImageView mSwitchView;
 
     public void setSwitchView(ImageView mSwitchView) {
-        this.mSwitchView = mSwitchView;
+        if (this.mSwitchView == null) {
+            this.mSwitchView = mSwitchView;
+        }
     }
 
 
@@ -277,10 +279,10 @@ public class CameraInterface {
             return;
         }
         this.mHolder = holder;
-//        if (isPreviewing) {
+        if (isPreviewing) {
 //            mCamera.stopPreview();
-//            return;
-//        }
+            return;
+        }
         if (mCamera != null) {
             try {
                 mParams = mCamera.getParameters();
@@ -317,6 +319,8 @@ public class CameraInterface {
                 isPreviewing = true;
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                mCamera.stopPreview();
             }
         }
         Log.i(TAG, "=== Start Preview ===");
@@ -343,6 +347,7 @@ public class CameraInterface {
     public void doDestroyCamera() {
         if (null != mCamera) {
             try {
+                mSwitchView = null;
                 mCamera.stopPreview();
                 mCamera.setPreviewDisplay(null);
                 mHolder = null;
@@ -461,7 +466,7 @@ public class CameraInterface {
             try {
                 mediaRecorder.stop();
                 isRecorder = false;
-            } catch (IllegalStateException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 mediaRecorder = null;
                 mediaRecorder = new MediaRecorder();
@@ -524,7 +529,6 @@ public class CameraInterface {
 //        Log.i(TAG, "width = " + params.getPreviewSize().width + "height = " + params.getPreviewSize().height);
 
         mCamera.setParameters(params);
-
         mCamera.autoFocus(new Camera.AutoFocusCallback() {
             @Override
             public void onAutoFocus(boolean success, Camera camera) {
