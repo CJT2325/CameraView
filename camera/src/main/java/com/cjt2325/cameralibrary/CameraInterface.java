@@ -277,10 +277,10 @@ public class CameraInterface {
             return;
         }
         this.mHolder = holder;
-        if (isPreviewing) {
-            mCamera.stopPreview();
-            return;
-        }
+//        if (isPreviewing) {
+//            mCamera.stopPreview();
+//            return;
+//        }
         if (mCamera != null) {
             try {
                 mParams = mCamera.getParameters();

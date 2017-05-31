@@ -73,6 +73,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     private boolean stopping = false;
     private boolean isBorrow = false;
     private boolean takePictureing = false;
+    private boolean forbiddenSwitch = false;
 
     /**
      * switch buttom param
@@ -144,15 +145,16 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         mPhoto.setVisibility(INVISIBLE);
         //switchCamera
         mSwitchCamera = new ImageView(mContext);
-        LayoutParams imageViewParam = new LayoutParams(iconSize, iconSize);
+        LayoutParams imageViewParam = new LayoutParams(iconSize + iconMargin, iconSize + iconMargin);
         imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-        imageViewParam.setMargins(0, iconMargin, iconMargin, 0);
+//        imageViewParam.setMargins(0, iconMargin, iconMargin, 0);
+        mSwitchCamera.setPadding(0, iconMargin, iconMargin, 0);
         mSwitchCamera.setLayoutParams(imageViewParam);
         mSwitchCamera.setImageResource(iconSrc);
         mSwitchCamera.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isBorrow || switching) {
+                if (isBorrow || switching || forbiddenSwitch) {
                     return;
                 }
                 switching = true;
@@ -167,7 +169,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 }.start();
             }
         });
-
         //CaptureLayout
         mCaptureLayout = new CaptureLayout(mContext);
         LayoutParams layout_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -553,6 +554,10 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
      * forbidden audio
      */
     public void enableshutterSound(boolean enable) {
+    }
+
+    public void forbiddenSwitchCamera(boolean forbiddenSwitch) {
+        this.forbiddenSwitch = forbiddenSwitch;
     }
 
     @Override
