@@ -418,7 +418,6 @@ public class CameraInterface {
             videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedVideoSizes(), 1000,
                     screenProp);
         }
-
 //        Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
         if (videoSize.width == videoSize.height) {
             mediaRecorder.setVideoSize(preview_width, preview_height);
@@ -431,9 +430,7 @@ public class CameraInterface {
             mediaRecorder.setOrientationHint(nowAngle);
 //            mediaRecorder.setOrientationHint(90);
         }
-
-        mediaRecorder.setVideoEncodingBitRate(5 * 1024 * 1024);
-//        mediaRecorder.setPreviewDisplay(new Surface(textureView.getSurfaceTexture()));
+        mediaRecorder.setVideoEncodingBitRate(1600000);
         mediaRecorder.setPreviewDisplay(surface);
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
@@ -449,6 +446,8 @@ public class CameraInterface {
         } catch (IOException e) {
             e.printStackTrace();
             mediaRecorder.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -457,11 +456,15 @@ public class CameraInterface {
             return;
         }
         if (mediaRecorder != null && isRecorder) {
+            mediaRecorder.setOnErrorListener(null);
+            mediaRecorder.setPreviewDisplay(null);
             try {
                 mediaRecorder.stop();
                 isRecorder = false;
             } catch (IllegalStateException e) {
                 e.printStackTrace();
+                mediaRecorder = null;
+                mediaRecorder = new MediaRecorder();
             }
             mediaRecorder.release();
             mediaRecorder = null;
@@ -504,7 +507,6 @@ public class CameraInterface {
             return;
         }
         final Camera.Parameters params = mCamera.getParameters();
-        Camera.Size previewSize = params.getPreviewSize();
         Rect focusRect = calculateTapArea(x, y, 1f, context);
         mCamera.cancelAutoFocus();
         if (params.getMaxNumFocusAreas() > 0) {
