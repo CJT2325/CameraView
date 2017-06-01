@@ -81,6 +81,8 @@ public class CameraInterface {
 
     private int angle = 0;
     private int rotation = 0;
+    private boolean error = false;
+
     private SensorManager sm = null;
     private SensorEventListener sensorEventListener = new SensorEventListener() {
         public void onSensorChanged(SensorEvent event) {
@@ -279,10 +281,6 @@ public class CameraInterface {
             return;
         }
         this.mHolder = holder;
-        if (isPreviewing) {
-//            mCamera.stopPreview();
-            return;
-        }
         if (mCamera != null) {
             try {
                 mParams = mCamera.getParameters();
@@ -309,10 +307,7 @@ public class CameraInterface {
                 }
                 mCamera.setParameters(mParams);
                 mParams = mCamera.getParameters();
-
-                /**
-                 * SurfaceView
-                 */
+                //SurfaceView
                 mCamera.setPreviewDisplay(holder);
                 mCamera.setDisplayOrientation(90);
                 mCamera.startPreview();
@@ -332,8 +327,8 @@ public class CameraInterface {
     public void doStopCamera() {
         if (null != mCamera) {
             try {
-                mCamera.stopPreview();
                 mCamera.setPreviewDisplay(null);
+                mCamera.stopPreview();
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;
@@ -348,8 +343,8 @@ public class CameraInterface {
         if (null != mCamera) {
             try {
                 mSwitchView = null;
-                mCamera.stopPreview();
                 mCamera.setPreviewDisplay(null);
+                mCamera.stopPreview();
                 mHolder = null;
                 isPreviewing = false;
                 mCamera.release();
@@ -387,7 +382,7 @@ public class CameraInterface {
         });
     }
 
-    void startRecord(Surface surface) {
+    void startRecord(Surface surface, ErrorCallback callback) {
         if (isRecorder) {
             return;
         }
@@ -450,9 +445,10 @@ public class CameraInterface {
             isRecorder = true;
         } catch (IOException e) {
             e.printStackTrace();
-            mediaRecorder.stop();
+            callback.onError();
         } catch (Exception e) {
             e.printStackTrace();
+            callback.onError();
         }
     }
 
@@ -465,7 +461,6 @@ public class CameraInterface {
             mediaRecorder.setPreviewDisplay(null);
             try {
                 mediaRecorder.stop();
-                isRecorder = false;
             } catch (Exception e) {
                 e.printStackTrace();
                 mediaRecorder = null;
@@ -473,10 +468,9 @@ public class CameraInterface {
             }
             mediaRecorder.release();
             mediaRecorder = null;
+            isRecorder = false;
             if (isShort) {
-                /**
-                 * delete video file
-                 */
+                //delete video file
                 File file = new File(videoFileAbsPath);
                 if (file.exists()) {
                     file.delete();
@@ -485,7 +479,7 @@ public class CameraInterface {
                 return;
             }
             doStopCamera();
-            String fileName = saveVideoPath + "/" + videoFileName;
+            String fileName = saveVideoPath + File.separator + videoFileName;
             callback.recordResult(fileName);
         }
     }
@@ -550,12 +544,10 @@ public class CameraInterface {
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
         int centerX = (int) (x / ScreenUtils.getScreenHeight(context) * 2000 - 1000);
         int centerY = (int) (y / ScreenUtils.getScreenWidth(context) * 2000 - 1000);
-        Log.i("CJT", "FocusArea centerX = " + centerX + " , centerY = " + centerY);
+//        Log.i("CJT", "FocusArea centerX = " + centerX + " , centerY = " + centerY);
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int top = clamp(centerY - areaSize / 2, -1000, 1000);
-
         RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);
-
         return new Rect(Math.round(rectF.left), Math.round(rectF.top), Math.round(rectF.right), Math.round(rectF
                 .bottom));
     }
@@ -573,6 +565,10 @@ public class CameraInterface {
 
     interface StopRecordCallback {
         void recordResult(String url);
+    }
+
+    interface ErrorCallback {
+        void onError();
     }
 
     interface TakePictureCallback {

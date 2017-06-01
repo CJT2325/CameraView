@@ -80,7 +80,7 @@ public class CaptureLayout extends RelativeLayout {
             layout_width = outMetrics.widthPixels / 2;
         }
         button_size = (int) (layout_width / 4.5f);
-        layout_height = button_size + (button_size / 5) * 2 + 80;
+        layout_height = button_size + (button_size / 5) * 2 + 120;
 
         initView();
         initEvent();

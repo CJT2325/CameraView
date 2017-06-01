@@ -20,7 +20,7 @@ public class FileUtil {
     private static final String TAG = "FileUtil";
     private static final File parentPath = Environment.getExternalStorageDirectory();
     private static String storagePath = "";
-    private static String DST_FOLDER_NAME = "PlayCamera";
+    private static String DST_FOLDER_NAME = "JCamera";
 
     private static String initPath() {
         if (storagePath.equals("")) {
@@ -33,18 +33,20 @@ public class FileUtil {
         return storagePath;
     }
 
-    public static void saveBitmap(Bitmap b) {
+    public static String saveBitmap(Bitmap b) {
         String path = initPath();
         long dataTake = System.currentTimeMillis();
-        String jpegName = path + File.separator + dataTake + ".jpg";
+        String jpegName = path + File.separator + "picture_" + dataTake + ".jpg";
         try {
             FileOutputStream fout = new FileOutputStream(jpegName);
             BufferedOutputStream bos = new BufferedOutputStream(fout);
             b.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             bos.flush();
             bos.close();
+            return jpegName;
         } catch (IOException e) {
             e.printStackTrace();
+            return "";
         }
     }
 
