@@ -325,8 +325,9 @@ public class CameraInterface {
     public void doStopCamera() {
         if (null != mCamera) {
             try {
-                mCamera.setPreviewDisplay(null);
                 mCamera.stopPreview();
+                //这句要在stopPreview后执行，不然会卡顿或者花屏
+                mCamera.setPreviewDisplay(null);
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;
@@ -341,8 +342,9 @@ public class CameraInterface {
         if (null != mCamera) {
             try {
                 mSwitchView = null;
-                mCamera.setPreviewDisplay(null);
                 mCamera.stopPreview();
+                //这句要在stopPreview后执行，不然会卡顿或者花屏
+                mCamera.setPreviewDisplay(null);
                 mHolder = null;
                 isPreviewing = false;
                 mCamera.release();
