@@ -33,9 +33,9 @@
 
 **添加下列代码到 module gradle**
 
-> 最新版本（1.0.8）更新内容：
+> 最新版本（1.0.9）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.0.8'
+compile 'cjt.library.wheel:camera:1.0.9'
 //fix bug
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
