@@ -251,7 +251,7 @@ public class CameraInterface {
 
     private void openCamera(int id) {
         mCamera = Camera.open(id);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1 && mCamera != null) {
             mCamera.enableShutterSound(false);
         }
     }
