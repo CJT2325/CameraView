@@ -410,7 +410,7 @@ public class CameraInterface {
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
-        Camera.Size videoSize = null;
+        Camera.Size videoSize;
         if (mParams.getSupportedVideoSizes() == null) {
             videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedPreviewSizes(), 1000,
                     screenProp);
@@ -443,9 +443,6 @@ public class CameraInterface {
             mediaRecorder.prepare();
             mediaRecorder.start();
             isRecorder = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            callback.onError();
         } catch (Exception e) {
             e.printStackTrace();
             callback.onError();
@@ -456,7 +453,7 @@ public class CameraInterface {
         if (!isRecorder) {
             return;
         }
-        if (mediaRecorder != null && isRecorder) {
+        if (mediaRecorder != null) {
             mediaRecorder.setOnErrorListener(null);
             mediaRecorder.setOnInfoListener(null);
             mediaRecorder.setPreviewDisplay(null);
@@ -473,17 +470,22 @@ public class CameraInterface {
                 mediaRecorder = new MediaRecorder();
                 Log.i("CJT", "stop Exception");
             } finally {
-                mediaRecorder.release();
+                if (mediaRecorder != null) {
+                    mediaRecorder.release();
+                }
                 mediaRecorder = null;
                 isRecorder = false;
             }
             if (isShort) {
                 //delete video file
+                boolean result = true;
                 File file = new File(videoFileAbsPath);
                 if (file.exists()) {
-                    file.delete();
+                    result = file.delete();
                 }
-                callback.recordResult(null);
+                if (result) {
+                    callback.recordResult(null);
+                }
                 return;
             }
             doStopCamera();
