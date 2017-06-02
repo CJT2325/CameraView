@@ -222,6 +222,14 @@ public class CaptureButton extends View {
     private class LongPressRunnable implements Runnable {
         @Override
         public void run() {
+            if (!hasWindowFocus){
+                //移除录制视频的Runnable
+                removeCallbacks(recordRunnable);
+                resetRecordAnim();
+                //制空当前状态
+                state = STATE_NULL;
+                return;
+            }
             //如果按下后经过500毫秒则会修改当前状态为长按状态
             state = STATE_PRESS_LONG_CLICK;
             //启动按钮动画，外圆变大，内圆缩小
@@ -240,15 +248,6 @@ public class CaptureButton extends View {
     private class RecordRunnable implements Runnable {
         @Override
         public void run() {
-            if (!hasWindowFocus) {
-                //移除录制视频的Runnable
-                removeCallbacks(recordRunnable);
-                resetRecordAnim();
-                //制空当前状态
-                state = STATE_NULL;
-                return;
-            }
-
             record_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
