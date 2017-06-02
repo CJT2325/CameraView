@@ -80,7 +80,7 @@ public class CaptureLayout extends RelativeLayout {
             layout_width = outMetrics.widthPixels / 2;
         }
         button_size = (int) (layout_width / 4.5f);
-        layout_height = button_size + (button_size / 5) * 2 + 120;
+        layout_height = button_size + (button_size / 5) * 2 + 100;
 
         initView();
         initEvent();
@@ -99,6 +99,7 @@ public class CaptureLayout extends RelativeLayout {
 
     @Override
     protected void onDraw(Canvas canvas) {
+//        canvas.drawColor(0xffff0000);
         super.onDraw(canvas);
     }
 

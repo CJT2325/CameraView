@@ -1,18 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              tools:context=".MainActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/tv_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="Create By CJT2325\n\nEmail 445263848@qq.com"
+        android:textColor="#FFF" />
 
-    <com.cjt2325.cameralibrary.JCameraView
-        android:id="@+id/jcameraview"
+    <ImageView
+        android:id="@+id/btn"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_above="@id/tv_author"
+        android:layout_centerHorizontal="true"
+        android:text="JCameraView"
+        android:tint="#FFF"
+        app:srcCompat="@drawable/ic_capture" />
+
+    <ImageView
+        android:id="@+id/image_photo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:duration_max="10000"
-        app:iconMargin="20dp"
-        app:iconSize="30dp"
-        app:iconSrc="@drawable/ic_camera_enhance_black_24dp"/>
-</LinearLayout>
+        android:layout_above="@id/btn"
+        android:layout_margin="32dp" />
+
+</RelativeLayout>

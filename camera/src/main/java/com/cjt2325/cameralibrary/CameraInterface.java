@@ -69,9 +69,7 @@ public class CameraInterface {
     private ImageView mSwitchView;
 
     public void setSwitchView(ImageView mSwitchView) {
-        if (this.mSwitchView == null) {
-            this.mSwitchView = mSwitchView;
-        }
+        this.mSwitchView = mSwitchView;
     }
 
 
@@ -458,17 +456,25 @@ public class CameraInterface {
         }
         if (mediaRecorder != null && isRecorder) {
             mediaRecorder.setOnErrorListener(null);
+            mediaRecorder.setOnInfoListener(null);
             mediaRecorder.setPreviewDisplay(null);
             try {
                 mediaRecorder.stop();
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+                mediaRecorder = null;
+                mediaRecorder = new MediaRecorder();
+                Log.i("CJT", "stop RuntimeException");
             } catch (Exception e) {
                 e.printStackTrace();
                 mediaRecorder = null;
                 mediaRecorder = new MediaRecorder();
+                Log.i("CJT", "stop Exception");
+            } finally {
+                mediaRecorder.release();
+                mediaRecorder = null;
+                isRecorder = false;
             }
-            mediaRecorder.release();
-            mediaRecorder = null;
-            isRecorder = false;
             if (isShort) {
                 //delete video file
                 File file = new File(videoFileAbsPath);

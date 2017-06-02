@@ -41,37 +41,30 @@ import java.io.IOException;
  */
 public class JCameraView extends RelativeLayout implements CameraInterface.CamOpenOverCallback, SurfaceHolder.Callback {
     private static final String TAG = "CJT";
-    //拍照后浏览处理的是视频或图片
+
     private static final int TYPE_PICTURE = 0x001;
     private static final int TYPE_VIDEO = 0x002;
-    //回调接口
+
     private JCameraLisenter jCameraLisenter;
 
+
     private Context mContext;
-    //浏览且播放
     private VideoView mVideoView;
-    //显示拍照后的图片
     private ImageView mPhoto;
-    //右上角切换摄像头图标
     private ImageView mSwitchCamera;
-    //底部拍照按钮
     private CaptureLayout mCaptureLayout;
-    //对焦框
     private FoucsView mFoucsView;
-    //播放
+
     private MediaPlayer mMediaPlayer;
-    //控件宽度
+
     private int layout_width;
-    //对焦框大小
     private int fouce_size;
-    //屏幕长宽比
     private float screenProp;
-    //拍照后保存图片的Bitmap
+
     private Bitmap captureBitmap;
-    //录视频后视频地址
     private String videoUrl;
-    //正在操作的状态
     private int type = -1;
+
     private int CAMERA_STATE = -1;
     private static final int STATE_IDLE = 0x010;
     private static final int STATE_RUNNING = 0x020;
@@ -81,7 +74,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     private boolean isBorrow = false;
     private boolean takePictureing = false;
     private boolean forbiddenSwitch = false;
-    private boolean isError = false;
 
     /**
      * switch buttom param
@@ -181,7 +173,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         LayoutParams layout_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         layout_param.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         layout_param.addRule(RelativeLayout.CENTER_HORIZONTAL);
-//        layout_param.setMargins(0, 0, 0, 40);
+        layout_param.setMargins(0, 0, 0, 40);
         mCaptureLayout.setLayoutParams(layout_param);
         mCaptureLayout.setDuration(duration);
 
@@ -221,6 +213,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         mCaptureLayout.startTypeBtnAnimator();
                         takePictureing = false;
                         mSwitchCamera.setVisibility(INVISIBLE);
+                        CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                     }
                 });
             }
@@ -244,8 +237,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                                         CAMERA_STATE = STATE_IDLE;
                                         stopping = false;
                                         isBorrow = false;
-                                        CameraInterface.getInstance().doStopCamera();
-                                        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
                                     }
                                 });
                     }
@@ -261,15 +252,15 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 isBorrow = true;
                 CAMERA_STATE = STATE_RUNNING;
                 mFoucsView.setVisibility(INVISIBLE);
-                CameraInterface.getInstance().startRecord(mVideoView.getHolder().getSurface(), new CameraInterface.ErrorCallback() {
+                CameraInterface.getInstance().startRecord(mVideoView.getHolder().getSurface(), new CameraInterface
+                        .ErrorCallback() {
                     @Override
                     public void onError() {
-                        Log.i("CJT", "error");
+                        Log.i("CJT", "startRecorder error");
                         mCaptureLayout.isRecord(false);
-                        CAMERA_STATE = STATE_IDLE;
+                        CAMERA_STATE = STATE_WAIT;
                         stopping = false;
                         isBorrow = false;
-                        isError = true;
                     }
                 });
             }
@@ -337,7 +328,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         mMediaPlayer.release();
                         mMediaPlayer = null;
                     }
-                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+//                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                     handlerPictureOrVideo(type, false);
                 }
             }
@@ -350,7 +341,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         mMediaPlayer.release();
                         mMediaPlayer = null;
                     }
-                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+//                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                     handlerPictureOrVideo(type, true);
                 }
             }
@@ -392,6 +383,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
      */
     public void onResume() {
         CameraInterface.getInstance().registerSensorManager(mContext);
+        CameraInterface.getInstance().setSwitchView(mSwitchCamera);
     }
 
     /**
@@ -471,8 +463,8 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         if (x > layout_width - mFoucsView.getWidth() / 2) {
             x = layout_width - mFoucsView.getWidth() / 2;
         }
-        if ((y + iconMargin) < mFoucsView.getWidth() / 2) {
-            y = mFoucsView.getWidth() / 2;
+        if (y < mFoucsView.getWidth() / 2 + iconMargin) {
+            y = mFoucsView.getWidth() / 2 + iconMargin;
         }
         if (y > mCaptureLayout.getTop() - mFoucsView.getWidth() / 2) {
             y = mCaptureLayout.getTop() - mFoucsView.getWidth() / 2;
@@ -534,6 +526,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout
                         .TRUE);
                 mVideoView.setLayoutParams(videoViewParam);
+                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                 break;
         }
         isBorrow = false;
@@ -577,7 +570,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
             @Override
             public void run() {
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
             }
         }.start();
     }
