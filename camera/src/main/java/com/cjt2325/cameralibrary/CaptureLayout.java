@@ -274,8 +274,8 @@ public class CaptureLayout extends RelativeLayout {
 
     }
 
-    public void setTextWithAnimation() {
-        txt_tip.setText("录制时间过短");
+    public void setTextWithAnimation(String tip) {
+        txt_tip.setText(tip);
         ObjectAnimator animator_txt_tip = ObjectAnimator.ofFloat(txt_tip, "alpha", 0f, 1f, 1f, 0f);
         animator_txt_tip.setDuration(2500);
         animator_txt_tip.start();
@@ -287,5 +287,9 @@ public class CaptureLayout extends RelativeLayout {
 
     public void isRecord(boolean record) {
         btn_capture.isRecord(record);
+    }
+
+    public void setButtonFeatures(int state) {
+        btn_capture.setButtonFeatures(state);
     }
 }

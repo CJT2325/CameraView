@@ -21,6 +21,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.ImageView;
 
+import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
@@ -66,6 +67,8 @@ public class CameraInterface {
     private String saveVideoPath;
     private String videoFileAbsPath;
 
+    private ErrorLisenter errorLisenter;
+
     private ImageView mSwitchView;
 
     public void setSwitchView(ImageView mSwitchView) {
@@ -80,6 +83,9 @@ public class CameraInterface {
     private int angle = 0;
     private int rotation = 0;
     private boolean error = false;
+
+    //视频质量
+    private int mediaQuality = JCameraView.MEDIA_QUALITY_MIDDLE;
 
     private SensorManager sm = null;
     private SensorEventListener sensorEventListener = new SensorEventListener() {
@@ -220,6 +226,10 @@ public class CameraInterface {
 
     }
 
+    public void setMediaQuality(int quality) {
+        this.mediaQuality = quality;
+    }
+
     interface CamOpenOverCallback {
         void cameraHasOpened();
 
@@ -243,6 +253,7 @@ public class CameraInterface {
      * open Camera
      */
     void doOpenCamera(CamOpenOverCallback callback) {
+
         if (mCamera == null) {
             openCamera(SELECTED_CAMERA);
         }
@@ -250,9 +261,16 @@ public class CameraInterface {
     }
 
     private void openCamera(int id) {
-        mCamera = Camera.open(id);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1 && mCamera != null) {
-            mCamera.enableShutterSound(false);
+        try {
+            this.mCamera = Camera.open(id);
+        } catch (Exception var3) {
+            if (this.errorLisenter != null) {
+                this.errorLisenter.onError();
+            }
+        }
+
+        if (Build.VERSION.SDK_INT > 17 && this.mCamera != null) {
+            this.mCamera.enableShutterSound(false);
         }
     }
 
@@ -294,8 +312,9 @@ public class CameraInterface {
 
                 mParams.setPictureSize(pictureSize.width, pictureSize.height);
 
-                if (CameraParamUtil.getInstance().isSupportedFocusMode(mParams.getSupportedFocusModes(), Camera
-                        .Parameters.FOCUS_MODE_AUTO)) {
+                if (CameraParamUtil.getInstance().isSupportedFocusMode(
+                        mParams.getSupportedFocusModes(),
+                        Camera.Parameters.FOCUS_MODE_AUTO)) {
                     mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
                 }
                 if (CameraParamUtil.getInstance().isSupportedPictureFormats(mParams.getSupportedPictureFormats(),
@@ -430,7 +449,7 @@ public class CameraInterface {
             mediaRecorder.setOrientationHint(nowAngle);
 //            mediaRecorder.setOrientationHint(90);
         }
-        mediaRecorder.setVideoEncodingBitRate(1600000);
+        mediaRecorder.setVideoEncodingBitRate(mediaQuality);
         mediaRecorder.setPreviewDisplay(surface);
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
@@ -572,6 +591,10 @@ public class CameraInterface {
         return x;
     }
 
+    public void setErrorLinsenter(ErrorLisenter errorLisenter) {
+        this.errorLisenter = errorLisenter;
+    }
+
 
     interface StopRecordCallback {
         void recordResult(String url);
@@ -605,5 +628,4 @@ public class CameraInterface {
         }
         sm.unregisterListener(sensorEventListener);
     }
-
 }

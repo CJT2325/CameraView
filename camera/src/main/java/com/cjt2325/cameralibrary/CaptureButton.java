@@ -13,6 +13,10 @@ import android.view.animation.LinearInterpolator;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
 
+import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_BOTH;
+import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_ONLY_CAPTURE;
+import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_ONLY_RECORDER;
+
 
 /**
  * =====================================
@@ -23,7 +27,11 @@ import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
  * =====================================
  */
 public class CaptureButton extends View {
-//    private static final String TAG = "CJT";
+    //    private static final String TAG = "CJT";
+
+
+    //按钮可执行的功能状态
+    private int button_state;
 
     //空状态
     public static final int STATE_NULL = 0x000;
@@ -106,6 +114,8 @@ public class CaptureButton extends View {
         //set default state;
         this.state = STATE_NULL;
 
+        this.button_state = BUTTON_STATE_BOTH;
+
         //set max record duration,default 10*1000
         duration = 10 * 1000;
         center_X = (button_size + outside_add_size * 2) / 2;
@@ -162,13 +172,18 @@ public class CaptureButton extends View {
                 //修改当前状态为点击按下
                 state = STATE_PRESS_CLICK;
                 //当前状态能否录制
-                if (!isRecorder) {
+                //判断按钮状态是否为可录制状态
+                if (!isRecorder &&
+                        (button_state == BUTTON_STATE_ONLY_RECORDER ||
+                                button_state == BUTTON_STATE_BOTH)) {
                     //同时延长500启动长按后处理的逻辑Runnable
                     postDelayed(longPressRunnable, 500);
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (captureLisenter != null && state == STATE_PRESS_LONG_CLICK) {
+                if (captureLisenter != null
+                        && state == STATE_PRESS_LONG_CLICK
+                        && (button_state == BUTTON_STATE_ONLY_RECORDER || button_state == BUTTON_STATE_BOTH)) {
                     //记录当前Y值与按下时候Y值的差值，调用缩放回调接口
                     captureLisenter.recordZoom(event_Y - event.getY());
                 }
@@ -189,7 +204,8 @@ public class CaptureButton extends View {
         switch (state) {
             //当前是点击按下
             case STATE_PRESS_CLICK:
-                if (captureLisenter != null) {
+                if (captureLisenter != null &&
+                        (button_state == BUTTON_STATE_ONLY_CAPTURE || button_state == BUTTON_STATE_BOTH)) {
                     //回调拍照接口
                     captureLisenter.takePictures();
                 }
@@ -370,5 +386,10 @@ public class CaptureButton extends View {
     //设置回调接口
     public void setCaptureLisenter(CaptureLisenter captureLisenter) {
         this.captureLisenter = captureLisenter;
+    }
+
+    //设置按钮功能（拍照和录像）
+    public void setButtonFeatures(int state) {
+        this.button_state = state;
     }
 }

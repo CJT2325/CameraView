@@ -4,14 +4,15 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 
 import com.cjt2325.cameralibrary.JCameraView;
+import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.util.FileUtil;
 
@@ -27,10 +28,17 @@ public class CameraActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_camera);
         jCameraView = (JCameraView) findViewById(R.id.jcameraview);
-
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
-
+        jCameraView.setFeatures(JCameraView.BUTTON_STATE_ONLY_RECORDER);
+        jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
+        jCameraView.setErrorLisenter(new ErrorLisenter() {
+            @Override
+            public void onError() {
+                //错误监听
+                Log.i("CJT", "camera error");
+            }
+        });
         //JCameraView监听
         jCameraView.setJCameraLisenter(new JCameraLisenter() {
             @Override

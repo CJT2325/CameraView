@@ -23,6 +23,7 @@ import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
+import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
@@ -45,6 +46,22 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     private static final int TYPE_PICTURE = 0x001;
     private static final int TYPE_VIDEO = 0x002;
 
+    public static final int MEDIA_QUALITY_HIGH = 20 * 100000;
+    public static final int MEDIA_QUALITY_MIDDLE = 16 * 100000;
+    public static final int MEDIA_QUALITY_LOW = 12 * 100000;
+    public static final int MEDIA_QUALITY_POOR = 8 * 100000;
+    public static final int MEDIA_QUALITY_FUNNY = 4 * 100000;
+    public static final int MEDIA_QUALITY_DESPAIR = 2 * 100000;
+    public static final int MEDIA_QUALITY_SORRY = 1 * 80000;
+    public static final int MEDIA_QUALITY_SORRY_YOU_ARE_GOOD_MAN = 1 * 10000;
+
+    //只能拍照
+    public static final int BUTTON_STATE_ONLY_CAPTURE = 0x101;
+    //只能录像
+    public static final int BUTTON_STATE_ONLY_RECORDER = 0x102;
+    //两者都可以
+    public static final int BUTTON_STATE_BOTH = 0x103;
+
     private JCameraLisenter jCameraLisenter;
 
 
@@ -54,7 +71,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     private ImageView mSwitchCamera;
     private CaptureLayout mCaptureLayout;
     private FoucsView mFoucsView;
-
     private MediaPlayer mMediaPlayer;
 
     private int layout_width;
@@ -224,7 +240,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                     return;
                 }
                 stopping = true;
-                mCaptureLayout.setTextWithAnimation();
+                mCaptureLayout.setTextWithAnimation("录制时间过短");
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -232,7 +248,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                                 CameraInterface.StopRecordCallback() {
                                     @Override
                                     public void recordResult(String url) {
-                                        Log.i(TAG, "stopping ...");
+                                        Log.i(TAG, "Record Stopping ...");
                                         mCaptureLayout.isRecord(false);
                                         CAMERA_STATE = STATE_IDLE;
                                         stopping = false;
@@ -328,7 +344,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         mMediaPlayer.release();
                         mMediaPlayer = null;
                     }
-//                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                     handlerPictureOrVideo(type, false);
                 }
             }
@@ -341,7 +356,6 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                         mMediaPlayer.release();
                         mMediaPlayer = null;
                     }
-//                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                     handlerPictureOrVideo(type, true);
                 }
             }
@@ -561,6 +575,21 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
 
     public void forbiddenSwitchCamera(boolean forbiddenSwitch) {
         this.forbiddenSwitch = forbiddenSwitch;
+    }
+
+    //启动Camera错误回调
+    public void setErrorLisenter(ErrorLisenter errorLisenter) {
+        CameraInterface.getInstance().setErrorLinsenter(errorLisenter);
+    }
+
+    //设置CaptureButton功能（拍照和录像）
+    public void setFeatures(int state) {
+        this.mCaptureLayout.setButtonFeatures(state);
+    }
+
+    //设置录制质量
+    public void setMediaQuality(int quality) {
+        CameraInterface.getInstance().setMediaQuality(quality);
     }
 
     @Override
