@@ -402,7 +402,11 @@ public class CameraInterface {
                 }
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                 if (callback != null) {
-                    callback.captureResult(bitmap);
+                    if (nowAngle == 90 || nowAngle == 270) {
+                        callback.captureResult(bitmap, true);
+                    } else {
+                        callback.captureResult(bitmap, false);
+                    }
                 }
             }
         });
@@ -628,7 +632,7 @@ public class CameraInterface {
     }
 
     interface TakePictureCallback {
-        void captureResult(Bitmap bitmap);
+        void captureResult(Bitmap bitmap,boolean isVertical);
     }
 
     interface FocusCallback {

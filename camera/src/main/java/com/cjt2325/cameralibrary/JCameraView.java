@@ -217,12 +217,17 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 mFoucsView.setVisibility(INVISIBLE);
                 CameraInterface.getInstance().takePicture(new CameraInterface.TakePictureCallback() {
                     @Override
-                    public void captureResult(Bitmap bitmap) {
+                    public void captureResult(Bitmap bitmap, boolean isVertical) {
                         captureBitmap = bitmap;
                         CameraInterface.getInstance().doStopCamera();
                         type = TYPE_PICTURE;
                         isBorrow = true;
                         CAMERA_STATE = STATE_WAIT;
+                        if (isVertical) {
+                            mPhoto.setScaleType(ImageView.ScaleType.FIT_XY);
+                        } else {
+                            mPhoto.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                        }
                         mPhoto.setImageBitmap(bitmap);
                         mPhoto.setVisibility(VISIBLE);
                         mCaptureLayout.startAlphaAnimation();
