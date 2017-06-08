@@ -27,7 +27,6 @@ repositories {
         dirs 'libs'
     }
 }
-
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 //    compile(name: 'camera-debug', ext: 'aar')

@@ -193,6 +193,13 @@ public class CaptureLayout extends RelativeLayout {
                     captureLisenter.recordZoom(zoom);
                 }
             }
+
+            @Override
+            public void recordError() {
+                if (captureLisenter != null) {
+                    captureLisenter.recordError();
+                }
+            }
         });
 
         //btn_cancel

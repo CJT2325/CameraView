@@ -334,6 +334,14 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
             public void recordZoom(float zoom) {
                 CameraInterface.getInstance().setZoom(zoom, CameraInterface.TYPE_RECORDER);
             }
+
+            @Override
+            public void recordError() {
+                //错误回调
+                if (errorLisenter != null) {
+                    errorLisenter.AudioPermissionError();
+                }
+            }
         });
         mCaptureLayout.setTypeLisenter(new TypeLisenter() {
             @Override
@@ -398,6 +406,12 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
     public void onResume() {
         CameraInterface.getInstance().registerSensorManager(mContext);
         CameraInterface.getInstance().setSwitchView(mSwitchCamera);
+        new Thread() {
+            @Override
+            public void run() {
+                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+            }
+        }.start();
     }
 
     /**
@@ -577,8 +591,11 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         this.forbiddenSwitch = forbiddenSwitch;
     }
 
+    private ErrorLisenter errorLisenter;
+
     //启动Camera错误回调
     public void setErrorLisenter(ErrorLisenter errorLisenter) {
+        this.errorLisenter = errorLisenter;
         CameraInterface.getInstance().setErrorLinsenter(errorLisenter);
     }
 

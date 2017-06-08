@@ -10,4 +10,5 @@ package com.cjt2325.cameralibrary.lisenter;
  */
 public interface ErrorLisenter {
     void onError();
+    void AudioPermissionError();
 }

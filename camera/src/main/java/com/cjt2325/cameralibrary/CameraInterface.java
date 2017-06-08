@@ -54,6 +54,12 @@ public class CameraInterface {
 
     private static CameraInterface mCameraInterface;
 
+    public static void destroyCameraInterface() {
+        if (mCameraInterface != null) {
+            mCameraInterface = null;
+        }
+    }
+
     private int SELECTED_CAMERA = -1;
     private int CAMERA_POST_POSITION = -1;
     private int CAMERA_FRONT_POSITION = -1;
@@ -368,6 +374,7 @@ public class CameraInterface {
                 isPreviewing = false;
                 mCamera.release();
                 mCamera = null;
+                destroyCameraInterface();
                 Log.i(TAG, "=== Destroy Camera ===");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -424,10 +431,13 @@ public class CameraInterface {
         mediaRecorder.reset();
         mediaRecorder.setCamera(mCamera);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+
 
         Camera.Size videoSize;
         if (mParams.getSupportedVideoSizes() == null) {
@@ -453,6 +463,7 @@ public class CameraInterface {
         mediaRecorder.setPreviewDisplay(surface);
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
+//        videoFileName = "video_" + System.currentTimeMillis() + ".3gp";
         if (saveVideoPath.equals("")) {
             saveVideoPath = Environment.getExternalStorageDirectory().getPath();
         }
@@ -462,9 +473,21 @@ public class CameraInterface {
             mediaRecorder.prepare();
             mediaRecorder.start();
             isRecorder = true;
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
             e.printStackTrace();
-            callback.onError();
+            Log.i("CJT", "startRecord IllegalStateException");
+            if (this.errorLisenter != null) {
+                this.errorLisenter.onError();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.i("CJT", "startRecord IOException");
+            if (this.errorLisenter != null) {
+                this.errorLisenter.onError();
+            }
+        } catch (RuntimeException e) {
+            Log.i("CJT", "startRecord RuntimeException");
+
         }
     }
 

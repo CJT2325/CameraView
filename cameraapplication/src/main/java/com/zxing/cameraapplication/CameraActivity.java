@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.cjt2325.cameralibrary.JCameraView;
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
@@ -30,13 +31,18 @@ public class CameraActivity extends AppCompatActivity {
         jCameraView = (JCameraView) findViewById(R.id.jcameraview);
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
-        jCameraView.setFeatures(JCameraView.BUTTON_STATE_ONLY_RECORDER);
-        jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
+        jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
+        jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_SORRY_YOU_ARE_GOOD_MAN);
         jCameraView.setErrorLisenter(new ErrorLisenter() {
             @Override
             public void onError() {
                 //错误监听
                 Log.i("CJT", "camera error");
+            }
+
+            @Override
+            public void AudioPermissionError() {
+                Toast.makeText(CameraActivity.this, "给点录音权限可以?", Toast.LENGTH_SHORT).show();
             }
         });
         //JCameraView监听
