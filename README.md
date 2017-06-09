@@ -1,4 +1,4 @@
-# JCameraView（1.0.9）
+# JCameraView（1.1.1）
 # 下载源码后运行cameraapplication这个model
 
  [![Download](https://api.bintray.com/packages/cjt/maven/cameraView/images/download.svg)](https://bintray.com//cjt/maven/cameraView/_latestVersion) [![API 14+](https://img.shields.io/badge/API-14%2B-green.svg)](https://github.com/CJT2325/CameraView)
@@ -33,9 +33,9 @@
 
 **添加下列代码到 module gradle**
 
-> 最新版本（1.0.9）更新内容：
+> 最新版本（1.1.1）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.0.9'
+compile 'cjt.library.wheel:camera:1.1.1'
 //fix bug
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
@@ -52,6 +52,9 @@ allprojects {
 
 ### 旧版本
 ```gradle
+compile 'cjt.library.wheel:camera:1.0.9'
+//fix bug
+
 compile 'cjt.library.wheel:camera:1.0.5'
 //浏览界面能使用两根手指进行缩放
 //切换摄像头的按钮会根据手持手机方向进行旋转
@@ -141,35 +144,46 @@ if (Build.VERSION.SDK_INT >= 19) {
 ```
 ### 初始化JCameraView控件
 ```java
-//1.0.0
+//1.1.1
 jCameraView = (JCameraView) findViewById(R.id.jcameraview);
-/**
- * 设置视频保存路径
- */
+
+//设置视频保存路径
 jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
-/**
- * JCameraView监听
- */
+
+//设置只能录像或只能拍照或两种都可以（默认两种都可以）
+jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
+
+//设置视频质量
+jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
+
+//JCameraView监听
+jCameraView.setErrorLisenter(new ErrorLisenter() {
+     @Override
+     public void onError() {
+          //打开Camera失败回调
+          Log.i("CJT", "open camera error");
+     }
+     @Override
+     public void AudioPermissionError() {
+          //没有录取权限回调
+          Log.i("CJT", "AudioPermissionError");
+     }
+});
+
 jCameraView.setJCameraLisenter(new JCameraLisenter() {
     @Override
     public void captureSuccess(Bitmap bitmap) {
-    /**
-     * 获取图片bitmap
-     */
+        //获取图片bitmap
         Log.i("JCameraView", "bitmap = " + bitmap.getWidth());
     }
     @Override
     public void recordSuccess(String url) {
-    /**
-     * 获取视频路径
-     */
+        //获取视频路径
         Log.i("CJT", "url = " + url);
      }
     @Override
     public void quit() {
-    /**
-     * 退出按钮
-     */
+        //退出按钮
         MainActivity.this.finish();
     }
 });
