@@ -190,7 +190,7 @@ protected void onPause() {
 
 ### 感谢
 
-感谢 - [YanJingW](https://github.com/YanJingW) 修复首次录视频弹出获取录音权限Diglog导致Touch事件失效的BUG:relaxed:
+感谢 - [YanJingW](https://github.com/YanJingW) 修复首次录视频弹出获取录音权限Diglog导致Touch事件失效的BUG
 
 ### APK Demo
 扫码下载
