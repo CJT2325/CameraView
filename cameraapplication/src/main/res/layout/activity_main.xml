@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
-    tools:context=".MainActivity">
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimaryDark"
+                tools:context=".MainActivity">
 
     <TextView
         android:id="@+id/tv_author"
@@ -15,7 +15,7 @@
         android:gravity="center"
         android:padding="16dp"
         android:text="Create By CJT2325\n\nEmail 445263848@qq.com"
-        android:textColor="#FFF" />
+        android:textColor="#FFF"/>
 
     <ImageView
         android:id="@+id/btn"
@@ -25,13 +25,24 @@
         android:layout_centerHorizontal="true"
         android:text="JCameraView"
         android:tint="#FFF"
-        app:srcCompat="@drawable/ic_capture" />
+        app:srcCompat="@drawable/ic_capture"/>
 
     <ImageView
         android:id="@+id/image_photo"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/btn"
-        android:layout_margin="32dp" />
+        android:layout_margin="32dp"/>
+
+    <TextView
+        android:id="@+id/device"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:text="Andriod Device"
+        android:textColor="#FFF"
+        android:textSize="18dp"
+        android:textStyle="bold"/>
 
 </RelativeLayout>

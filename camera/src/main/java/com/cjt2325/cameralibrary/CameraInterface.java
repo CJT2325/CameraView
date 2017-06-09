@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
+import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
 
 import java.io.File;
@@ -463,7 +464,11 @@ public class CameraInterface {
             mediaRecorder.setOrientationHint(nowAngle);
 //            mediaRecorder.setOrientationHint(90);
         }
-        mediaRecorder.setVideoEncodingBitRate(mediaQuality);
+        if (DeviceUtil.isHuaWeiRongyao()){
+            mediaRecorder.setVideoEncodingBitRate(4 * 100000);
+        }else{
+            mediaRecorder.setVideoEncodingBitRate(mediaQuality);
+        }
         mediaRecorder.setPreviewDisplay(surface);
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";

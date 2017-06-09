@@ -13,13 +13,14 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
@@ -40,7 +41,7 @@ import java.io.IOException;
  * 描    述：
  * =====================================
  */
-public class JCameraView extends RelativeLayout implements CameraInterface.CamOpenOverCallback, SurfaceHolder.Callback {
+public class JCameraView extends FrameLayout implements CameraInterface.CamOpenOverCallback, SurfaceHolder.Callback {
     private static final String TAG = "CJT";
 
     private static final int TYPE_PICTURE = 0x001;
@@ -148,22 +149,24 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         //VideoView
         mVideoView = new VideoView(mContext);
         LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+//        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mVideoView.setLayoutParams(videoViewParam);
 
         //mPhoto
         mPhoto = new ImageView(mContext);
         LayoutParams photoParam = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
                 .MATCH_PARENT);
-        photoParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+//        photoParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
         mPhoto.setLayoutParams(photoParam);
         mPhoto.setBackgroundColor(0xff000000);
         mPhoto.setVisibility(INVISIBLE);
         //switchCamera
         mSwitchCamera = new ImageView(mContext);
-        LayoutParams imageViewParam = new LayoutParams(iconSize, iconSize);
-        imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-        imageViewParam.setMargins(0, iconMargin, iconMargin, 0);
+        LayoutParams imageViewParam = new LayoutParams(iconSize + 2 * iconMargin, iconSize + 2 * iconMargin);
+        imageViewParam.gravity = Gravity.RIGHT;
+//        imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+//        imageViewParam.setMargins(0, iconMargin, iconMargin, 0);
+        mSwitchCamera.setPadding(iconMargin, iconMargin, iconMargin, iconMargin);
         mSwitchCamera.setLayoutParams(imageViewParam);
         mSwitchCamera.setImageResource(iconSrc);
         mSwitchCamera.setOnClickListener(new OnClickListener() {
@@ -187,17 +190,19 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         //CaptureLayout
         mCaptureLayout = new CaptureLayout(mContext);
         LayoutParams layout_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        layout_param.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        layout_param.addRule(RelativeLayout.CENTER_HORIZONTAL);
-        layout_param.setMargins(0, 0, 0, 40);
+//        layout_param.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+//        layout_param.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        layout_param.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+//        layout_param.setMargins(0, 0, 0, 40);
         mCaptureLayout.setLayoutParams(layout_param);
         mCaptureLayout.setDuration(duration);
 
         //mFoucsView
         mFoucsView = new FoucsView(mContext, fouce_size);
         LayoutParams foucs_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        foucs_param.gravity = Gravity.CENTER;
         mFoucsView.setLayoutParams(foucs_param);
-        mFoucsView.setVisibility(INVISIBLE);
+        mFoucsView.setVisibility(VISIBLE);
 
         //add view to ParentLayout
         this.addView(mVideoView);
@@ -417,6 +422,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
             }
         }.start();
+        mFoucsView.setVisibility(INVISIBLE);
     }
 
     /**
@@ -496,8 +502,8 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
         if (x > layout_width - mFoucsView.getWidth() / 2) {
             x = layout_width - mFoucsView.getWidth() / 2;
         }
-        if (y < mFoucsView.getWidth() / 2 + iconMargin) {
-            y = mFoucsView.getWidth() / 2 + iconMargin;
+        if (y < mFoucsView.getWidth() / 2) {
+            y = mFoucsView.getWidth() / 2;
         }
         if (y > mCaptureLayout.getTop() - mFoucsView.getWidth() / 2) {
             y = mCaptureLayout.getTop() - mFoucsView.getWidth() / 2;
@@ -556,8 +562,7 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
                 mCaptureLayout.isRecord(false);
                 LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
                         LayoutParams.MATCH_PARENT);
-                videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout
-                        .TRUE);
+//                videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
                 mVideoView.setLayoutParams(videoViewParam);
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                 break;
@@ -580,8 +585,8 @@ public class JCameraView extends RelativeLayout implements CameraInterface.CamOp
             int height = (int) ((videoHeight / videoWidth) * getWidth());
             videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
                     height);
-            videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout
-                    .TRUE);
+            videoViewParam.gravity = Gravity.CENTER;
+//            videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
             mVideoView.setLayoutParams(videoViewParam);
         }
     }

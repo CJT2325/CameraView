@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.cjt2325.cameralibrary.JCameraView;
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
+import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.FileUtil;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class CameraActivity extends AppCompatActivity {
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
         jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
-        jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_SORRY_YOU_ARE_GOOD_MAN);
+        jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
         jCameraView.setErrorLisenter(new ErrorLisenter() {
             @Override
             public void onError() {
@@ -74,6 +75,8 @@ public class CameraActivity extends AppCompatActivity {
                 CameraActivity.this.finish();
             }
         });
+
+        Log.i("CJT", DeviceUtil.getDeviceModel());
     }
 
     @Override

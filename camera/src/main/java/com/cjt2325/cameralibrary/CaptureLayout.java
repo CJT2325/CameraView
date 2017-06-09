@@ -11,7 +11,7 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
@@ -28,7 +28,7 @@ import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
  * =====================================
  */
 
-public class CaptureLayout extends RelativeLayout {
+public class CaptureLayout extends FrameLayout {
     //拍照按钮监听
     private CaptureLisenter captureLisenter;
     //拍照或录制后接结果按钮监听
@@ -146,14 +146,14 @@ public class CaptureLayout extends RelativeLayout {
 
     private void initView() {
         setWillNotDraw(false);
-
         //btn_capture
         btn_capture = new CaptureButton(getContext(), button_size);
         LayoutParams btn_capture_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        btn_capture_param.addRule(CENTER_IN_PARENT, TRUE);
-        btn_capture_param.setMargins(0, 152, 0, 0);
+//        btn_capture_param.addRule(CENTER_IN_PARENT, TRUE);
+        btn_capture_param.gravity = Gravity.CENTER;
+//        btn_capture_param.setMargins(0, 152, 0, 0);
         btn_capture.setLayoutParams(btn_capture_param);
-        btn_capture.setDuration(5000);
+        btn_capture.setDuration(10 * 1000);
         btn_capture.setCaptureLisenter(new CaptureLisenter() {
             @Override
             public void takePictures() {
@@ -206,8 +206,9 @@ public class CaptureLayout extends RelativeLayout {
 
         btn_cancel = new TypeButton(getContext(), TypeButton.TYPE_CANCEL, button_size);
         final LayoutParams btn_cancel_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        btn_cancel_param.addRule(CENTER_VERTICAL, TRUE);
-        btn_cancel_param.addRule(ALIGN_PARENT_LEFT, TRUE);
+//        btn_cancel_param.addRule(CENTER_VERTICAL, TRUE);
+//        btn_cancel_param.addRule(ALIGN_PARENT_LEFT, TRUE);
+        btn_cancel_param.gravity = Gravity.CENTER_VERTICAL;
         btn_cancel_param.setMargins((layout_width / 4) - button_size / 2, 0, 0, 0);
         btn_cancel.setLayoutParams(btn_cancel_param);
         btn_cancel.setOnClickListener(new OnClickListener() {
@@ -228,8 +229,9 @@ public class CaptureLayout extends RelativeLayout {
 
         btn_confirm = new TypeButton(getContext(), TypeButton.TYPE_CONFIRM, button_size);
         LayoutParams btn_confirm_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        btn_confirm_param.addRule(CENTER_VERTICAL, TRUE);
-        btn_confirm_param.addRule(ALIGN_PARENT_RIGHT, TRUE);
+//        btn_confirm_param.addRule(CENTER_VERTICAL, TRUE);
+//        btn_confirm_param.addRule(ALIGN_PARENT_RIGHT, TRUE);
+        btn_confirm_param.gravity = Gravity.CENTER_VERTICAL|Gravity.RIGHT;
         btn_confirm_param.setMargins(0, 0, (layout_width / 4) - button_size / 2, 0);
         btn_confirm.setLayoutParams(btn_confirm_param);
         btn_confirm.setOnClickListener(new OnClickListener() {
@@ -249,7 +251,8 @@ public class CaptureLayout extends RelativeLayout {
         //btn_return
         btn_return = new ReturnButton(getContext(), button_size / 2);
         LayoutParams btn_return_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        btn_return_param.addRule(CENTER_VERTICAL, TRUE);
+//        btn_return_param.addRule(CENTER_VERTICAL, TRUE);
+        btn_return_param.gravity = Gravity.CENTER_VERTICAL;
         btn_return_param.setMargins(layout_width / 6, 0, 0, 0);
         btn_return.setLayoutParams(btn_return_param);
         btn_return.setOnClickListener(new OnClickListener() {
@@ -267,6 +270,7 @@ public class CaptureLayout extends RelativeLayout {
 
         txt_tip = new TextView(getContext());
         LayoutParams txt_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        txt_param.gravity = Gravity.CENTER_HORIZONTAL;
         txt_param.setMargins(0, 0, 0, 0);
         txt_tip.setText("轻触拍照，长按摄像");
         txt_tip.setTextColor(0xFFFFFFFF);
