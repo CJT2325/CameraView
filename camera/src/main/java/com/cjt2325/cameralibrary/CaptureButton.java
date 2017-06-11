@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
-import com.cjt2325.cameralibrary.util.CheckAudioPermission;
+import com.cjt2325.cameralibrary.util.CheckPermission;
 
 import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_BOTH;
 import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_ONLY_CAPTURE;
@@ -243,7 +243,7 @@ public class CaptureButton extends View {
             //如果按下后经过500毫秒则会修改当前状态为长按状态
             state = STATE_PRESS_LONG_CLICK;
             //启动按钮动画，外圆变大，内圆缩小
-            if (CheckAudioPermission.getRecordState() != CheckAudioPermission.STATE_SUCCESS) {
+            if (CheckPermission.getRecordState() != CheckPermission.STATE_SUCCESS) {
                 if (captureLisenter != null) {
                     captureLisenter.recordError();
                     state = STATE_NULL;

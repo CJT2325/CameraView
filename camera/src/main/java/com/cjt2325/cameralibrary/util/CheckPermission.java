@@ -1,5 +1,6 @@
 package com.cjt2325.cameralibrary.util;
 
+import android.hardware.Camera;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -13,12 +14,14 @@ import android.util.Log;
  * 描    述：
  * =====================================
  */
-public class CheckAudioPermission {
-    public  static final int STATE_RECORDING=-1;
-    public  static final int STATE_NO_PERMISSION=-2;
-    public  static final int STATE_SUCCESS=1;
+public class CheckPermission {
+    public static final int STATE_RECORDING = -1;
+    public static final int STATE_NO_PERMISSION = -2;
+    public static final int STATE_SUCCESS = 1;
+
     /**
      * 用于检测是否具有录音权限
+     *
      * @return
      */
     public static int getRecordState() {
@@ -43,7 +46,7 @@ public class CheckAudioPermission {
                 audioRecord.stop();
                 audioRecord.release();
                 audioRecord = null;
-                Log.d("CheckAudioPermission","录音机被占用");
+                Log.d("CheckAudioPermission", "录音机被占用");
             }
             return STATE_RECORDING;
         } else {
@@ -52,14 +55,14 @@ public class CheckAudioPermission {
             readSize = audioRecord.read(point, 0, point.length);
 
 
-            if (readSize <=0) {
+            if (readSize <= 0) {
                 if (audioRecord != null) {
                     audioRecord.stop();
                     audioRecord.release();
                     audioRecord = null;
 
                 }
-                Log.d("CheckAudioPermission","录音的结果为空");
+                Log.d("CheckAudioPermission", "录音的结果为空");
                 return STATE_NO_PERMISSION;
 
             } else {
@@ -73,5 +76,22 @@ public class CheckAudioPermission {
                 return STATE_SUCCESS;
             }
         }
+    }
+
+    public synchronized static boolean isCameraUseable(int cameraID) {
+        boolean canUse = true;
+        Camera mCamera = null;
+        try {
+            mCamera = Camera.open(cameraID);
+            // setParameters 是针对魅族MX5。MX5通过Camera.open()拿到的Camera对象不为null
+            Camera.Parameters mParameters = mCamera.getParameters();
+            mCamera.setParameters(mParameters);
+        } catch (Exception e) {
+            e.printStackTrace();
+            canUse = false;
+        } finally {
+            mCamera.release();
+        }
+        return canUse;
     }
 }

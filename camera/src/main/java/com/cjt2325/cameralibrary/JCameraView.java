@@ -81,6 +81,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private Bitmap captureBitmap;
     private String videoUrl;
     private int type = -1;
+    private boolean onlyPause = false;
 
     private int CAMERA_STATE = -1;
     private static final int STATE_IDLE = 0x010;
@@ -416,12 +417,14 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     public void onResume() {
         CameraInterface.getInstance().registerSensorManager(mContext);
         CameraInterface.getInstance().setSwitchView(mSwitchCamera);
-        new Thread() {
-            @Override
-            public void run() {
-                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-            }
-        }.start();
+        if (onlyPause) {
+            new Thread() {
+                @Override
+                public void run() {
+                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+                }
+            }.start();
+        }
         mFoucsView.setVisibility(INVISIBLE);
     }
 
@@ -429,6 +432,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
      * stop preview
      */
     public void onPause() {
+        onlyPause = true;
         CameraInterface.getInstance().unregisterSensorManager(mContext);
         CameraInterface.getInstance().doStopCamera();
     }
@@ -636,6 +640,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        onlyPause = false;
         Log.i("CJT", "surfaceDestroyed");
         CameraInterface.getInstance().doDestroyCamera();
     }

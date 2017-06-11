@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
+import com.cjt2325.cameralibrary.util.CheckPermission;
 import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
 
@@ -260,7 +261,10 @@ public class CameraInterface {
      * open Camera
      */
     void doOpenCamera(CamOpenOverCallback callback) {
-
+        if (!CheckPermission.isCameraUseable(SELECTED_CAMERA) && this.errorLisenter != null) {
+            this.errorLisenter.onError();
+            return;
+        }
         if (mCamera == null) {
             openCamera(SELECTED_CAMERA);
         }
@@ -339,7 +343,8 @@ public class CameraInterface {
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                mCamera.stopPreview();
+                e.printStackTrace();
+//                mCamera.stopPreview();
             }
         }
         Log.i(TAG, "=== Start Preview ===");
@@ -389,6 +394,9 @@ public class CameraInterface {
      */
 
     void takePicture(final TakePictureCallback callback) {
+        if (mCamera == null) {
+            return;
+        }
         final int nowAngle = (angle + 90) % 360;
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
@@ -464,9 +472,9 @@ public class CameraInterface {
             mediaRecorder.setOrientationHint(nowAngle);
 //            mediaRecorder.setOrientationHint(90);
         }
-        if (DeviceUtil.isHuaWeiRongyao()){
+        if (DeviceUtil.isHuaWeiRongyao()) {
             mediaRecorder.setVideoEncodingBitRate(4 * 100000);
-        }else{
+        } else {
             mediaRecorder.setVideoEncodingBitRate(mediaQuality);
         }
         mediaRecorder.setPreviewDisplay(surface);
@@ -637,7 +645,7 @@ public class CameraInterface {
     }
 
     interface TakePictureCallback {
-        void captureResult(Bitmap bitmap,boolean isVertical);
+        void captureResult(Bitmap bitmap, boolean isVertical);
     }
 
     interface FocusCallback {

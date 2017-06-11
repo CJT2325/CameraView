@@ -39,6 +39,7 @@ public class CameraActivity extends AppCompatActivity {
             public void onError() {
                 //错误监听
                 Log.i("CJT", "camera error");
+                finish();
             }
 
             @Override
@@ -101,12 +102,14 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
+        Log.i("CJT","onResume");
         super.onResume();
         jCameraView.onResume();
     }
 
     @Override
     protected void onPause() {
+        Log.i("CJT","onPause");
         super.onPause();
         jCameraView.onPause();
     }
