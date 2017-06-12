@@ -17,7 +17,7 @@ import java.io.IOException;
  * =====================================
  */
 public class FileUtil {
-    private static final String TAG = "FileUtil";
+    private static final String TAG = "CJT";
     private static final File parentPath = Environment.getExternalStorageDirectory();
     private static String storagePath = "";
     private static String DST_FOLDER_NAME = "JCamera";
@@ -33,7 +33,8 @@ public class FileUtil {
         return storagePath;
     }
 
-    public static String saveBitmap(Bitmap b) {
+    public static String saveBitmap(String dir, Bitmap b) {
+        DST_FOLDER_NAME = dir;
         String path = initPath();
         long dataTake = System.currentTimeMillis();
         String jpegName = path + File.separator + "picture_" + dataTake + ".jpg";

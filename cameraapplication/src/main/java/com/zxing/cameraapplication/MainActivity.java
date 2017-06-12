@@ -74,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
             Log.i("CJT", "video");
             String path = data.getStringExtra("path");
         }
+        if (resultCode == 103) {
+            Toast.makeText(this, "请检查相机权限~", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @TargetApi(23)

@@ -39,6 +39,8 @@ public class CameraActivity extends AppCompatActivity {
             public void onError() {
                 //错误监听
                 Log.i("CJT", "camera error");
+                Intent intent = new Intent();
+                setResult(103, intent);
                 finish();
             }
 
@@ -53,7 +55,7 @@ public class CameraActivity extends AppCompatActivity {
             public void captureSuccess(Bitmap bitmap) {
                 //获取图片bitmap
 //                Log.i("JCameraView", "bitmap = " + bitmap.getWidth());
-                String path = FileUtil.saveBitmap(bitmap);
+                String path = FileUtil.saveBitmap("JCamera", bitmap);
                 Intent intent = new Intent();
                 intent.putExtra("path", path);
                 setResult(101, intent);
@@ -102,14 +104,14 @@ public class CameraActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        Log.i("CJT","onResume");
+        Log.i("CJT", "onResume");
         super.onResume();
         jCameraView.onResume();
     }
 
     @Override
     protected void onPause() {
-        Log.i("CJT","onPause");
+        Log.i("CJT", "onPause");
         super.onPause();
         jCameraView.onPause();
     }
