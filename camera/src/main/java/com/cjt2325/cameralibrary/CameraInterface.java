@@ -281,7 +281,12 @@ public class CameraInterface {
         }
 
         if (Build.VERSION.SDK_INT > 17 && this.mCamera != null) {
-            this.mCamera.enableShutterSound(false);
+            try {
+                this.mCamera.enableShutterSound(false);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("CJT", "enable shutter sound faild");
+            }
         }
     }
 
