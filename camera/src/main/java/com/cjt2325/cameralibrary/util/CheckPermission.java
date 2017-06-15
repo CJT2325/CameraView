@@ -25,8 +25,10 @@ public class CheckPermission {
      * @return
      */
     public static int getRecordState() {
-        int minBuffer = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, 44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, (minBuffer * 100));
+        int minBuffer = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat
+                .ENCODING_PCM_16BIT);
+        AudioRecord audioRecord = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, 44100, AudioFormat
+                .CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, (minBuffer * 100));
         short[] point = new short[minBuffer];
         int readSize = 0;
         try {
@@ -90,7 +92,11 @@ public class CheckPermission {
             e.printStackTrace();
             canUse = false;
         } finally {
-            mCamera.release();
+            if (mCamera != null) {
+                mCamera.release();
+            } else {
+                canUse = false;
+            }
         }
         return canUse;
     }
