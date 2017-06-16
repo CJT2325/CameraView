@@ -95,6 +95,26 @@ public class CameraInterface {
     //视频质量
     private int mediaQuality = JCameraView.MEDIA_QUALITY_MIDDLE;
 
+    private   int mTxtTopMargin=0;//0 default
+
+    private   int mCaptureAppend=0;//0 default
+
+    public void setTextTopMargin(int topMargin){
+        mTxtTopMargin=topMargin;
+    }
+    public void setCaptureAppend(int append){
+        mCaptureAppend=append;
+    }
+
+
+    public int getTxtTopMargin() {
+        return mTxtTopMargin;
+    }
+
+    public int getCaptureAppend() {
+        return mCaptureAppend;
+    }
+
     private SensorManager sm = null;
     private SensorEventListener sensorEventListener = new SensorEventListener() {
         public void onSensorChanged(SensorEvent event) {

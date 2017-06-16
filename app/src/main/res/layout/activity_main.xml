@@ -11,6 +11,7 @@
         android:id="@+id/jcameraview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:isExpandCapture="true"
         app:duration_max="10000"
         app:iconMargin="20dp"
         app:iconSize="30dp"

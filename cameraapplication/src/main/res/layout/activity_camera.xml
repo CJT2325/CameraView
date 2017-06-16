@@ -12,5 +12,6 @@
         app:duration_max="10000"
         app:iconMargin="20dp"
         app:iconSize="30dp"
+        app:isExpandCapture="true"
         app:iconSrc="@drawable/ic_camera_enhance_black_24dp"/>
 </LinearLayout>

@@ -80,10 +80,14 @@ public class CaptureLayout extends FrameLayout {
             layout_width = outMetrics.widthPixels / 2;
         }
         button_size = (int) (layout_width / 4.5f);
-        layout_height = button_size + (button_size / 5) * 2 + 100;
+        layout_height = button_size + (button_size / 5) * 2 + CameraInterface.getInstance().getCaptureAppend();
 
         initView();
         initEvent();
+    }
+
+    public int getCaptureHeight(){
+        return layout_height;
     }
 
     @Override
@@ -271,7 +275,7 @@ public class CaptureLayout extends FrameLayout {
         txt_tip = new TextView(getContext());
         LayoutParams txt_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         txt_param.gravity = Gravity.CENTER_HORIZONTAL;
-        txt_param.setMargins(0, 0, 0, 0);
+        txt_param.setMargins(0, CameraInterface.getInstance().getTxtTopMargin(), 0, 0);
         txt_tip.setText("轻触拍照，长按摄像");
         txt_tip.setTextColor(0xFFFFFFFF);
         txt_tip.setGravity(Gravity.CENTER);

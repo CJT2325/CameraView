@@ -100,6 +100,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private int iconMargin = 0;
     private int iconSrc = 0;
     private int duration = 0;
+    private boolean isExpandCapture;
 
     /**
      * constructor
@@ -129,6 +130,16 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 TypedValue.COMPLEX_UNIT_SP, 15, getResources().getDisplayMetrics()));
         iconSrc = a.getResourceId(R.styleable.JCameraView_iconSrc, R.drawable.ic_sync_black_24dp);
         duration = a.getInteger(R.styleable.JCameraView_duration_max, 10 * 1000);
+        isExpandCapture =a.getBoolean(R.styleable.JCameraView_isExpandCapture, false);
+
+        int captureAppend = a.getDimensionPixelSize(R.styleable.JCameraView_captureAppend, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, 80, getResources().getDisplayMetrics()));
+        int tipTopMargin = a.getDimensionPixelSize(R.styleable.JCameraView_tipTopMargin, (int) TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_SP, 8, getResources().getDisplayMetrics()));
+
+        CameraInterface.getInstance().setCaptureAppend(captureAppend);
+        CameraInterface.getInstance().setTextTopMargin(tipTopMargin);
+
         a.recycle();
         initData();
         initView();
@@ -147,20 +158,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private void initView() {
         setWillNotDraw(false);
         this.setBackgroundColor(0xff000000);
-        //VideoView
-        mVideoView = new VideoView(mContext);
-        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-        mVideoView.setLayoutParams(videoViewParam);
 
-        //mPhoto
-        mPhoto = new ImageView(mContext);
-        LayoutParams photoParam = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
-                .MATCH_PARENT);
-//        photoParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-        mPhoto.setLayoutParams(photoParam);
-        mPhoto.setBackgroundColor(0xff000000);
-        mPhoto.setVisibility(INVISIBLE);
         //switchCamera
         mSwitchCamera = new ImageView(mContext);
         LayoutParams imageViewParam = new LayoutParams(iconSize + 2 * iconMargin, iconSize + 2 * iconMargin);
@@ -197,6 +195,25 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 //        layout_param.setMargins(0, 0, 0, 40);
         mCaptureLayout.setLayoutParams(layout_param);
         mCaptureLayout.setDuration(duration);
+
+        //限制录制的高度
+        //VideoView
+        mVideoView = new VideoView(mContext);
+        LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+//        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+        if(isExpandCapture)videoViewParam.setMargins(0, 0, 0, mCaptureLayout.getCaptureHeight());
+        mVideoView.setLayoutParams(videoViewParam);
+
+        //mPhoto
+        mPhoto = new ImageView(mContext);
+        LayoutParams photoParam = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
+                .MATCH_PARENT);
+        if(isExpandCapture)photoParam.setMargins(0, 0, 0, mCaptureLayout.getCaptureHeight());
+
+//        photoParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
+        mPhoto.setLayoutParams(photoParam);
+        mPhoto.setBackgroundColor(0xff000000);
+        mPhoto.setVisibility(INVISIBLE);
 
         //mFoucsView
         mFoucsView = new FoucsView(mContext, fouce_size);
@@ -396,6 +413,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         float widthSize = MeasureSpec.getSize(widthMeasureSpec);
         float heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        if(isExpandCapture)heightSize-=mCaptureLayout.getCaptureHeight();
         screenProp = heightSize / widthSize;
     }
 
@@ -564,10 +582,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                     }
                 }
                 mCaptureLayout.isRecord(false);
-                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
-                        LayoutParams.MATCH_PARENT);
+//                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
+//                        LayoutParams.MATCH_PARENT);
 //                videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-                mVideoView.setLayoutParams(videoViewParam);
+//                mVideoView.setLayoutParams(videoViewParam);
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                 break;
         }
