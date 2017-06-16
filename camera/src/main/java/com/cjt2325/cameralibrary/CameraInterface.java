@@ -298,6 +298,14 @@ public class CameraInterface {
         }
         doStopCamera();
         mCamera = Camera.open(SELECTED_CAMERA);
+        if (Build.VERSION.SDK_INT > 17 && this.mCamera != null) {
+            try {
+                this.mCamera.enableShutterSound(false);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("CJT", "enable shutter_sound sound faild");
+            }
+        }
         doStartPreview(mHolder, screenProp);
         callback.cameraSwitchSuccess();
     }
