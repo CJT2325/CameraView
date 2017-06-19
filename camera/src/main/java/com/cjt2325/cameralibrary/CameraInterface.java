@@ -8,6 +8,7 @@ import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -28,6 +29,7 @@ import com.cjt2325.cameralibrary.util.CheckPermission;
 import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +44,7 @@ import java.util.List;
  * =====================================
  */
 @SuppressWarnings("deprecation")
-public class CameraInterface {
+public class CameraInterface implements Camera.PreviewCallback {
 
     private static final String TAG = "CJT";
 
@@ -74,6 +76,7 @@ public class CameraInterface {
     private String videoFileName;
     private String saveVideoPath;
     private String videoFileAbsPath;
+    private Bitmap videoFirstFrame = null;
 
     private ErrorLisenter errorLisenter;
 
@@ -238,6 +241,13 @@ public class CameraInterface {
         this.mediaQuality = quality;
     }
 
+    private byte[] firstFrame_data;
+
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+        firstFrame_data = data;
+    }
+
     interface CamOpenOverCallback {
         void cameraHasOpened();
 
@@ -250,6 +260,7 @@ public class CameraInterface {
         saveVideoPath = "";
     }
 
+    //获取CameraInterface单例
     public static synchronized CameraInterface getInstance() {
         if (mCameraInterface == null) {
             mCameraInterface = new CameraInterface();
@@ -343,6 +354,7 @@ public class CameraInterface {
                 //SurfaceView
                 mCamera.setPreviewDisplay(holder);
                 mCamera.setDisplayOrientation(90);
+                mCamera.setPreviewCallback(this);
                 mCamera.startPreview();
                 isPreviewing = true;
             } catch (IOException e) {
@@ -393,7 +405,6 @@ public class CameraInterface {
         }
     }
 
-
     /**
      * 拍照
      */
@@ -426,11 +437,31 @@ public class CameraInterface {
         });
     }
 
+    //启动录像
     void startRecord(Surface surface, ErrorCallback callback) {
+        mCamera.setPreviewCallback(null);
+        final int nowAngle = (angle + 90) % 360;
+        //获取第一帧图片
+        Camera.Parameters parameters = mCamera.getParameters();
+        int width = parameters.getPreviewSize().width;
+        int height = parameters.getPreviewSize().height;
+        YuvImage yuv = new YuvImage(firstFrame_data, parameters.getPreviewFormat(), width, height, null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+        byte[] bytes = out.toByteArray();
+        videoFirstFrame = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Matrix matrix = new Matrix();
+        if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+            matrix.setRotate(nowAngle);
+        } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+            matrix.setRotate(270);
+        }
+        videoFirstFrame = Bitmap.createBitmap(videoFirstFrame, 0, 0, videoFirstFrame.getWidth(), videoFirstFrame
+                .getHeight(), matrix, true);
+
         if (isRecorder) {
             return;
         }
-        int nowAngle = (angle + 90) % 360;
         if (mCamera == null) {
             openCamera(SELECTED_CAMERA);
         }
@@ -485,7 +516,6 @@ public class CameraInterface {
         mediaRecorder.setPreviewDisplay(surface);
 
         videoFileName = "video_" + System.currentTimeMillis() + ".mp4";
-//        videoFileName = "video_" + System.currentTimeMillis() + ".3gp";
         if (saveVideoPath.equals("")) {
             saveVideoPath = Environment.getExternalStorageDirectory().getPath();
         }
@@ -513,6 +543,7 @@ public class CameraInterface {
         }
     }
 
+    //停止录像
     void stopRecord(boolean isShort, StopRecordCallback callback) {
         if (!isRecorder) {
             return;
@@ -548,13 +579,13 @@ public class CameraInterface {
                     result = file.delete();
                 }
                 if (result) {
-                    callback.recordResult(null);
+                    callback.recordResult(null, null);
                 }
                 return;
             }
             doStopCamera();
             String fileName = saveVideoPath + File.separator + videoFileName;
-            callback.recordResult(fileName);
+            callback.recordResult(fileName, videoFirstFrame);
         }
     }
 
@@ -643,7 +674,7 @@ public class CameraInterface {
 
 
     interface StopRecordCallback {
-        void recordResult(String url);
+        void recordResult(String url, Bitmap firstFrame);
     }
 
     interface ErrorCallback {

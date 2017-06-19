@@ -79,6 +79,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private float screenProp;
 
     private Bitmap captureBitmap;
+    private Bitmap firstFrame;
     private String videoUrl;
     private int type = -1;
     private boolean onlyPause = false;
@@ -252,13 +253,15 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 }
                 stopping = true;
                 mCaptureLayout.setTextWithAnimation("录制时间过短");
+                mSwitchCamera.setRotation(0);
+                mSwitchCamera.setVisibility(VISIBLE);
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         CameraInterface.getInstance().stopRecord(true, new
                                 CameraInterface.StopRecordCallback() {
                                     @Override
-                                    public void recordResult(String url) {
+                                    public void recordResult(String url, Bitmap firstFrame) {
                                         Log.i(TAG, "Record Stopping ...");
                                         mCaptureLayout.isRecord(false);
                                         CAMERA_STATE = STATE_IDLE;
@@ -275,6 +278,9 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 if (CAMERA_STATE != STATE_IDLE && stopping) {
                     return;
                 }
+
+                mSwitchCamera.setVisibility(GONE);
+
                 mCaptureLayout.isRecord(true);
                 isBorrow = true;
                 CAMERA_STATE = STATE_RUNNING;
@@ -296,10 +302,11 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
             public void recordEnd(long time) {
                 CameraInterface.getInstance().stopRecord(false, new CameraInterface.StopRecordCallback() {
                     @Override
-                    public void recordResult(final String url) {
+                    public void recordResult(final String url, Bitmap firstFrame) {
                         CAMERA_STATE = STATE_WAIT;
                         videoUrl = url;
                         type = TYPE_VIDEO;
+                        JCameraView.this.firstFrame = firstFrame;
                         new Thread(new Runnable() {
                             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
                             @Override
@@ -555,7 +562,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
             case TYPE_VIDEO:
                 if (confirm) {
                     //回调录像成功后的URL
-                    jCameraLisenter.recordSuccess(videoUrl);
+                    jCameraLisenter.recordSuccess(videoUrl, firstFrame);
                 } else {
                     //删除视频
                     File file = new File(videoUrl);
@@ -564,11 +571,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                     }
                 }
                 mCaptureLayout.isRecord(false);
-                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT,
-                        LayoutParams.MATCH_PARENT);
-//                videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 mVideoView.setLayoutParams(videoViewParam);
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+                mSwitchCamera.setRotation(0);
                 break;
         }
         isBorrow = false;

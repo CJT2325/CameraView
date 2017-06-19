@@ -63,9 +63,9 @@ public class CameraActivity extends AppCompatActivity {
             }
 
             @Override
-            public void recordSuccess(String url) {
+            public void recordSuccess(String url, Bitmap firstFrame) {
                 //获取视频路径
-                Log.i("CJT", "url = " + url);
+                Log.i("CJT", "url = " + url + ", Bitmap = " + firstFrame.getWidth());
                 Intent intent = new Intent();
                 intent.putExtra("path", url);
                 setResult(102, intent);

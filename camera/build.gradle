@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-version = "1.1.1"
+version = "1.1.2"
 
 android {
     compileSdkVersion 25
@@ -28,7 +28,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:25.3.0'
+    provided 'com.android.support:appcompat-v7:25.3.0'
 }
 def siteUrl = 'https://github.com/CJT2325/CameraView'   // 项目的主页
 def gitUrl = 'https://github.com/CJT2325/CameraView.git'   // Git仓库的url

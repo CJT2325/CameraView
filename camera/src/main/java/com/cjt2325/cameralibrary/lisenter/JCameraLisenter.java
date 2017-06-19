@@ -14,7 +14,7 @@ public interface JCameraLisenter {
 
     void captureSuccess(Bitmap bitmap);
 
-    void recordSuccess(String url);
+    void recordSuccess(String url, Bitmap firstFrame);
 
     void quit();
 
