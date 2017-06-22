@@ -43,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void recordSuccess(String url) {
-                //获取视频路径
+            public void recordSuccess(String url, Bitmap firstFrame) {
                 Log.i("CJT", "url = " + url);
             }
 

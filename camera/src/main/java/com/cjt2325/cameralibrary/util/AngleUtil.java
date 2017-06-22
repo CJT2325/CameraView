@@ -14,12 +14,12 @@ public class AngleUtil {
             /**
              * 横屏倾斜角度比较大
              */
-            if (x > 7) {
+            if (x > 4) {
                 /**
                  * 左边倾斜
                  */
                 return 270;
-            } else if (x < -7) {
+            } else if (x < -4) {
                 /**
                  * 右边倾斜
                  */

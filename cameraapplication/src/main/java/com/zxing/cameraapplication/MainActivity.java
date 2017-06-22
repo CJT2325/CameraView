@@ -108,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
                     startActivityForResult(new Intent(MainActivity.this, CameraActivity.class), 100);
                 } else {
                     Toast.makeText(this, "请到设置-权限管理中开启", Toast.LENGTH_SHORT).show();
-                    finish();
                 }
             }
         }

@@ -255,6 +255,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 mCaptureLayout.setTextWithAnimation("录制时间过短");
                 mSwitchCamera.setRotation(0);
                 mSwitchCamera.setVisibility(VISIBLE);
+                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
                 postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -575,6 +576,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 mVideoView.setLayoutParams(videoViewParam);
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                 mSwitchCamera.setRotation(0);
+                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
                 break;
         }
         isBorrow = false;

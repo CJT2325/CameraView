@@ -1,7 +1,10 @@
 package com.cjt2325.cameralibrary.util;
 
+import android.content.Context;
 import android.hardware.Camera;
 import android.util.Log;
+import android.view.Surface;
+import android.view.WindowManager;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -121,5 +124,36 @@ public class CameraParamUtil {
             }
         }
 
+    }
+
+    public int getCameraDisplayOrientation(Context context, int cameraId) {
+        android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
+        android.hardware.Camera.getCameraInfo(cameraId, info);
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        int rotation = wm.getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
+        }
+        int result;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (info.orientation + degrees) % 360;
+            result = (360 - result) % 360;   // compensate the mirror
+        } else {
+            // back-facing
+            result = (info.orientation - degrees + 360) % 360;
+        }
+        return result;
     }
 }

@@ -84,6 +84,11 @@ public class CameraInterface implements Camera.PreviewCallback {
 
     public void setSwitchView(ImageView mSwitchView) {
         this.mSwitchView = mSwitchView;
+        if (mSwitchView != null) {
+            cameraAngle = CameraParamUtil.getInstance().getCameraDisplayOrientation(mSwitchView.getContext(),
+                    SELECTED_CAMERA);
+//            cameraAngle = 270;
+        }
     }
 
 
@@ -92,6 +97,7 @@ public class CameraInterface implements Camera.PreviewCallback {
 
 
     private int angle = 0;
+    private int cameraAngle = 90;//摄像头角度   默认为90度
     private int rotation = 0;
     private boolean error = false;
 
@@ -361,8 +367,11 @@ public class CameraInterface implements Camera.PreviewCallback {
                 mParams = mCamera.getParameters();
                 //SurfaceView
                 mCamera.setPreviewDisplay(holder);
-                mCamera.setDisplayOrientation(90);
+                //浏览角度
+                mCamera.setDisplayOrientation(cameraAngle);
+//              //每一帧回调
                 mCamera.setPreviewCallback(this);
+//              //启动浏览
                 mCamera.startPreview();
                 isPreviewing = true;
             } catch (IOException e) {
@@ -381,6 +390,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     public void doStopCamera() {
         if (null != mCamera) {
             try {
+                mCamera.setPreviewCallback(null);
                 mCamera.stopPreview();
                 //这句要在stopPreview后执行，不然会卡顿或者花屏
                 mCamera.setPreviewDisplay(null);
@@ -390,6 +400,8 @@ public class CameraInterface implements Camera.PreviewCallback {
                 Log.i(TAG, "=== Stop Camera ===");
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -397,6 +409,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     public void doDestroyCamera() {
         if (null != mCamera) {
             try {
+                mCamera.setPreviewCallback(null);
                 mSwitchView = null;
                 mCamera.stopPreview();
                 //这句要在stopPreview后执行，不然会卡顿或者花屏
@@ -409,6 +422,8 @@ public class CameraInterface implements Camera.PreviewCallback {
                 Log.i(TAG, "=== Destroy Camera ===");
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }
@@ -416,12 +431,22 @@ public class CameraInterface implements Camera.PreviewCallback {
     /**
      * 拍照
      */
+    private int nowAngle;
 
     void takePicture(final TakePictureCallback callback) {
         if (mCamera == null) {
             return;
         }
-        final int nowAngle = (angle + 90) % 360;
+        switch (cameraAngle) {
+            case 90:
+                nowAngle = Math.abs(angle + cameraAngle) % 360;
+                break;
+            case 270:
+                nowAngle = Math.abs(cameraAngle - angle);
+                break;
+        }
+//
+        Log.i("CJT", angle + " = " + cameraAngle + " = " + nowAngle);
         mCamera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
@@ -430,9 +455,10 @@ public class CameraInterface implements Camera.PreviewCallback {
                 if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
                     matrix.setRotate(nowAngle);
                 } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                    matrix.setRotate(270);
+                    matrix.setRotate(360 - nowAngle);
                     matrix.postScale(-1, 1);
                 }
+
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                 if (callback != null) {
                     if (nowAngle == 90 || nowAngle == 270) {
@@ -510,12 +536,39 @@ public class CameraInterface implements Camera.PreviewCallback {
         } else {
             mediaRecorder.setVideoSize(videoSize.width, videoSize.height);
         }
+//        if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+//            mediaRecorder.setOrientationHint(270);
+//        } else {
+//            mediaRecorder.setOrientationHint(nowAngle);
+////            mediaRecorder.setOrientationHint(90);
+//        }
+
+        Log.i("CJT", "-=----------------------" + nowAngle);
         if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-            mediaRecorder.setOrientationHint(270);
+            //手机预览倒立的处理
+            if (cameraAngle == 270) {
+                //横屏
+                if (nowAngle == 0) {
+                    mediaRecorder.setOrientationHint(180);
+                } else if (nowAngle == 270) {
+                    mediaRecorder.setOrientationHint(270);
+                } else {
+                    mediaRecorder.setOrientationHint(90);
+                }
+            } else {
+                if (nowAngle == 90) {
+                    mediaRecorder.setOrientationHint(270);
+                } else if (nowAngle == 270) {
+                    mediaRecorder.setOrientationHint(90);
+                } else {
+                    mediaRecorder.setOrientationHint(nowAngle);
+                }
+            }
         } else {
             mediaRecorder.setOrientationHint(nowAngle);
-//            mediaRecorder.setOrientationHint(90);
         }
+
+
         if (DeviceUtil.isHuaWeiRongyao()) {
             mediaRecorder.setVideoEncodingBitRate(4 * 100000);
         } else {
