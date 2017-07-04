@@ -55,7 +55,6 @@ public class CameraParamUtil {
 
     public Camera.Size getPictureSize(List<Camera.Size> list, int th, float rate) {
         Collections.sort(list, sizeComparator);
-
         int i = 0;
         for (Camera.Size s : list) {
             if ((s.width > th) && equalRate(s, rate)) {

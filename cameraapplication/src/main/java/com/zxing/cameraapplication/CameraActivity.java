@@ -33,6 +33,7 @@ public class CameraActivity extends AppCompatActivity {
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
         jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
+        jCameraView.setTip("JCameraView Tip");
         jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
         jCameraView.setErrorLisenter(new ErrorLisenter() {
             @Override

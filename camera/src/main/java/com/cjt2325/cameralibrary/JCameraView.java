@@ -151,23 +151,20 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         //VideoView
         mVideoView = new VideoView(mContext);
         LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        videoViewParam.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
         mVideoView.setLayoutParams(videoViewParam);
 
         //mPhoto
         mPhoto = new ImageView(mContext);
         LayoutParams photoParam = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams
                 .MATCH_PARENT);
-//        photoParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
         mPhoto.setLayoutParams(photoParam);
         mPhoto.setBackgroundColor(0xff000000);
         mPhoto.setVisibility(INVISIBLE);
+
         //switchCamera
         mSwitchCamera = new ImageView(mContext);
         LayoutParams imageViewParam = new LayoutParams(iconSize + 2 * iconMargin, iconSize + 2 * iconMargin);
         imageViewParam.gravity = Gravity.RIGHT;
-//        imageViewParam.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, RelativeLayout.TRUE);
-//        imageViewParam.setMargins(0, iconMargin, iconMargin, 0);
         mSwitchCamera.setPadding(iconMargin, iconMargin, iconMargin, iconMargin);
         mSwitchCamera.setLayoutParams(imageViewParam);
         mSwitchCamera.setImageResource(iconSrc);
@@ -192,10 +189,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         //CaptureLayout
         mCaptureLayout = new CaptureLayout(mContext);
         LayoutParams layout_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-//        layout_param.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-//        layout_param.addRule(RelativeLayout.CENTER_HORIZONTAL);
         layout_param.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-//        layout_param.setMargins(0, 0, 0, 40);
         mCaptureLayout.setLayoutParams(layout_param);
         mCaptureLayout.setDuration(duration);
 
@@ -233,7 +227,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                         if (isVertical) {
                             mPhoto.setScaleType(ImageView.ScaleType.FIT_XY);
                         } else {
-                            mPhoto.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                            mPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
                         }
                         mPhoto.setImageBitmap(bitmap);
                         mPhoto.setVisibility(VISIBLE);
@@ -281,7 +275,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 }
 
                 mSwitchCamera.setVisibility(GONE);
-
                 mCaptureLayout.isRecord(true);
                 isBorrow = true;
                 CAMERA_STATE = STATE_RUNNING;
@@ -426,14 +419,54 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         CameraInterface.getInstance().registerSensorManager(mContext);
         CameraInterface.getInstance().setSwitchView(mSwitchCamera);
         if (onlyPause) {
-            new Thread() {
-                @Override
-                public void run() {
-                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-                }
-            }.start();
+//            if (isBorrow && type == TYPE_VIDEO) {
+//                new Thread(new Runnable() {
+//                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            if (mMediaPlayer == null) {
+//                                mMediaPlayer = new MediaPlayer();
+//                            } else {
+//                                mMediaPlayer.reset();
+//                            }
+//                            Log.i("CJT", "URL = " + videoUrl);
+//                            mMediaPlayer.setDataSource(videoUrl);
+//                            mMediaPlayer.setSurface(mVideoView.getHolder().getSurface());
+//                            mMediaPlayer.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+//                            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//                            mMediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer
+//                                    .OnVideoSizeChangedListener() {
+//                                @Override
+//                                public void
+//                                onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+//                                    updateVideoViewSize(mMediaPlayer.getVideoWidth(), mMediaPlayer
+//                                            .getVideoHeight());
+//                                }
+//                            });
+//                            mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//                                @Override
+//                                public void onPrepared(MediaPlayer mp) {
+//                                    mMediaPlayer.start();
+//                                }
+//                            });
+//                            mMediaPlayer.setLooping(true);
+//                            mMediaPlayer.prepare();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }).start();
+//            } else {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+                    }
+                }.start();
+                mFoucsView.setVisibility(INVISIBLE);
+//            }
         }
-        mFoucsView.setVisibility(INVISIBLE);
     }
 
     /**
@@ -629,6 +662,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     //设置录制质量
     public void setMediaQuality(int quality) {
         CameraInterface.getInstance().setMediaQuality(quality);
+    }
+
+    public void setTip(String tip) {
+        mCaptureLayout.setTip(tip);
     }
 
     @Override

@@ -268,15 +268,6 @@ public class CaptureButton extends View {
             record_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
-//                    if (!hasWindowFocus) {
-//                        //移除录制视频的Runnable
-//                        removeCallbacks(recordRunnable);
-//                        resetRecordAnim();
-//                        //制空当前状态
-//                        state = STATE_NULL;
-//                        hasWindowFocus = true;
-//                        return;
-//                    }
                     if (state == STATE_PRESS_LONG_CLICK) {
                         //更新录制进度
                         progress = (float) animation.getAnimatedValue();

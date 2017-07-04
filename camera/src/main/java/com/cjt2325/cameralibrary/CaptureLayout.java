@@ -231,7 +231,7 @@ public class CaptureLayout extends FrameLayout {
         LayoutParams btn_confirm_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 //        btn_confirm_param.addRule(CENTER_VERTICAL, TRUE);
 //        btn_confirm_param.addRule(ALIGN_PARENT_RIGHT, TRUE);
-        btn_confirm_param.gravity = Gravity.CENTER_VERTICAL|Gravity.RIGHT;
+        btn_confirm_param.gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
         btn_confirm_param.setMargins(0, 0, (layout_width / 4) - button_size / 2, 0);
         btn_confirm.setLayoutParams(btn_confirm_param);
         btn_confirm.setOnClickListener(new OnClickListener() {
@@ -302,5 +302,9 @@ public class CaptureLayout extends FrameLayout {
 
     public void setButtonFeatures(int state) {
         btn_capture.setButtonFeatures(state);
+    }
+
+    public void setTip(String tip) {
+        txt_tip.setText(tip);
     }
 }
