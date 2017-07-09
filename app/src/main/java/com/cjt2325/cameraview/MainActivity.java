@@ -44,8 +44,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void recordSuccess(String url, Bitmap firstFrame) {
-                Log.i("CJT", "url = " + url);
+
             }
+
 
             @Override
             public void quit() {

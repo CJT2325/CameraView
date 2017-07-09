@@ -23,6 +23,7 @@ import android.view.SurfaceHolder;
 import android.widget.ImageView;
 
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
+import com.cjt2325.cameralibrary.lisenter.FirstFoucsLisenter;
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 import com.cjt2325.cameralibrary.util.CheckPermission;
@@ -202,7 +203,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         if (mParams == null) {
             mParams = mCamera.getParameters();
         }
-        if (!mParams.isZoomSupported() || !mParams.isSmoothZoomSupported()) {
+        if (!mParams.isZoomSupported() && !mParams.isSmoothZoomSupported()) {
             return;
         }
         switch (type) {
@@ -213,7 +214,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                 }
                 if (zoom >= 0) {
                     //每移动50个像素缩放一个级别
-                    int scaleRate = (int) (zoom / 50);
+                    int scaleRate = (int) (zoom / 40);
                     if (scaleRate <= mParams.getMaxZoom() && scaleRate >= nowScaleRate && recordScleRate != scaleRate) {
                         mParams.setZoom(scaleRate);
                         mCamera.setParameters(mParams);
@@ -323,14 +324,14 @@ public class CameraInterface implements Camera.PreviewCallback {
                 Log.e("CJT", "enable shutter_sound sound faild");
             }
         }
-        doStartPreview(mHolder, screenProp);
+        doStartPreview(mHolder, screenProp, null);
         callback.cameraSwitchSuccess();
     }
 
     /**
      * doStartPreview
      */
-    void doStartPreview(SurfaceHolder holder, float screenProp) {
+    void doStartPreview(SurfaceHolder holder, float screenProp, FirstFoucsLisenter lisenter) {
         if (this.screenProp < 0) {
             this.screenProp = screenProp;
         }
@@ -380,6 +381,10 @@ public class CameraInterface implements Camera.PreviewCallback {
                 e.printStackTrace();
 //                mCamera.stopPreview();
             }
+        }
+        //启动浏览后自动对焦一次
+        if (lisenter != null) {
+            lisenter.onFouce();
         }
         Log.i(TAG, "=== Start Preview ===");
     }

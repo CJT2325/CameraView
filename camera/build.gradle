@@ -28,7 +28,7 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    provided 'com.android.support:appcompat-v7:25.3.0'
+    compile('com.android.support:appcompat-v7:25.3.0') { exclude module: 'support-v4' }
 }
 def siteUrl = 'https://github.com/CJT2325/CameraView'   // 项目的主页
 def gitUrl = 'https://github.com/CJT2325/CameraView.git'   // Git仓库的url

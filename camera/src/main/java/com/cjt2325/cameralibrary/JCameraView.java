@@ -25,6 +25,7 @@ import android.widget.VideoView;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
+import com.cjt2325.cameralibrary.lisenter.FirstFoucsLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
@@ -44,9 +45,12 @@ import java.io.IOException;
 public class JCameraView extends FrameLayout implements CameraInterface.CamOpenOverCallback, SurfaceHolder.Callback {
     private static final String TAG = "CJT";
 
+    //拍照浏览时候的类型
     private static final int TYPE_PICTURE = 0x001;
     private static final int TYPE_VIDEO = 0x002;
 
+
+    //录制视频比特率
     public static final int MEDIA_QUALITY_HIGH = 20 * 100000;
     public static final int MEDIA_QUALITY_MIDDLE = 16 * 100000;
     public static final int MEDIA_QUALITY_LOW = 12 * 100000;
@@ -54,7 +58,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     public static final int MEDIA_QUALITY_FUNNY = 4 * 100000;
     public static final int MEDIA_QUALITY_DESPAIR = 2 * 100000;
     public static final int MEDIA_QUALITY_SORRY = 1 * 80000;
-    public static final int MEDIA_QUALITY_SORRY_YOU_ARE_GOOD_MAN = 1 * 10000;
 
     //只能拍照
     public static final int BUTTON_STATE_ONLY_CAPTURE = 0x101;
@@ -63,6 +66,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     //两者都可以
     public static final int BUTTON_STATE_BOTH = 0x103;
 
+    //回调监听
     private JCameraLisenter jCameraLisenter;
 
 
@@ -78,8 +82,11 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private int fouce_size;
     private float screenProp;
 
+    //拍照的图片
     private Bitmap captureBitmap;
+    //第一帧图片
     private Bitmap firstFrame;
+    //视频URL
     private String videoUrl;
     private int type = -1;
     private boolean onlyPause = false;
@@ -198,7 +205,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         LayoutParams foucs_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         foucs_param.gravity = Gravity.CENTER;
         mFoucsView.setLayoutParams(foucs_param);
-        mFoucsView.setVisibility(VISIBLE);
+        mFoucsView.setVisibility(INVISIBLE);
 
         //add view to ParentLayout
         this.addView(mVideoView);
@@ -402,7 +409,17 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 
     @Override
     public void cameraHasOpened() {
-        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
+        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp, new FirstFoucsLisenter() {
+            @Override
+            public void onFouce() {
+                JCameraView.this.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
+                    }
+                });
+            }
+        });
     }
 
     private boolean switching = false;
@@ -458,13 +475,13 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 //                    }
 //                }).start();
 //            } else {
-                new Thread() {
-                    @Override
-                    public void run() {
-                        CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-                    }
-                }.start();
-                mFoucsView.setVisibility(INVISIBLE);
+            new Thread() {
+                @Override
+                public void run() {
+                    CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+                }
+            }.start();
+            mFoucsView.setVisibility(INVISIBLE);
 //            }
         }
     }
@@ -516,7 +533,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                         firstTouchLength = result;
                         firstTouch = false;
                     }
-                    if ((int) (result - firstTouchLength) / 50 != 0) {
+                    if ((int) (result - firstTouchLength) / 40 != 0) {
                         firstTouch = true;
                         CameraInterface.getInstance().setZoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
                     }
@@ -615,6 +632,9 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         isBorrow = false;
         mSwitchCamera.setVisibility(VISIBLE);
         CAMERA_STATE = STATE_IDLE;
+        mFoucsView.setVisibility(VISIBLE);
+        setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
+
     }
 
     public void setSaveVideoPath(String path) {

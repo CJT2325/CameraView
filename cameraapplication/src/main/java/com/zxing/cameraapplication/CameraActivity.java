@@ -66,10 +66,11 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void recordSuccess(String url, Bitmap firstFrame) {
                 //获取视频路径
-                Log.i("CJT", "url = " + url + ", Bitmap = " + firstFrame.getWidth());
+                String path = FileUtil.saveBitmap("JCamera", firstFrame);
+                Log.i("CJT", "url = " + url + ", Bitmap = " + path);
                 Intent intent = new Intent();
-                intent.putExtra("path", url);
-                setResult(102, intent);
+                intent.putExtra("path", path);
+                setResult(101, intent);
                 finish();
             }
 
