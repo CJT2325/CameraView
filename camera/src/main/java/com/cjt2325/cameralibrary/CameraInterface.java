@@ -203,7 +203,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         if (mParams == null) {
             mParams = mCamera.getParameters();
         }
-        if (!mParams.isZoomSupported() && !mParams.isSmoothZoomSupported()) {
+        if (!mParams.isZoomSupported() || !mParams.isSmoothZoomSupported()) {
             return;
         }
         switch (type) {
