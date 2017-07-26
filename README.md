@@ -1,4 +1,4 @@
-# JCameraView（1.1.2）  群：590205592
+# JCameraView（1.1.3）  群：590205592
 # 下载源码后运行cameraapplication这个model
 
  [![Download](https://api.bintray.com/packages/cjt/maven/cameraView/images/download.svg)](https://bintray.com//cjt/maven/cameraView/_latestVersion) [![API 14+](https://img.shields.io/badge/API-14%2B-green.svg)](https://github.com/CJT2325/CameraView)
@@ -33,9 +33,9 @@
 
 **添加下列代码到 module gradle**
 
-> 最新版本（1.1.2）更新内容：
+> 最新版本（1.1.3）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.1.2'
+compile 'cjt.library.wheel:camera:1.1.3'
 //fix bug
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
