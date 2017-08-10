@@ -8,15 +8,15 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
-import android.util.Log
+import android.os.CountDownTimer
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.LinearInterpolator
+import com.cjt2325.kotlin_jcameraview.util.i
 
 /**
  * =====================================
  * 作    者: 陈嘉桐
- * 版    本：
+ * 版    本：Kotlin
  * 创建日期：2017/8/9
  * 描    述：拍照按钮
  * =====================================
@@ -45,7 +45,8 @@ class CaptureButton(context: Context, size: Float) : View(context) {
 
     private var touch_Y: Float = 0f//Touch_Event_Down时候记录的Y值
 
-    var max_duration = 5000//录制最长时间，默认为10s
+    var max_duration: Long = 5000//录制最长时间，默认为10s
+    var recorder_time: Long = 0 //保存录制了多长时间
     var progress_color: Int = 0xEE16AE16.toInt()//进度条颜色
     var outside_color: Int = 0xEECCCCCC.toInt()//外圆背景色
     var inside_color: Int = 0xFFFFFFFF.toInt()//内圆背景色
@@ -53,7 +54,8 @@ class CaptureButton(context: Context, size: Float) : View(context) {
 
     private var progress: Float = 0f//录制视频的进度
     private val rectF: RectF
-    private var record_anim = ValueAnimator.ofFloat(0f, 361f)
+
+    private var recorderTimer: RecorderTimer
 
     /**
      * 主构造函数初始化代码块
@@ -80,6 +82,7 @@ class CaptureButton(context: Context, size: Float) : View(context) {
 
         mPaint.isAntiAlias = true//抗锯齿
 
+        recorderTimer = RecorderTimer(max_duration, max_duration / 360)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -99,34 +102,6 @@ class CaptureButton(context: Context, size: Float) : View(context) {
         }
     }
 
-
-
-    //录视频线程
-    private val recordRunnable = Runnable {
-        state = STATE_RECORDERING
-        record_anim.addUpdateListener { animation ->
-            if (state == STATE_RECORDERING) {
-                //更新录制进度
-                progress = animation.getAnimatedValue() as Float
-                invalidate()
-            } else {
-//                TODO("这里应该停止录像并且重置")
-            }
-            Log.i("CJT","Running")
-        }
-        record_anim.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator?) {
-                super.onAnimationEnd(animation)
-                if (state == STATE_RECORDERING) {
-                    recordEnd(true)
-                    Log.i("CJT", "onAnimationEnd")
-                }
-            }
-        })
-        record_anim.duration = max_duration.toLong()
-        record_anim.interpolator = LinearInterpolator()
-        record_anim.start()
-    }
     //长按线程
     private val longPressRunnable = Runnable {
         state = STATE_LONG_PRESS //状态为长按状态
@@ -164,6 +139,7 @@ class CaptureButton(context: Context, size: Float) : View(context) {
     }
 
     /**
+     * 录制视频按钮动画
      * @param outside_start 外圆起始半径
      * @param outside_end   外圆结束半径
      * @param inside_start  内圆起始半径
@@ -183,17 +159,14 @@ class CaptureButton(context: Context, size: Float) : View(context) {
             invalidate()
         }
         //当动画结束后启动录像Runnable并且回调录像开始接口
-
         var animSet: AnimatorSet = AnimatorSet()
         animSet.playTogether(outside_anim, inside_anim)
         animSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 super.onAnimationEnd(animation)
                 if (state == STATE_LONG_PRESS) {
-//                    if (captureLisenter != null) {
-//                        captureLisenter.recordStart()
-//                    }
-                    post(recordRunnable)
+                    state = STATE_RECORDERING
+                    recorderTimer.start()
                 }
             }
         })
@@ -204,44 +177,50 @@ class CaptureButton(context: Context, size: Float) : View(context) {
     private fun handlerUnpressByState() {
         removeCallbacks(longPressRunnable)//移除长按逻辑的Runnable
         when (state) {
-            STATE_PRESS -> Log.i("CJT", "拍照")
-//                if (captureLisenter != null && (button_state == BUTTON_STATE_ONLY_CAPTURE || button_state == BUTTON_STATE_BOTH)) {
-//                //回调拍照接口
-//                    captureLisenter.takePictures()
-//                }
+            STATE_PRESS -> {
+                captureAnimation();
+            }
             STATE_RECORDERING -> {
-                Log.i("CJT", "录制")
-                removeCallbacks(recordRunnable)//移除录制视频的Runnable
-                recordEnd(false)//录制结束
+                recorderTimer.cancel()
+                recordEnd()//录制结束
+            }
+            STATE_LONG_PRESS -> {
+                resetRecordAnim()
+                captureAnimation();
             }
         }
         this.state = STATE_IDLE //制空当前状态
     }
 
     /**
-     * @param finish 是否录制最大时间
+     * 拍照时按钮动画
      */
-    private fun recordEnd(finish: Boolean) {
-//        if (captureLisenter != null) {
-//            //录制时间小于一秒时候则提示录制时间过短
-//            if (record_anim.currentPlayTime < 1500 && !finish) {
-//                captureLisenter.recordShort(record_anim.currentPlayTime)
-//            } else {
-                if (finish) {
-                    Log.i("CJT", "录制了 = " + max_duration)
-//                    captureLisenter.recordEnd(duration.toLong())
-                } else {
-//                    captureLisenter.recordEnd(record_anim.currentPlayTime)
-                    Log.i("CJT", "录制了 = " + record_anim.currentPlayTime)
-                }
-//            }
-//        }
+    private fun captureAnimation() {
+        val captureAnim = ValueAnimator.ofFloat(button_inside_radius, button_inside_radius - inside_reduce_size, button_size / 2 * 0.75f)
+        captureAnim.addUpdateListener { animation ->
+            button_inside_radius = animation.animatedValue as Float
+            invalidate()
+        }
+        captureAnim.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                super.onAnimationEnd(animation)
+                i("拍照")
+            }
+        })
+        captureAnim.duration = 100
+        captureAnim.start()
+    }
 
+    fun recordEnd() {
+        if (recorder_time < 1500) {
+            i("录制时间小于1500")
+        } else {
+            i("录制了" + recorder_time)
+        }
         resetRecordAnim()
     }
 
     fun resetRecordAnim() {
-        record_anim.cancel()
         progress = 0f
         invalidate()
         startAnimation(
@@ -250,5 +229,22 @@ class CaptureButton(context: Context, size: Float) : View(context) {
                 button_inside_radius,
                 button_size / 2 * 0.75f
         )
+    }
+
+    fun updateProgress(millisUntilFinished: Long) {
+        recorder_time = max_duration - millisUntilFinished
+        this.progress = 360f - millisUntilFinished / max_duration.toFloat() * 360
+        invalidate()
+    }
+
+    inner class RecorderTimer(millisInFuture: Long, countDownInterval: Long) : CountDownTimer(millisInFuture, countDownInterval) {
+        override fun onFinish() {
+            updateProgress(0)
+            recordEnd()
+        }
+
+        override fun onTick(millisUntilFinished: Long) {
+            updateProgress(millisUntilFinished)
+        }
     }
 }
