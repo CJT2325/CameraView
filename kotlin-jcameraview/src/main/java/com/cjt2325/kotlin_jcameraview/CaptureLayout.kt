@@ -54,6 +54,7 @@ class CaptureLayout(context: Context) : FrameLayout(context) {
 
         //内容提示
         textView_tip = TextView(context)
+        textView_tip.setTextColor(0xFFFFFFFF.toInt())
         textView_tip.text = "Kotlin JCamera"
         val tip_param = FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.MATCH_PARENT)
         tip_param.gravity = Gravity.CENTER_HORIZONTAL
@@ -63,7 +64,6 @@ class CaptureLayout(context: Context) : FrameLayout(context) {
         this.addView(cancleButton)
         this.addView(confirmButton)
         this.addView(textView_tip)
-
 
         cancleButton.visibility = View.INVISIBLE
         confirmButton.visibility = View.INVISIBLE

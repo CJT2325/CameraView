@@ -1,11 +1,15 @@
 package com.cjt2325.kotlin_jcameraview
 
 import android.content.Context
+import android.graphics.SurfaceTexture
+import android.os.Build
+import android.support.annotation.RequiresApi
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.ImageView
+import com.cjt2325.kotlin_jcameraview.util.i
 
 /**
  * =====================================
@@ -15,15 +19,15 @@ import android.widget.ImageView
  * 描    述：
  * =====================================
  */
-class JCameraView : FrameLayout {
+class JCameraView : FrameLayout, TextureView.SurfaceTextureListener {
 
-    var textureView: TextureView
+    var textureView: AutoFitTextureView
     var captureLayout: CaptureLayout
     var switchCamera: ImageView
     var switchFlash: ImageView
 
     init {
-        textureView = TextureView(context)
+        textureView = AutoFitTextureView(context)
         captureLayout = CaptureLayout(context)
         switchCamera = ImageView(context)
         switchFlash = ImageView(context)
@@ -53,12 +57,57 @@ class JCameraView : FrameLayout {
 
         //TextureView
         val textureView_param = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
-//        textureView_param.gravity = Gravity.CENTER
-        textureView.setBackgroundColor(0xff888888.toInt())
         textureView.layoutParams = textureView_param
+        textureView.surfaceTextureListener = this
 
+        val switchcamera_param = FrameLayout.LayoutParams(60, 60)
+        switchcamera_param.gravity = Gravity.RIGHT
+        switchcamera_param.setMargins(16, 16, 16, 16)
+        switchCamera.layoutParams = switchcamera_param
+        switchCamera.setImageResource(R.drawable.ic_camera)
+
+        val switchflash_param = FrameLayout.LayoutParams(60, 60)
+        switchflash_param.setMargins(16, 16, 16, 16)
+        switchFlash.layoutParams = switchflash_param
+        switchFlash.setImageResource(R.drawable.ic_brightness)
 
         this.addView(textureView)
         this.addView(captureLayout)
+        this.addView(switchCamera)
+        this.addView(switchFlash)
     }
+
+    fun onResume() {
+        i("JCameraView onResume")
+    }
+
+    fun onPause() {
+        i("JCameraView onPause")
+    }
+
+
+    //TextureView监听
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
+        //锁屏再解锁不会回调onSurfaceTextureAvailable
+        //打开Camera并启动浏览
+        CameraNewInterface.Companion.getInstance().openCamera(context, textureView, width, height);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean {
+        //锁屏会回调销毁(onSurfaceTextureDestroyed)
+        i("onSurfaceTextureDestroyed")
+        CameraNewInterface.Companion.getInstance().stopCamera()
+        return true
+    }
+
+    override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
+        i("onSurfaceTextureSizeChanged")
+    }
+
+    override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {
+//        i("onSurfaceTextureUpdated")
+    }
+
 }
