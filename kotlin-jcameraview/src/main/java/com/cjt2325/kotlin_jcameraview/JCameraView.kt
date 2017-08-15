@@ -9,6 +9,8 @@ import android.view.Gravity
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.ImageView
+import com.cjt2325.kotlin_jcameraview.util.getScreenHeight
+import com.cjt2325.kotlin_jcameraview.util.getScreenWidth
 import com.cjt2325.kotlin_jcameraview.util.i
 
 /**
@@ -91,6 +93,8 @@ class JCameraView : FrameLayout, TextureView.SurfaceTextureListener {
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
         //锁屏再解锁不会回调onSurfaceTextureAvailable
         //打开Camera并启动浏览
+        i("width = " + getScreenWidth(context) + " height = " + getScreenHeight(context));
+        i("Texturewidth = " + width + " Textureheight = " + height);
         CameraNewInterface.Companion.getInstance().openCamera(context, textureView, width, height);
     }
 

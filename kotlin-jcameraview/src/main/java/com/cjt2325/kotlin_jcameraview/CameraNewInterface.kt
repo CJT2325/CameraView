@@ -3,10 +3,7 @@ package com.cjt2325.kotlin_jcameraview
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
-import android.hardware.camera2.CameraCaptureSession
-import android.hardware.camera2.CameraDevice
-import android.hardware.camera2.CameraManager
-import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.Build
 import android.os.Handler
@@ -49,16 +46,23 @@ class CameraNewInterface private constructor() {
         }
     }
 
+    private var preview_width: Int = 0
+    private var preview_height: Int = 0
+
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun openCamera(context: Context, textureView: AutoFitTextureView, width: Int, height: Int) {
         mCameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         mTextureView = textureView
+
+        preview_width = width
+        preview_height = height
 //        setUpCameraOutputs(context, width, height)
 //        configureTransform(width, height)
 //        try {
 //            if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
 //                throw RuntimeException("Time out waiting to lock camera opening.")
 //            }
+        setUpCameraOutputs(context, 0, 0)
         mCameraManager?.openCamera("0", mStateCallback, null)
 //        .openCamera(mCameraId, mStateCallback, mBackgroundHandler)
 //        } catch (e: CameraAccessException) {
@@ -137,11 +141,11 @@ class CameraNewInterface private constructor() {
         mPreviewRequestBuilder = mCameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW) as CaptureRequest.Builder
         // 将SurfaceView的surface作为CaptureRequest.Builder的目标
         var sufaceTexture: SurfaceTexture = mTextureView?.surfaceTexture as SurfaceTexture
-        sufaceTexture.setDefaultBufferSize(1080, 1920)
+        sufaceTexture.setDefaultBufferSize(3840, 2304)
         var surface: Surface = Surface(sufaceTexture)
         mPreviewRequestBuilder?.addTarget(surface)
         // 创建CameraCaptureSession，该对象负责管理处理预览请求和拍照请求
-        mImageReader = ImageReader.newInstance(1080, 1920, ImageFormat.JPEG, 1)
+        mImageReader = ImageReader.newInstance(720, 1280, ImageFormat.JPEG, 1)
         mCameraDevice?.createCaptureSession(Arrays.asList(surface, mImageReader?.surface), mCameraCaptureSessionCallback, null)
     }
 
@@ -151,28 +155,33 @@ class CameraNewInterface private constructor() {
 //        mBackgroundHandler?.post(ImageSaver(reader.acquireNextImage(), mFile))
 //    }
 
-//    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-//    private fun setUpCameraOutputs(context: Context, width: Int, height: Int) {
-//        if (mCameraManager == null)
-//            mCameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
-//        for (cameraId in mCameraManager?.cameraIdList!!) {
-//            val characteristics = mCameraManager?.getCameraCharacteristics(cameraId)
-//
-//            // We don't use a front facing camera in this sample.
-//            val facing = characteristics?.get(CameraCharacteristics.LENS_FACING)
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private fun setUpCameraOutputs(context: Context, width: Int, height: Int) {
+        if (mCameraManager == null)
+            mCameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        for (cameraId in mCameraManager?.cameraIdList!!) {
+            val characteristics = mCameraManager?.getCameraCharacteristics(cameraId)
+
+            // We don't use a front facing camera in this sample.
+            val facing = characteristics?.get(CameraCharacteristics.LENS_FACING)
 //            if (facing != null && facing === CameraCharacteristics.LENS_FACING_FRONT) {
 //                continue
 //            }
-//
-//            val map = characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
-//
-//            // For still image captures, we use the largest available size.
+
+            val map = characteristics?.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP) ?: continue
+
+            var size = map.getOutputSizes(ImageFormat.JPEG)
+            for (i in size) {
+                var rate = i.width.toFloat() / i.height
+                i("previewWidth = " + i.width + " previewHeight = " + i.height + "rate = " + rate)
+            }
+            // For still image captures, we use the largest available size.
 //            val largest = Collections.max(Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)), CompareSizesByArea())
 //            mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(), ImageFormat.JPEG, /*maxImages*/2)
 //            mImageReader?.setOnImageAvailableListener(mOnImageAvailableListener, null)
-//
-//            // Find out if we need to swap dimension to get the preview size relative to sensor
-//            // coordinate.
+
+            // Find out if we need to swap dimension to get the preview size relative to sensor
+            // coordinate.
 //            val displayRotation = activity.getWindowManager().getDefaultDisplay().getRotation()
 //
 //            mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION)
@@ -232,6 +241,6 @@ class CameraNewInterface private constructor() {
 //
 //            mCameraId = cameraId
 //            return
-//        }
-//    }
+        }
+    }
 }
