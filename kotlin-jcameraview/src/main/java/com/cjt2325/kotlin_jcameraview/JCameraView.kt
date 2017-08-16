@@ -9,6 +9,9 @@ import android.view.Gravity
 import android.view.TextureView
 import android.widget.FrameLayout
 import android.widget.ImageView
+import com.cjt2325.kotlin_jcameraview.listener.CaptureListener
+import com.cjt2325.kotlin_jcameraview.listener.QuitListener
+import com.cjt2325.kotlin_jcameraview.listener.TypeListener
 import com.cjt2325.kotlin_jcameraview.util.getScreenHeight
 import com.cjt2325.kotlin_jcameraview.util.getScreenWidth
 import com.cjt2325.kotlin_jcameraview.util.i
@@ -40,11 +43,13 @@ class JCameraView : FrameLayout, TextureView.SurfaceTextureListener {
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         initAttr(attrs)
         initView()
+        initListener()
     }
 
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes) {
         initAttr(attrs)
         initView()
+        initListener()
     }
 
     fun initAttr(attrs: AttributeSet?) {
@@ -69,7 +74,8 @@ class JCameraView : FrameLayout, TextureView.SurfaceTextureListener {
         switchCamera.setImageResource(R.drawable.ic_camera)
 
         val switchflash_param = FrameLayout.LayoutParams(60, 60)
-        switchflash_param.setMargins(16, 16, 16, 16)
+        switchflash_param.gravity = Gravity.RIGHT
+        switchflash_param.setMargins(16, 16, 48 + 60, 16)
         switchFlash.layoutParams = switchflash_param
         switchFlash.setImageResource(R.drawable.ic_brightness)
 
@@ -77,6 +83,50 @@ class JCameraView : FrameLayout, TextureView.SurfaceTextureListener {
         this.addView(captureLayout)
         this.addView(switchCamera)
         this.addView(switchFlash)
+
+    }
+
+    fun initListener() {
+        captureLayout.mQuitListener = object : QuitListener {
+            override fun quit() {
+                i("JCameraView : quit")
+            }
+        }
+        captureLayout.mTypeListener = object : TypeListener {
+            override fun confirm() {
+                i("JCameraView : confirm")
+            }
+
+            override fun cancle() {
+                i("JCameraView : cancle")
+            }
+        }
+        captureLayout.mCaptureListener = object : CaptureListener {
+            override fun error(error: String) {
+            }
+
+            override fun recorderZoom() {
+
+            }
+
+            override fun caputre() {
+                CameraNewInterface.getInstance().takePicture()
+                i("JCameraView : caputre")
+            }
+
+            override fun recorderEnd(time: Long) {
+                i("JCameraView : recorderEnd")
+            }
+
+            override fun recorderShort() {
+                i("JCameraView : recorderShort")
+            }
+
+            override fun recorderStart() {
+                i("JCameraView : recorderStart")
+            }
+
+        }
     }
 
     fun onResume() {

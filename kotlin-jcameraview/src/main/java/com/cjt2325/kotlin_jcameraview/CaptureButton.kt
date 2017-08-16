@@ -11,7 +11,7 @@ import android.graphics.RectF
 import android.os.CountDownTimer
 import android.view.MotionEvent
 import android.view.View
-import com.cjt2325.kotlin_jcameraview.util.i
+import com.cjt2325.kotlin_jcameraview.listener.CaptureListener
 
 /**
  * =====================================
@@ -56,6 +56,9 @@ class CaptureButton(context: Context, size: Float) : View(context) {
     private val rectF: RectF
 
     private var recorderTimer: RecorderTimer
+
+    var mCaptureListener: CaptureListener? = null
+
 
     /**
      * 主构造函数初始化代码块
@@ -166,6 +169,8 @@ class CaptureButton(context: Context, size: Float) : View(context) {
                 super.onAnimationEnd(animation)
                 if (state == STATE_LONG_PRESS) {
                     state = STATE_RECORDERING
+                    if (mCaptureListener != null)
+                        mCaptureListener?.recorderStart()
                     recorderTimer.start()
                 }
             }
@@ -174,11 +179,14 @@ class CaptureButton(context: Context, size: Float) : View(context) {
         animSet.start()
     }
 
+    /**
+     * 松开手指处理的逻辑
+     */
     private fun handlerUnpressByState() {
         removeCallbacks(longPressRunnable)//移除长按逻辑的Runnable
         when (state) {
             STATE_PRESS -> {
-                captureAnimation();
+                captureAnimation()
             }
             STATE_RECORDERING -> {
                 recorderTimer.cancel()
@@ -186,7 +194,7 @@ class CaptureButton(context: Context, size: Float) : View(context) {
             }
             STATE_LONG_PRESS -> {
                 resetRecordAnim()
-                captureAnimation();
+                captureAnimation()
             }
         }
         this.state = STATE_IDLE //制空当前状态
@@ -204,25 +212,38 @@ class CaptureButton(context: Context, size: Float) : View(context) {
         captureAnim.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator?) {
                 super.onAnimationEnd(animation)
-                i("拍照")
+                if (mCaptureListener != null)
+                    mCaptureListener?.caputre()
             }
         })
         captureAnim.duration = 100
         captureAnim.start()
     }
 
+    /**
+     * 录制结束
+     */
     fun recordEnd() {
+        if (state != STATE_RECORDERING)
+            return
         if (recorder_time < 1500) {
-            i("录制时间小于1500")
+            if (mCaptureListener != null)
+                mCaptureListener?.recorderShort()
+//            i("录制时间小于1500")
         } else {
-            i("录制了" + recorder_time)
+            if (mCaptureListener != null)
+                mCaptureListener?.recorderEnd(recorder_time)
         }
         resetRecordAnim()
     }
 
+    /**
+     * 重置
+     */
     fun resetRecordAnim() {
         progress = 0f
         invalidate()
+        state = STATE_IDLE //录制结束状态为（空闲）
         startAnimation(
                 button_outside_radius,
                 button_size / 2,
@@ -247,4 +268,9 @@ class CaptureButton(context: Context, size: Float) : View(context) {
             updateProgress(millisUntilFinished)
         }
     }
+
+    /**
+     * 回调
+     */
+
 }
