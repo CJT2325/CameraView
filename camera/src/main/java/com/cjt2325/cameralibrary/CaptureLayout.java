@@ -296,10 +296,6 @@ public class CaptureLayout extends FrameLayout {
         btn_capture.setDuration(duration);
     }
 
-    public void isRecord(boolean record) {
-        btn_capture.isRecord(record);
-    }
-
     public void setButtonFeatures(int state) {
         btn_capture.setButtonFeatures(state);
     }

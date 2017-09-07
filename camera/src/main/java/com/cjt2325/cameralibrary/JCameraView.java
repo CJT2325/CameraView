@@ -264,7 +264,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                                     @Override
                                     public void recordResult(String url, Bitmap firstFrame) {
                                         Log.i(TAG, "Record Stopping ...");
-                                        mCaptureLayout.isRecord(false);
                                         CAMERA_STATE = STATE_IDLE;
                                         stopping = false;
                                         isBorrow = false;
@@ -281,7 +280,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 }
 
                 mSwitchCamera.setVisibility(GONE);
-                mCaptureLayout.isRecord(true);
                 isBorrow = true;
                 CAMERA_STATE = STATE_RUNNING;
                 mFoucsView.setVisibility(INVISIBLE);
@@ -290,7 +288,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                     @Override
                     public void onError() {
                         Log.i("CJT", "startRecorder error");
-                        mCaptureLayout.isRecord(false);
                         CAMERA_STATE = STATE_WAIT;
                         stopping = false;
                         isBorrow = false;
@@ -617,7 +614,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                         file.delete();
                     }
                 }
-                mCaptureLayout.isRecord(false);
                 LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
                 mVideoView.setLayoutParams(videoViewParam);
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
@@ -631,7 +627,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         mFoucsView.setVisibility(VISIBLE);
         mCaptureLayout.showTip();
         setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
-
     }
 
     public void setSaveVideoPath(String path) {
