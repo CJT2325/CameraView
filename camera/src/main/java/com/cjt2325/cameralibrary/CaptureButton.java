@@ -2,17 +2,19 @@ package com.cjt2325.cameralibrary;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.CountDownTimer;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
 import com.cjt2325.cameralibrary.util.CheckPermission;
+import com.cjt2325.cameralibrary.util.LogUtil;
 
 import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_BOTH;
 import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_ONLY_CAPTURE;
@@ -28,12 +30,12 @@ import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_ONLY_RECORDER;
  * =====================================
  */
 public class CaptureButton extends View {
-    //    private static final String TAG = "CJT";
 
-
-    //按钮可执行的功能状态
+    //按钮可执行的功能状态（拍照,录制,两者）
     private int button_state;
 
+    //当前按钮状态
+    private int state;
     //空状态
     public static final int STATE_NULL = 0x000;
     //点击后松开时候的状态
@@ -44,15 +46,23 @@ public class CaptureButton extends View {
     public static final int STATE_PRESS_LONG_CLICK = 0x003;
     //长按后松开时候的状态
     public static final int STATE_UNPRESS_LONG_CLICK = 0x004;
+
+    private static final int STATE_IDLE = 0x001;        //空闲状态
+    private static final int STATE_PRESS = 0x002;       //按下状态
+    private static final int STATE_LONG_PRESS = 0x003;  //长按状态
+    private static final int STATE_RECORDERING = 0x004; //录制状态
+
+    private int progress_color = 0xEE16AE16;            //进度条颜色
+    private int outside_color = 0xEECCCCCC;             //外圆背景色
+    private int inside_color = 0xFFFFFFFF;              //内圆背景色
+
+
     //长按后处理的逻辑Runnable
     private LongPressRunnable longPressRunnable;
     //录制视频的Runnable
-    private RecordRunnable recordRunnable;
+//    private RecordRunnable recordRunnable;
     //录视频进度条动画
     private ValueAnimator record_anim = ValueAnimator.ofFloat(0, 362);
-
-    //当前按钮状态
-    private int state;
 
 
     private Paint mPaint;
@@ -82,11 +92,12 @@ public class CaptureButton extends View {
     private RectF rectF;
     //录制视频最大时间长度
     private int duration;
+    private int recorded_time;
 
     //按钮回调接口
     private CaptureLisenter captureLisenter;
 
-//    private boolean hasWindowFocus = true;
+    private RecordCountDownTimer timer;
 
     public CaptureButton(Context context) {
         super(context);
@@ -112,7 +123,7 @@ public class CaptureButton extends View {
 
         //init longPress runnable
         longPressRunnable = new LongPressRunnable();
-        recordRunnable = new RecordRunnable();
+//        recordRunnable = new RecordRunnable();
         //set default state;
         this.state = STATE_NULL;
 
@@ -128,6 +139,8 @@ public class CaptureButton extends View {
                 center_Y - (button_radius + outside_add_size - strokeWidth / 2),
                 center_X + (button_radius + outside_add_size - strokeWidth / 2),
                 center_Y + (button_radius + outside_add_size - strokeWidth / 2));
+
+        timer = new RecordCountDownTimer(duration, duration / 360);
     }
 
     @Override
@@ -141,17 +154,17 @@ public class CaptureButton extends View {
         super.onDraw(canvas);
         mPaint.setStyle(Paint.Style.FILL);
         //外圆（半透明灰色）
-        mPaint.setColor(0xEECCCCCC);
+        mPaint.setColor(outside_color);
         canvas.drawCircle(center_X, center_Y, button_outside_radius, mPaint);
 
         //内圆（白色）
-        mPaint.setColor(0xFFFFFFFF);
+        mPaint.setColor(inside_color);
         canvas.drawCircle(center_X, center_Y, button_inside_radius, mPaint);
 
         //如果状态为按钮长按按下的状态，则绘制录制进度条
         if (state == STATE_PRESS_LONG_CLICK) {
             mPaint.setAntiAlias(true);
-            mPaint.setColor(0x9900CC00);
+            mPaint.setColor(progress_color);
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(strokeWidth);
             canvas.drawArc(rectF, -90, progress, false, mPaint);
@@ -216,9 +229,10 @@ public class CaptureButton extends View {
             case STATE_PRESS_LONG_CLICK:
                 state = STATE_UNPRESS_LONG_CLICK;
                 //移除录制视频的Runnable
-                removeCallbacks(recordRunnable);
+//                removeCallbacks(recordRunnable);
                 //录制结束
-                recordEnd(false);
+                timer.cancel();
+                recordEnd();
                 break;
         }
         //制空当前状态
@@ -262,34 +276,35 @@ public class CaptureButton extends View {
     /**
      * record runnable
      */
-    private class RecordRunnable implements Runnable {
-        @Override
-        public void run() {
-            record_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    if (state == STATE_PRESS_LONG_CLICK) {
-                        //更新录制进度
-                        progress = (float) animation.getAnimatedValue();
-                    }
-                    invalidate();
-                }
-            });
-            //如果一直长按到结束，则自动回调录制结束接口
-            record_anim.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    super.onAnimationEnd(animation);
-                    if (state == STATE_PRESS_LONG_CLICK) {
-                        recordEnd(true);
-                    }
-                }
-            });
-            record_anim.setInterpolator(new LinearInterpolator());
-            record_anim.setDuration(duration);
-            record_anim.start();
-        }
-    }
+//    private class RecordRunnable implements Runnable {
+//        @Override
+//        public void run() {
+//            timer.start();
+//            record_anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+//                @Override
+//                public void onAnimationUpdate(ValueAnimator animation) {
+//                    if (state == STATE_PRESS_LONG_CLICK) {
+//                        //更新录制进度
+//                        progress = (float) animation.getAnimatedValue();
+//                    }
+//                    invalidate();
+//                }
+//            });
+//            //如果一直长按到结束，则自动回调录制结束接口
+//            record_anim.addListener(new AnimatorListenerAdapter() {
+//                @Override
+//                public void onAnimationEnd(Animator animation) {
+//                    super.onAnimationEnd(animation);
+//                    if (state == STATE_PRESS_LONG_CLICK) {
+//                        recordEnd(true);
+//                    }
+//                }
+//            });
+//            record_anim.setInterpolator(new LinearInterpolator());
+//            record_anim.setDuration(duration);
+//            record_anim.start();
+//        }
+//    }
 
 
     @Override
@@ -302,23 +317,29 @@ public class CaptureButton extends View {
 
     /**
      * 录制结束
-     *
-     * @param finish 是否录制满时间
      */
-    private void recordEnd(boolean finish) {
+    private void recordEnd() {
         state = STATE_UNPRESS_LONG_CLICK;
         if (captureLisenter != null) {
-            //录制时间小于一秒时候则提示录制时间过短
-            if (record_anim.getCurrentPlayTime() < 1500 && !finish) {
-                captureLisenter.recordShort(record_anim.getCurrentPlayTime());
+            if (recorded_time < 1500) {
+                captureLisenter.recordShort(recorded_time);
             } else {
-                if (finish) {
-                    captureLisenter.recordEnd(duration);
-                } else {
-                    captureLisenter.recordEnd(record_anim.getCurrentPlayTime());
-                }
+                captureLisenter.recordEnd(recorded_time);
             }
         }
+        resetRecordAnim();
+//        if (captureLisenter != null) {
+//            //录制时间小于一秒时候则提示录制时间过短
+//            if (record_anim.getCurrentPlayTime() < 1500 &&) {
+//                captureLisenter.recordShort(record_anim.getCurrentPlayTime());
+//            } else {
+//                if (finish) {
+//                    captureLisenter.recordEnd(duration);
+//                } else {
+//                    captureLisenter.recordEnd(record_anim.getCurrentPlayTime());
+//                }
+//            }
+//        }
         resetRecordAnim();
     }
 
@@ -368,14 +389,15 @@ public class CaptureButton extends View {
                     if (captureLisenter != null) {
                         captureLisenter.recordStart();
                     }
-                    post(recordRunnable);
+                    timer.start();
+//                    post(recordRunnable);
                 }
             }
         });
-        outside_anim.setDuration(100);
-        inside_anim.setDuration(100);
-        outside_anim.start();
-        inside_anim.start();
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(outside_anim, inside_anim);
+        set.setDuration(100);
+        set.start();
     }
 
     /**
@@ -394,5 +416,30 @@ public class CaptureButton extends View {
     //设置按钮功能（拍照和录像）
     public void setButtonFeatures(int state) {
         this.button_state = state;
+    }
+
+    private void updateProgress(long millisUntilFinished) {
+        recorded_time = (int) (duration - millisUntilFinished);
+        progress = 360f - millisUntilFinished / (float) duration * 360f;
+        invalidate();
+    }
+
+    class RecordCountDownTimer extends CountDownTimer {
+
+        public RecordCountDownTimer(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            updateProgress(millisUntilFinished);
+        }
+
+        @Override
+        public void onFinish() {
+            updateProgress(0);
+            recordEnd();
+            LogUtil.i("onFinish");
+        }
     }
 }

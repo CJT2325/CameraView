@@ -25,7 +25,6 @@ import android.widget.VideoView;
 
 import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
-import com.cjt2325.cameralibrary.lisenter.FirstFoucsLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
@@ -409,17 +408,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 
     @Override
     public void cameraHasOpened() {
-        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp, new FirstFoucsLisenter() {
-            @Override
-            public void onFouce() {
-                JCameraView.this.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
-                    }
-                });
-            }
-        });
+        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
+//        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp, null);
     }
 
     private boolean switching = false;
@@ -491,6 +481,11 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
      */
     public void onPause() {
         onlyPause = true;
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
         CameraInterface.getInstance().unregisterSensorManager(mContext);
         CameraInterface.getInstance().doStopCamera();
     }
@@ -600,10 +595,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         }
         switch (type) {
             case TYPE_PICTURE:
-                mPhoto.setVisibility(INVISIBLE);
                 if (confirm && captureBitmap != null) {
                     jCameraLisenter.captureSuccess(captureBitmap);
                 } else {
+                    mPhoto.setVisibility(INVISIBLE);
                     if (captureBitmap != null) {
                         captureBitmap.recycle();
                     }
@@ -611,6 +606,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                 }
                 break;
             case TYPE_VIDEO:
+                Log.i("CJT", "TYPE VIDEO");
                 if (confirm) {
                     //回调录像成功后的URL
                     jCameraLisenter.recordSuccess(videoUrl, firstFrame);
@@ -633,6 +629,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         mSwitchCamera.setVisibility(VISIBLE);
         CAMERA_STATE = STATE_IDLE;
         mFoucsView.setVisibility(VISIBLE);
+        mCaptureLayout.showTip();
         setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
 
     }

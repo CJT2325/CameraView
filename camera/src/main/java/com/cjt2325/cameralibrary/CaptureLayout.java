@@ -266,7 +266,7 @@ public class CaptureLayout extends FrameLayout {
             }
         });
 
-        //txt_tip
+
 
         txt_tip = new TextView(getContext());
         LayoutParams txt_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -306,5 +306,9 @@ public class CaptureLayout extends FrameLayout {
 
     public void setTip(String tip) {
         txt_tip.setText(tip);
+    }
+
+    public void showTip() {
+        txt_tip.setVisibility(VISIBLE);
     }
 }

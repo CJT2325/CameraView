@@ -23,7 +23,6 @@ import android.view.SurfaceHolder;
 import android.widget.ImageView;
 
 import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
-import com.cjt2325.cameralibrary.lisenter.FirstFoucsLisenter;
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 import com.cjt2325.cameralibrary.util.CheckPermission;
@@ -324,14 +323,14 @@ public class CameraInterface implements Camera.PreviewCallback {
                 Log.e("CJT", "enable shutter_sound sound faild");
             }
         }
-        doStartPreview(mHolder, screenProp, null);
+        doStartPreview(mHolder, screenProp);
         callback.cameraSwitchSuccess();
     }
 
     /**
      * doStartPreview
      */
-    void doStartPreview(SurfaceHolder holder, float screenProp, FirstFoucsLisenter lisenter) {
+    void doStartPreview(SurfaceHolder holder, float screenProp) {
         if (this.screenProp < 0) {
             this.screenProp = screenProp;
         }
@@ -370,9 +369,9 @@ public class CameraInterface implements Camera.PreviewCallback {
                 mCamera.setPreviewDisplay(holder);
                 //浏览角度
                 mCamera.setDisplayOrientation(cameraAngle);
-//              //每一帧回调
+                //每一帧回调
                 mCamera.setPreviewCallback(this);
-//              //启动浏览
+                //启动浏览
                 mCamera.startPreview();
                 isPreviewing = true;
             } catch (IOException e) {
@@ -382,10 +381,7 @@ public class CameraInterface implements Camera.PreviewCallback {
 //                mCamera.stopPreview();
             }
         }
-        //启动浏览后自动对焦一次
-        if (lisenter != null) {
-            lisenter.onFouce();
-        }
+
         Log.i(TAG, "=== Start Preview ===");
     }
 
@@ -412,6 +408,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     }
 
     public void doDestroyCamera() {
+        errorLisenter = null;
         if (null != mCamera) {
             try {
                 mCamera.setPreviewCallback(null);
@@ -704,6 +701,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                         callback.focusSuccess();
                     } else {
                         handleFocus(context, x, y, callback);
+//                        handleFocus(context, x, y, null);
                     }
                 }
             });
