@@ -9,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -25,7 +24,7 @@ import static com.cjt2325.cameralibrary.JCameraView.BUTTON_STATE_ONLY_RECORDER;
 /**
  * =====================================
  * 作    者: 陈嘉桐 445263848@qq.com
- * 版    本：1.0.4
+ * 版    本：1.1.4
  * 创建日期：2017/4/25
  * 描    述：拍照按钮
  * =====================================
@@ -35,10 +34,10 @@ public class CaptureButton extends View {
     private int state;              //当前按钮状态
     private int button_state;       //按钮可执行的功能状态（拍照,录制,两者）
 
-    private static final int STATE_IDLE = 0x001;        //空闲状态
-    private static final int STATE_PRESS = 0x002;       //按下状态
-    private static final int STATE_LONG_PRESS = 0x003;  //长按状态
-    private static final int STATE_RECORDERING = 0x004; //录制状态
+    public static final int STATE_IDLE = 0x001;        //空闲状态
+    public static final int STATE_PRESS = 0x002;       //按下状态
+    public static final int STATE_LONG_PRESS = 0x003;  //长按状态
+    public static final int STATE_RECORDERING = 0x004; //录制状态
 
     private int progress_color = 0xEE16AE16;            //进度条颜色
     private int outside_color = 0xEECCCCCC;             //外圆背景色
@@ -145,7 +144,8 @@ public class CaptureButton extends View {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                if (event.getPointerCount() > 1)
+                LogUtil.i("state = " + state);
+                if (event.getPointerCount() > 1 || state != STATE_IDLE)
                     break;
                 event_Y = event.getY();     //记录Y值
                 state = STATE_PRESS;        //修改当前状态为点击按下
@@ -176,7 +176,8 @@ public class CaptureButton extends View {
         switch (state) {
             //当前是点击按下
             case STATE_PRESS:
-                if (captureLisenter != null && (button_state == BUTTON_STATE_ONLY_CAPTURE || button_state == BUTTON_STATE_BOTH))
+                if (captureLisenter != null && (button_state == BUTTON_STATE_ONLY_CAPTURE || button_state ==
+                        BUTTON_STATE_BOTH))
                     startCaptureAnimation(button_inside_radius);
                 break;
             //当前是长按状态
@@ -288,8 +289,6 @@ public class CaptureButton extends View {
     private void updateProgress(long millisUntilFinished) {
         recorded_time = (int) (duration - millisUntilFinished);
         progress = 360f - millisUntilFinished / (float) duration * 360f;
-        LogUtil.i("projress = " + progress);
-        LogUtil.i("millisUntilFinished = " + millisUntilFinished);
         invalidate();
     }
 
@@ -297,20 +296,17 @@ public class CaptureButton extends View {
     private class RecordCountDownTimer extends CountDownTimer {
         RecordCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
-            LogUtil.i(countDownInterval + " = " + millisInFuture);
         }
 
         @Override
         public void onTick(long millisUntilFinished) {
             updateProgress(millisUntilFinished);
-            LogUtil.i("onTick");
         }
 
         @Override
         public void onFinish() {
             updateProgress(0);
             recordEnd();
-            LogUtil.i("onFinish");
         }
     }
 
@@ -338,7 +334,7 @@ public class CaptureButton extends View {
     }
 
     /**************************************************
-     *               对外提供的API                     *
+     * 对外提供的API                     *
      **************************************************/
 
     //设置最长录制时间
@@ -359,5 +355,15 @@ public class CaptureButton extends View {
     //设置按钮功能（拍照和录像）
     public void setButtonFeatures(int state) {
         this.button_state = state;
+    }
+
+    //是否空闲状态
+    public boolean isIdle() {
+        return state == STATE_IDLE ? true : false;
+    }
+
+    //设置状态
+    public void setState(int state) {
+        this.state = state;
     }
 }

@@ -28,6 +28,7 @@ import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
+import com.cjt2325.cameralibrary.util.LogUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +49,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private static final int TYPE_PICTURE = 0x001;
     private static final int TYPE_VIDEO = 0x002;
 
-
     //录制视频比特率
     public static final int MEDIA_QUALITY_HIGH = 20 * 100000;
     public static final int MEDIA_QUALITY_MIDDLE = 16 * 100000;
@@ -58,16 +58,13 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     public static final int MEDIA_QUALITY_DESPAIR = 2 * 100000;
     public static final int MEDIA_QUALITY_SORRY = 1 * 80000;
 
-    //只能拍照
-    public static final int BUTTON_STATE_ONLY_CAPTURE = 0x101;
-    //只能录像
-    public static final int BUTTON_STATE_ONLY_RECORDER = 0x102;
-    //两者都可以
-    public static final int BUTTON_STATE_BOTH = 0x103;
+
+    public static final int BUTTON_STATE_ONLY_CAPTURE = 0x101;      //只能拍照
+    public static final int BUTTON_STATE_ONLY_RECORDER = 0x102;     //只能录像
+    public static final int BUTTON_STATE_BOTH = 0x103;              //两者都可以
 
     //回调监听
     private JCameraLisenter jCameraLisenter;
-
 
     private Context mContext;
     private VideoView mVideoView;
@@ -81,12 +78,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private int fouce_size;
     private float screenProp;
 
-    //拍照的图片
-    private Bitmap captureBitmap;
-    //第一帧图片
-    private Bitmap firstFrame;
-    //视频URL
-    private String videoUrl;
+    private Bitmap captureBitmap;   //捕获的图片
+    private Bitmap firstFrame;      //第一帧图片
+    private String videoUrl;        //视频URL
+
     private int type = -1;
     private boolean onlyPause = false;
 
@@ -100,31 +95,20 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     private boolean takePictureing = false;
     private boolean forbiddenSwitch = false;
 
-    /**
-     * switch buttom param
-     */
-    private int iconSize = 0;
-    private int iconMargin = 0;
-    private int iconSrc = 0;
-    private int duration = 0;
+    //切换摄像头按钮的参数
+    private int iconSize = 0;       //图标大小
+    private int iconMargin = 0;     //右上边距
+    private int iconSrc = 0;        //图标资源
+    private int duration = 0;       //录制时间
 
-    /**
-     * constructor
-     */
     public JCameraView(Context context) {
         this(context, null);
     }
 
-    /**
-     * constructor
-     */
     public JCameraView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    /**
-     * constructor
-     */
     public JCameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mContext = context;
@@ -135,7 +119,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         iconMargin = a.getDimensionPixelSize(R.styleable.JCameraView_iconMargin, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, 15, getResources().getDisplayMetrics()));
         iconSrc = a.getResourceId(R.styleable.JCameraView_iconSrc, R.drawable.ic_sync_black_24dp);
-        duration = a.getInteger(R.styleable.JCameraView_duration_max, 10 * 1000);
+        duration = a.getInteger(R.styleable.JCameraView_duration_max, 10 * 1000);       //没设置默认为10s
         a.recycle();
         initData();
         initView();
@@ -242,6 +226,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                         takePictureing = false;
                         mSwitchCamera.setVisibility(INVISIBLE);
                         CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+                        mCaptureLayout.setCaptureButtomState(CaptureButton.STATE_IDLE);
                     }
                 });
             }
@@ -648,9 +633,11 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         }
     }
 
-    /**
-     * forbidden audio
-     */
+
+    /**************************************************
+     * 对外提供的API                     *
+     **************************************************/
+
     public void enableshutterSound(boolean enable) {
     }
 
@@ -682,7 +669,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        Log.i("CJT", "surfaceCreated");
+        LogUtil.i("surfaceCreated");
         new Thread() {
             @Override
             public void run() {
@@ -698,7 +685,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         onlyPause = false;
-        Log.i("CJT", "surfaceDestroyed");
+        LogUtil.i("surfaceDestroyed");
         CameraInterface.getInstance().doDestroyCamera();
     }
 }

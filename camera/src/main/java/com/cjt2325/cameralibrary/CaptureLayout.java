@@ -2,10 +2,10 @@ package com.cjt2325.cameralibrary;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -29,12 +29,10 @@ import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
  */
 
 public class CaptureLayout extends FrameLayout {
-    //拍照按钮监听
-    private CaptureLisenter captureLisenter;
-    //拍照或录制后接结果按钮监听
-    private TypeLisenter typeLisenter;
-    //退出按钮监听
-    private ReturnLisenter returnLisenter;
+
+    private CaptureLisenter captureLisenter;    //拍照按钮监听
+    private TypeLisenter typeLisenter;          //拍照或录制后接结果按钮监听
+    private ReturnLisenter returnLisenter;      //退出按钮监听
 
     public void setTypeLisenter(TypeLisenter typeLisenter) {
         this.typeLisenter = typeLisenter;
@@ -48,15 +46,17 @@ public class CaptureLayout extends FrameLayout {
         this.returnLisenter = returnLisenter;
     }
 
-    private CaptureButton btn_capture;
-    private TypeButton btn_confirm;
-    private TypeButton btn_cancel;
-    private ReturnButton btn_return;
-    private TextView txt_tip;
+    private CaptureButton btn_capture;      //拍照按钮
+    private TypeButton btn_confirm;         //确认按钮
+    private TypeButton btn_cancel;          //取消按钮
+    private ReturnButton btn_return;        //返回按钮
+    private TextView txt_tip;               //提示文本
 
     private int layout_width;
     private int layout_height;
     private int button_size;
+
+    private boolean isFirst = true;
 
     public CaptureLayout(Context context) {
         this(context, null);
@@ -69,7 +69,6 @@ public class CaptureLayout extends FrameLayout {
     public CaptureLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        //get width
         WindowManager manager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics outMetrics = new DisplayMetrics();
         manager.getDefaultDisplay().getMetrics(outMetrics);
@@ -92,17 +91,6 @@ public class CaptureLayout extends FrameLayout {
         setMeasuredDimension(layout_width, layout_height);
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-//        canvas.drawColor(0xffff0000);
-        super.onDraw(canvas);
-    }
-
     public void initEvent() {
         //默认Typebutton为隐藏
         btn_cancel.setVisibility(INVISIBLE);
@@ -118,12 +106,11 @@ public class CaptureLayout extends FrameLayout {
         btn_cancel.setClickable(false);
         btn_confirm.setClickable(false);
         ObjectAnimator animator_cancel = ObjectAnimator.ofFloat(btn_cancel, "translationX", layout_width / 4, 0);
-        animator_cancel.setDuration(200);
-        animator_cancel.start();
         ObjectAnimator animator_confirm = ObjectAnimator.ofFloat(btn_confirm, "translationX", -layout_width / 4, 0);
-        animator_confirm.setDuration(200);
-        animator_confirm.start();
-        animator_confirm.addListener(new AnimatorListenerAdapter() {
+
+        AnimatorSet set = new AnimatorSet();
+        set.playTogether(animator_cancel, animator_confirm);
+        set.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 super.onAnimationEnd(animation);
@@ -131,29 +118,18 @@ public class CaptureLayout extends FrameLayout {
                 btn_confirm.setClickable(true);
             }
         });
+        set.setDuration(200);
+        set.start();
     }
 
-    private boolean isFirst = true;
-
-    public void startAlphaAnimation() {
-        if (isFirst) {
-            ObjectAnimator animator_txt_tip = ObjectAnimator.ofFloat(txt_tip, "alpha", 1f, 0f);
-            animator_txt_tip.setDuration(500);
-            animator_txt_tip.start();
-            isFirst = false;
-        }
-    }
 
     private void initView() {
         setWillNotDraw(false);
-        //btn_capture
+        //拍照按钮
         btn_capture = new CaptureButton(getContext(), button_size);
         LayoutParams btn_capture_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        btn_capture_param.addRule(CENTER_IN_PARENT, TRUE);
         btn_capture_param.gravity = Gravity.CENTER;
-//        btn_capture_param.setMargins(0, 152, 0, 0);
         btn_capture.setLayoutParams(btn_capture_param);
-        btn_capture.setDuration(10 * 1000);
         btn_capture.setCaptureLisenter(new CaptureLisenter() {
             @Override
             public void takePictures() {
@@ -202,12 +178,9 @@ public class CaptureLayout extends FrameLayout {
             }
         });
 
-        //btn_cancel
-
+        //取消按钮
         btn_cancel = new TypeButton(getContext(), TypeButton.TYPE_CANCEL, button_size);
         final LayoutParams btn_cancel_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        btn_cancel_param.addRule(CENTER_VERTICAL, TRUE);
-//        btn_cancel_param.addRule(ALIGN_PARENT_LEFT, TRUE);
         btn_cancel_param.gravity = Gravity.CENTER_VERTICAL;
         btn_cancel_param.setMargins((layout_width / 4) - button_size / 2, 0, 0, 0);
         btn_cancel.setLayoutParams(btn_cancel_param);
@@ -218,19 +191,13 @@ public class CaptureLayout extends FrameLayout {
                     typeLisenter.cancel();
                 }
                 startAlphaAnimation();
-                btn_cancel.setVisibility(INVISIBLE);
-                btn_confirm.setVisibility(INVISIBLE);
-                btn_capture.setVisibility(VISIBLE);
-                btn_return.setVisibility(VISIBLE);
+                resetCaptureLayout();
             }
         });
 
-        //btn_confirm
-
+        //确认按钮
         btn_confirm = new TypeButton(getContext(), TypeButton.TYPE_CONFIRM, button_size);
         LayoutParams btn_confirm_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-//        btn_confirm_param.addRule(CENTER_VERTICAL, TRUE);
-//        btn_confirm_param.addRule(ALIGN_PARENT_RIGHT, TRUE);
         btn_confirm_param.gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
         btn_confirm_param.setMargins(0, 0, (layout_width / 4) - button_size / 2, 0);
         btn_confirm.setLayoutParams(btn_confirm_param);
@@ -241,17 +208,13 @@ public class CaptureLayout extends FrameLayout {
                     typeLisenter.confirm();
                 }
                 startAlphaAnimation();
-                btn_cancel.setVisibility(INVISIBLE);
-                btn_confirm.setVisibility(INVISIBLE);
-                btn_capture.setVisibility(VISIBLE);
-                btn_return.setVisibility(VISIBLE);
+                resetCaptureLayout();
             }
         });
 
-        //btn_return
+        //返回按钮
         btn_return = new ReturnButton(getContext(), button_size / 2);
         LayoutParams btn_return_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-//        btn_return_param.addRule(CENTER_VERTICAL, TRUE);
         btn_return_param.gravity = Gravity.CENTER_VERTICAL;
         btn_return_param.setMargins(layout_width / 6, 0, 0, 0);
         btn_return.setLayoutParams(btn_return_param);
@@ -265,7 +228,6 @@ public class CaptureLayout extends FrameLayout {
                 }
             }
         });
-
 
 
         txt_tip = new TextView(getContext());
@@ -283,6 +245,26 @@ public class CaptureLayout extends FrameLayout {
         this.addView(btn_return);
         this.addView(txt_tip);
 
+    }
+
+    /**************************************************
+     * 对外提供的API                      *
+     **************************************************/
+    public void resetCaptureLayout() {
+        btn_cancel.setVisibility(INVISIBLE);
+        btn_confirm.setVisibility(INVISIBLE);
+        btn_capture.setVisibility(VISIBLE);
+        btn_return.setVisibility(VISIBLE);
+    }
+
+
+    public void startAlphaAnimation() {
+        if (isFirst) {
+            ObjectAnimator animator_txt_tip = ObjectAnimator.ofFloat(txt_tip, "alpha", 1f, 0f);
+            animator_txt_tip.setDuration(500);
+            animator_txt_tip.start();
+            isFirst = false;
+        }
     }
 
     public void setTextWithAnimation(String tip) {
@@ -306,5 +288,9 @@ public class CaptureLayout extends FrameLayout {
 
     public void showTip() {
         txt_tip.setVisibility(VISIBLE);
+    }
+
+    public void setCaptureButtomState(int state) {
+        btn_capture.setState(state);
     }
 }

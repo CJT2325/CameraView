@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.graphics.Bitmap.createBitmap;
+
 /**
  * =====================================
  * 作    者: 陈嘉桐
@@ -254,6 +256,42 @@ public class CameraInterface implements Camera.PreviewCallback {
         firstFrame_data = data;
     }
 
+    public void getFrameBitmap(final TakePictureCallback callback) {
+        if (mCamera == null) {
+            return;
+        }
+        switch (cameraAngle) {
+            case 90:
+                nowAngle = Math.abs(angle + cameraAngle) % 360;
+                break;
+            case 270:
+                nowAngle = Math.abs(cameraAngle - angle);
+                break;
+        }
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+                final int nowAngle = (angle + 90) % 360;
+                Camera.Parameters parameters = mCamera.getParameters();
+                int width = parameters.getPreviewSize().width;
+                int height = parameters.getPreviewSize().height;
+                YuvImage yuv = new YuvImage(firstFrame_data, parameters.getPreviewFormat(), width, height, null);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+                byte[] bytes = out.toByteArray();
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                Matrix matrix = new Matrix();
+                if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+                    matrix.setRotate(nowAngle);
+                } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+                    matrix.setRotate(270);
+                }
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                callback.captureResult(bitmap, true);
+//            }
+//        }).start();
+    }
+
     interface CamOpenOverCallback {
         void cameraHasOpened();
 
@@ -461,7 +499,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                     matrix.postScale(-1, 1);
                 }
 
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                bitmap = createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                 if (callback != null) {
                     if (nowAngle == 90 || nowAngle == 270) {
                         callback.captureResult(bitmap, true);
@@ -492,7 +530,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
             matrix.setRotate(270);
         }
-        videoFirstFrame = Bitmap.createBitmap(videoFirstFrame, 0, 0, videoFirstFrame.getWidth(), videoFirstFrame
+        videoFirstFrame = createBitmap(videoFirstFrame, 0, 0, videoFirstFrame.getWidth(), videoFirstFrame
                 .getHeight(), matrix, true);
 
         if (isRecorder) {
