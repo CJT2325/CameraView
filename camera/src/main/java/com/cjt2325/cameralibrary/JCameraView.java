@@ -28,6 +28,7 @@ import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
+import com.cjt2325.cameralibrary.state.CameraMachine;
 import com.cjt2325.cameralibrary.util.LogUtil;
 
 import java.io.File;
@@ -44,6 +45,9 @@ import java.io.IOException;
  */
 public class JCameraView extends FrameLayout implements CameraInterface.CamOpenOverCallback, SurfaceHolder.Callback {
     private static final String TAG = "CJT";
+
+    //Camera状态机
+    private CameraMachine machine;
 
     //拍照浏览时候的类型
     private static final int TYPE_PICTURE = 0x001;
@@ -132,6 +136,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         layout_width = outMetrics.widthPixels;
         fouce_size = layout_width / 4;
         CAMERA_STATE = STATE_IDLE;
+
+        machine = new CameraMachine(getContext());
     }
 
 
@@ -161,19 +167,20 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         mSwitchCamera.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isBorrow || switching || forbiddenSwitch) {
-                    return;
-                }
-                switching = true;
-                new Thread() {
-                    /**
-                     * switch camera
-                     */
-                    @Override
-                    public void run() {
-                        CameraInterface.getInstance().switchCamera(JCameraView.this);
-                    }
-                }.start();
+                machine.swtich();
+//                if (isBorrow || switching || forbiddenSwitch) {
+//                    return;
+//                }
+//                switching = true;
+//                new Thread() {
+//                    /**
+//                     * switch camera
+//                     */
+//                    @Override
+//                    public void run() {
+//                        CameraInterface.getInstance().switchCamera(JCameraView.this);
+//                    }
+//                }.start();
             }
         });
         //CaptureLayout
@@ -391,7 +398,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
     @Override
     public void cameraHasOpened() {
         CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
-//        CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp, null);
     }
 
     private boolean switching = false;
@@ -645,27 +651,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         this.forbiddenSwitch = forbiddenSwitch;
     }
 
-    private ErrorLisenter errorLisenter;
-
-    //启动Camera错误回调
-    public void setErrorLisenter(ErrorLisenter errorLisenter) {
-        this.errorLisenter = errorLisenter;
-        CameraInterface.getInstance().setErrorLinsenter(errorLisenter);
-    }
-
-    //设置CaptureButton功能（拍照和录像）
-    public void setFeatures(int state) {
-        this.mCaptureLayout.setButtonFeatures(state);
-    }
-
-    //设置录制质量
-    public void setMediaQuality(int quality) {
-        CameraInterface.getInstance().setMediaQuality(quality);
-    }
-
-    public void setTip(String tip) {
-        mCaptureLayout.setTip(tip);
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -687,5 +672,27 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         onlyPause = false;
         LogUtil.i("surfaceDestroyed");
         CameraInterface.getInstance().doDestroyCamera();
+    }
+
+    private ErrorLisenter errorLisenter;
+
+    //启动Camera错误回调
+    public void setErrorLisenter(ErrorLisenter errorLisenter) {
+        this.errorLisenter = errorLisenter;
+        CameraInterface.getInstance().setErrorLinsenter(errorLisenter);
+    }
+
+    //设置CaptureButton功能（拍照和录像）
+    public void setFeatures(int state) {
+        this.mCaptureLayout.setButtonFeatures(state);
+    }
+
+    //设置录制质量
+    public void setMediaQuality(int quality) {
+        CameraInterface.getInstance().setMediaQuality(quality);
+    }
+
+    public void setTip(String tip) {
+        mCaptureLayout.setTip(tip);
     }
 }

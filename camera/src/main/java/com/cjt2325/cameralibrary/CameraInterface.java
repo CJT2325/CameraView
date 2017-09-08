@@ -271,23 +271,23 @@ public class CameraInterface implements Camera.PreviewCallback {
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
-                final int nowAngle = (angle + 90) % 360;
-                Camera.Parameters parameters = mCamera.getParameters();
-                int width = parameters.getPreviewSize().width;
-                int height = parameters.getPreviewSize().height;
-                YuvImage yuv = new YuvImage(firstFrame_data, parameters.getPreviewFormat(), width, height, null);
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
-                byte[] bytes = out.toByteArray();
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                Matrix matrix = new Matrix();
-                if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
-                    matrix.setRotate(nowAngle);
-                } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
-                    matrix.setRotate(270);
-                }
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                callback.captureResult(bitmap, true);
+        final int nowAngle = (angle + 90) % 360;
+        Camera.Parameters parameters = mCamera.getParameters();
+        int width = parameters.getPreviewSize().width;
+        int height = parameters.getPreviewSize().height;
+        YuvImage yuv = new YuvImage(firstFrame_data, parameters.getPreviewFormat(), width, height, null);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        yuv.compressToJpeg(new Rect(0, 0, width, height), 50, out);
+        byte[] bytes = out.toByteArray();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Matrix matrix = new Matrix();
+        if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
+            matrix.setRotate(nowAngle);
+        } else if (SELECTED_CAMERA == CAMERA_FRONT_POSITION) {
+            matrix.setRotate(270);
+        }
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        callback.captureResult(bitmap, true);
 //            }
 //        }).start();
     }
@@ -362,13 +362,13 @@ public class CameraInterface implements Camera.PreviewCallback {
             }
         }
         doStartPreview(mHolder, screenProp);
-        callback.cameraSwitchSuccess();
+//        callback.cameraSwitchSuccess();
     }
 
     /**
      * doStartPreview
      */
-    void doStartPreview(SurfaceHolder holder, float screenProp) {
+    public void doStartPreview(SurfaceHolder holder, float screenProp) {
         if (this.screenProp < 0) {
             this.screenProp = screenProp;
         }
@@ -473,7 +473,7 @@ public class CameraInterface implements Camera.PreviewCallback {
      */
     private int nowAngle;
 
-    void takePicture(final TakePictureCallback callback) {
+    public void takePicture(final TakePictureCallback callback) {
         if (mCamera == null) {
             return;
         }
@@ -512,7 +512,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     }
 
     //启动录像
-    void startRecord(Surface surface, ErrorCallback callback) {
+    public void startRecord(Surface surface, ErrorCallback callback) {
         mCamera.setPreviewCallback(null);
         final int nowAngle = (angle + 90) % 360;
         //获取第一帧图片
@@ -647,7 +647,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     }
 
     //停止录像
-    void stopRecord(boolean isShort, StopRecordCallback callback) {
+    public void stopRecord(boolean isShort, StopRecordCallback callback) {
         if (!isRecorder) {
             return;
         }
@@ -777,19 +777,19 @@ public class CameraInterface implements Camera.PreviewCallback {
     }
 
 
-    interface StopRecordCallback {
+    public interface StopRecordCallback {
         void recordResult(String url, Bitmap firstFrame);
     }
 
-    interface ErrorCallback {
+    public interface ErrorCallback {
         void onError();
     }
 
-    interface TakePictureCallback {
+    public interface TakePictureCallback {
         void captureResult(Bitmap bitmap, boolean isVertical);
     }
 
-    interface FocusCallback {
+    public interface FocusCallback {
         void focusSuccess();
 
     }
