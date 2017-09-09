@@ -1,10 +1,12 @@
 package com.cjt2325.cameralibrary.state;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
+import com.cjt2325.cameralibrary.JCameraView;
 import com.cjt2325.cameralibrary.util.LogUtil;
 
 /**
@@ -15,7 +17,7 @@ import com.cjt2325.cameralibrary.util.LogUtil;
  * 描    述：空闲状态
  * =====================================
  */
-public class PreviewState implements CameraState {
+public class PreviewState implements State {
     private final String TAG = "PreviewState";
     private CameraMachine machine;
 
@@ -29,14 +31,17 @@ public class PreviewState implements CameraState {
     }
 
     @Override
-    public void shutdown() {
+    public void stop() {
         CameraInterface.getInstance().doStopCamera();
     }
 
 
     @Override
     public void foucs(float x, float y, CameraInterface.FocusCallback callback) {
-        CameraInterface.getInstance().handleFocus(machine.getContext(), x, y, null);
+        LogUtil.i("preview state foucs");
+        if (machine.getView().handlerFoucs(x, y)) {
+            CameraInterface.getInstance().handleFocus(machine.getContext(), x, y, callback);
+        }
     }
 
     @Override
@@ -54,7 +59,9 @@ public class PreviewState implements CameraState {
         CameraInterface.getInstance().takePicture(new CameraInterface.TakePictureCallback() {
             @Override
             public void captureResult(Bitmap bitmap, boolean isVertical) {
-
+                machine.getView().showPicture(bitmap, isVertical);
+                machine.setState(machine.getBorrowPictureState());
+                LogUtil.i("capture");
             }
         });
     }
@@ -65,17 +72,30 @@ public class PreviewState implements CameraState {
     }
 
     @Override
-    public void stopRecord(boolean isShort) {
-        CameraInterface.getInstance().stopRecord(isShort, null);
+    public void stopRecord(final boolean isShort, long time) {
+        CameraInterface.getInstance().stopRecord(isShort, new CameraInterface.StopRecordCallback() {
+            @Override
+            public void recordResult(String url, Bitmap firstFrame) {
+                if (!isShort)
+                    machine.getView().playVideo(firstFrame, url);
+                machine.getView().reset(JCameraView.TYPE_SHORT);
+                machine.setState(machine.getBorrowVideoState());
+            }
+        });
     }
 
     @Override
-    public void cancle() {
+    public void cancle(SurfaceHolder holder, float screenProp) {
         LogUtil.i("浏览状态下,没有 cancle 事件");
     }
 
     @Override
     public void confirm() {
         LogUtil.i("浏览状态下,没有 confirm 事件");
+    }
+
+    @Override
+    public void zoom(float zoom, int type) {
+        CameraInterface.getInstance().setZoom(zoom, type);
     }
 }

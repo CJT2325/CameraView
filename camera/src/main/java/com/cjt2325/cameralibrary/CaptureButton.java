@@ -38,6 +38,7 @@ public class CaptureButton extends View {
     public static final int STATE_PRESS = 0x002;       //按下状态
     public static final int STATE_LONG_PRESS = 0x003;  //长按状态
     public static final int STATE_RECORDERING = 0x004; //录制状态
+    public static final int STATE_BAN = 0x005;         //禁止状态
 
     private int progress_color = 0xEE16AE16;            //进度条颜色
     private int outside_color = 0xEECCCCCC;             //外圆背景色
@@ -149,6 +150,7 @@ public class CaptureButton extends View {
                     break;
                 event_Y = event.getY();     //记录Y值
                 state = STATE_PRESS;        //修改当前状态为点击按下
+
                 //判断按钮状态是否为可录制状态
                 if ((button_state == BUTTON_STATE_ONLY_RECORDER || button_state == BUTTON_STATE_BOTH))
                     postDelayed(longPressRunnable, 500);    //同时延长500启动长按后处理的逻辑Runnable
@@ -210,7 +212,6 @@ public class CaptureButton extends View {
 
     //重制状态
     private void resetRecordAnim() {
-        state = STATE_IDLE; //设置状态为空闲
         progress = 0;       //重制进度
         invalidate();
         //还原按钮初始状态动画
@@ -238,6 +239,7 @@ public class CaptureButton extends View {
                 super.onAnimationEnd(animation);
                 //回调拍照接口
                 captureLisenter.takePictures();
+                state = STATE_BAN;
             }
         });
         inside_anim.setDuration(100);
@@ -363,7 +365,8 @@ public class CaptureButton extends View {
     }
 
     //设置状态
-    public void setState(int state) {
-        this.state = state;
+    public void resetState() {
+        state = STATE_IDLE;
+        LogUtil.i("重制状态");
     }
 }

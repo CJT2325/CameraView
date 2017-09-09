@@ -1,10 +1,13 @@
 package com.cjt2325.cameralibrary.state;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
+import com.cjt2325.cameralibrary.util.LogUtil;
+import com.cjt2325.cameralibrary.view.CameraView;
 
 /**
  * =====================================
@@ -14,45 +17,53 @@ import com.cjt2325.cameralibrary.CameraInterface;
  * 描    述：
  * =====================================
  */
-public class CameraMachine implements CameraState {
+public class CameraMachine implements State {
 
 
     private Context context;
-    private CameraState state;
+    private State state;
+    private CameraView view;
+//    private CameraInterface.CameraOpenOverCallback cameraOpenOverCallback;
 
-    private CameraState previewState;       //浏览状态(空闲)
-    private CameraState borrowPictureState; //浏览图片
-    private CameraState borrowVideoState;   //浏览视频
+    private State previewState;       //浏览状态(空闲)
+    private State borrowPictureState; //浏览图片
+    private State borrowVideoState;   //浏览视频
 
-    public CameraMachine(Context context) {
+    public CameraMachine(Context context, CameraView view, CameraInterface.CameraOpenOverCallback cameraOpenOverCallback) {
         this.context = context;
         previewState = new PreviewState(this);
         borrowPictureState = new BorrowPictureState(this);
         borrowVideoState = new BorrowVideoState(this);
         //默认设置为空闲状态
-        state = previewState;
+        this.state = previewState;
+//        this.cameraOpenOverCallback = cameraOpenOverCallback;
+        this.view = view;
+    }
+
+    public CameraView getView() {
+        return view;
     }
 
     public Context getContext() {
         return context;
     }
 
-    public void setState(CameraState state) {
+    public void setState(State state) {
         this.state = state;
     }
 
     //获取浏览图片状态
-    public CameraState getBorrowPictureState() {
+    public State getBorrowPictureState() {
         return borrowPictureState;
     }
 
     //获取浏览视频状态
-    public CameraState getBorrowVideoState() {
+    public State getBorrowVideoState() {
         return borrowVideoState;
     }
 
     //获取空闲状态
-    public CameraState getPreviewState() {
+    public State getPreviewState() {
         return previewState;
     }
 
@@ -62,13 +73,13 @@ public class CameraMachine implements CameraState {
     }
 
     @Override
-    public void shutdown() {
-        state.shutdown();
+    public void stop() {
+        state.stop();
     }
 
     @Override
     public void foucs(float x, float y, CameraInterface.FocusCallback callback) {
-
+        state.foucs(x, y, callback);
     }
 
     @Override
@@ -92,17 +103,23 @@ public class CameraMachine implements CameraState {
     }
 
     @Override
-    public void stopRecord(boolean isShort) {
-        state.stopRecord(isShort);
+    public void stopRecord(boolean isShort, long time) {
+        state.stopRecord(isShort, time);
     }
 
     @Override
-    public void cancle() {
-        state.cancle();
+    public void cancle(SurfaceHolder holder, float screenProp) {
+        state.cancle(holder, screenProp);
     }
 
     @Override
     public void confirm() {
         state.confirm();
+    }
+
+
+    @Override
+    public void zoom(float zoom,int type) {
+
     }
 }

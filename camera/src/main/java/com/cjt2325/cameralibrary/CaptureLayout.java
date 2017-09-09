@@ -191,7 +191,7 @@ public class CaptureLayout extends FrameLayout {
                     typeLisenter.cancel();
                 }
                 startAlphaAnimation();
-                resetCaptureLayout();
+//                resetCaptureLayout();
             }
         });
 
@@ -208,7 +208,7 @@ public class CaptureLayout extends FrameLayout {
                     typeLisenter.confirm();
                 }
                 startAlphaAnimation();
-                resetCaptureLayout();
+//                resetCaptureLayout();
             }
         });
 
@@ -251,6 +251,7 @@ public class CaptureLayout extends FrameLayout {
      * 对外提供的API                      *
      **************************************************/
     public void resetCaptureLayout() {
+        btn_capture.resetState();
         btn_cancel.setVisibility(INVISIBLE);
         btn_confirm.setVisibility(INVISIBLE);
         btn_capture.setVisibility(VISIBLE);
@@ -288,9 +289,5 @@ public class CaptureLayout extends FrameLayout {
 
     public void showTip() {
         txt_tip.setVisibility(VISIBLE);
-    }
-
-    public void setCaptureButtomState(int state) {
-        btn_capture.setState(state);
     }
 }

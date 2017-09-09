@@ -1,5 +1,7 @@
 package com.cjt2325.cameralibrary.view;
 
+import android.graphics.Bitmap;
+
 /**
  * =====================================
  * 作    者: 陈嘉桐
@@ -9,7 +11,15 @@ package com.cjt2325.cameralibrary.view;
  * =====================================
  */
 public interface CameraView {
-    void reset();
-    void showPicture();
-    void playVideo();
+    void reset(int type);
+
+    void showPicture(Bitmap bitmap, boolean isVertical);
+
+    void playVideo(Bitmap firstFrame, String url);
+
+    void stopVideo();
+
+    void setTip(String tip);
+
+    boolean handlerFoucs(float x, float y);
 }

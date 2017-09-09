@@ -1,9 +1,12 @@
 package com.cjt2325.cameralibrary.state;
 
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
+import com.cjt2325.cameralibrary.JCameraView;
+import com.cjt2325.cameralibrary.util.LogUtil;
 
 /**
  * =====================================
@@ -13,7 +16,7 @@ import com.cjt2325.cameralibrary.CameraInterface;
  * 描    述：
  * =====================================
  */
-public class BorrowVideoState implements CameraState {
+public class BorrowVideoState implements State {
     private final String TAG = "BorrowVideoState";
     private CameraMachine machine;
 
@@ -27,7 +30,7 @@ public class BorrowVideoState implements CameraState {
     }
 
     @Override
-    public void shutdown() {
+    public void stop() {
 
     }
 
@@ -58,17 +61,24 @@ public class BorrowVideoState implements CameraState {
     }
 
     @Override
-    public void stopRecord(boolean isShort) {
+    public void stopRecord(boolean isShort, long time) {
 
     }
 
     @Override
-    public void cancle() {
-
+    public void cancle(SurfaceHolder holder, float screenProp) {
+//        CameraInterface.getInstance().doStartPreview(holder, screenProp);
+        machine.getView().reset(JCameraView.TYPE_VIDEO);
+        machine.setState(machine.getPreviewState());
     }
 
     @Override
     public void confirm() {
+
+    }
+
+    @Override
+    public void zoom(float zoom,int type) {
 
     }
 }

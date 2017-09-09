@@ -292,7 +292,7 @@ public class CameraInterface implements Camera.PreviewCallback {
 //        }).start();
     }
 
-    interface CamOpenOverCallback {
+    public interface CameraOpenOverCallback {
         void cameraHasOpened();
 
         void cameraSwitchSuccess();
@@ -315,7 +315,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     /**
      * open Camera
      */
-    void doOpenCamera(CamOpenOverCallback callback) {
+    void doOpenCamera(CameraOpenOverCallback callback) {
         if (!CheckPermission.isCameraUseable(SELECTED_CAMERA) && this.errorLisenter != null) {
             this.errorLisenter.onError();
             return;
@@ -345,7 +345,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         }
     }
 
-    public synchronized void switchCamera(CamOpenOverCallback callback) {
+    public synchronized void switchCamera(CameraOpenOverCallback callback) {
         if (SELECTED_CAMERA == CAMERA_POST_POSITION) {
             SELECTED_CAMERA = CAMERA_FRONT_POSITION;
         } else {
@@ -661,12 +661,10 @@ public class CameraInterface implements Camera.PreviewCallback {
                 e.printStackTrace();
                 mediaRecorder = null;
                 mediaRecorder = new MediaRecorder();
-                Log.i("CJT", "stop RuntimeException");
             } catch (Exception e) {
                 e.printStackTrace();
                 mediaRecorder = null;
                 mediaRecorder = new MediaRecorder();
-                Log.i("CJT", "stop Exception");
             } finally {
                 if (mediaRecorder != null) {
                     mediaRecorder.release();
@@ -675,7 +673,6 @@ public class CameraInterface implements Camera.PreviewCallback {
                 isRecorder = false;
             }
             if (isShort) {
-                //delete video file
                 boolean result = true;
                 File file = new File(videoFileAbsPath);
                 if (file.exists()) {

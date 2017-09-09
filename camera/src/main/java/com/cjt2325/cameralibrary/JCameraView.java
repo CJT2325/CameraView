@@ -30,6 +30,7 @@ import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
 import com.cjt2325.cameralibrary.state.CameraMachine;
 import com.cjt2325.cameralibrary.util.LogUtil;
+import com.cjt2325.cameralibrary.view.CameraView;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,15 +44,16 @@ import java.io.IOException;
  * 描    述：
  * =====================================
  */
-public class JCameraView extends FrameLayout implements CameraInterface.CamOpenOverCallback, SurfaceHolder.Callback {
-    private static final String TAG = "CJT";
+public class JCameraView extends FrameLayout implements CameraInterface.CameraOpenOverCallback, SurfaceHolder.Callback, CameraView {
+    private static final String TAG = "JCameraView";
 
     //Camera状态机
     private CameraMachine machine;
 
     //拍照浏览时候的类型
-    private static final int TYPE_PICTURE = 0x001;
-    private static final int TYPE_VIDEO = 0x002;
+    public static final int TYPE_PICTURE = 0x001;
+    public static final int TYPE_VIDEO = 0x002;
+    public static final int TYPE_SHORT = 0x003;
 
     //录制视频比特率
     public static final int MEDIA_QUALITY_HIGH = 20 * 100000;
@@ -137,7 +139,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         fouce_size = layout_width / 4;
         CAMERA_STATE = STATE_IDLE;
 
-        machine = new CameraMachine(getContext());
+        machine = new CameraMachine(getContext(), this, this);
     }
 
 
@@ -168,19 +170,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
             @Override
             public void onClick(View v) {
                 machine.swtich();
-//                if (isBorrow || switching || forbiddenSwitch) {
-//                    return;
-//                }
-//                switching = true;
-//                new Thread() {
-//                    /**
-//                     * switch camera
-//                     */
-//                    @Override
-//                    public void run() {
-//                        CameraInterface.getInstance().switchCamera(JCameraView.this);
-//                    }
-//                }.start();
             }
         });
         //CaptureLayout
@@ -207,139 +196,105 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         mCaptureLayout.setCaptureLisenter(new CaptureLisenter() {
             @Override
             public void takePictures() {
-                if (CAMERA_STATE != STATE_IDLE || takePictureing) {
-                    return;
-                }
-                CAMERA_STATE = STATE_RUNNING;
-                takePictureing = true;
-                mFoucsView.setVisibility(INVISIBLE);
-                CameraInterface.getInstance().takePicture(new CameraInterface.TakePictureCallback() {
-                    @Override
-                    public void captureResult(Bitmap bitmap, boolean isVertical) {
-                        captureBitmap = bitmap;
-                        CameraInterface.getInstance().doStopCamera();
-                        type = TYPE_PICTURE;
-                        isBorrow = true;
-                        CAMERA_STATE = STATE_WAIT;
-                        if (isVertical) {
-                            mPhoto.setScaleType(ImageView.ScaleType.FIT_XY);
-                        } else {
-                            mPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                        }
-                        mPhoto.setImageBitmap(bitmap);
-                        mPhoto.setVisibility(VISIBLE);
-                        mCaptureLayout.startAlphaAnimation();
-                        mCaptureLayout.startTypeBtnAnimator();
-                        takePictureing = false;
-                        mSwitchCamera.setVisibility(INVISIBLE);
-                        CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-                        mCaptureLayout.setCaptureButtomState(CaptureButton.STATE_IDLE);
-                    }
-                });
-            }
-
-            @Override
-            public void recordShort(long time) {
-                if (CAMERA_STATE != STATE_RUNNING && stopping) {
-                    return;
-                }
-                stopping = true;
-                mCaptureLayout.setTextWithAnimation("录制时间过短");
-                mSwitchCamera.setRotation(0);
-                mSwitchCamera.setVisibility(VISIBLE);
-                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
-                postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        CameraInterface.getInstance().stopRecord(true, new
-                                CameraInterface.StopRecordCallback() {
-                                    @Override
-                                    public void recordResult(String url, Bitmap firstFrame) {
-                                        Log.i(TAG, "Record Stopping ...");
-                                        CAMERA_STATE = STATE_IDLE;
-                                        stopping = false;
-                                        isBorrow = false;
-                                    }
-                                });
-                    }
-                }, 1500 - time);
+                machine.capture();
             }
 
             @Override
             public void recordStart() {
-                if (CAMERA_STATE != STATE_IDLE && stopping) {
-                    return;
-                }
-
-                mSwitchCamera.setVisibility(GONE);
-                isBorrow = true;
-                CAMERA_STATE = STATE_RUNNING;
-                mFoucsView.setVisibility(INVISIBLE);
-                CameraInterface.getInstance().startRecord(mVideoView.getHolder().getSurface(), new CameraInterface
-                        .ErrorCallback() {
-                    @Override
-                    public void onError() {
-                        Log.i("CJT", "startRecorder error");
-                        CAMERA_STATE = STATE_WAIT;
-                        stopping = false;
-                        isBorrow = false;
-                    }
-                });
+                machine.record(mVideoView.getHolder().getSurface());
+//                if (CAMERA_STATE != STATE_IDLE && stopping) {
+//                    return;
+//                }
+//                mSwitchCamera.setVisibility(GONE);
+//                isBorrow = true;
+//                CAMERA_STATE = STATE_RUNNING;
+//                mFoucsView.setVisibility(INVISIBLE);
+//                CameraInterface.getInstance().startRecord(mVideoView.getHolder().getSurface(), new CameraInterface
+//                        .ErrorCallback() {
+//                    @Override
+//                    public void onError() {
+//                        Log.i("CJT", "startRecorder error");
+//                        CAMERA_STATE = STATE_WAIT;
+//                        stopping = false;
+//                        isBorrow = false;
+//                    }
+//                });
             }
 
             @Override
-            public void recordEnd(long time) {
-                CameraInterface.getInstance().stopRecord(false, new CameraInterface.StopRecordCallback() {
+            public void recordShort(final long time) {
+//                if (CAMERA_STATE != STATE_RUNNING && stopping) {
+//                    return;
+//                }
+//                stopping = true;
+                mCaptureLayout.setTextWithAnimation("录制时间过短");
+//                mSwitchCamera.setRotation(0);
+                mSwitchCamera.setVisibility(VISIBLE);
+//                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
+                postDelayed(new Runnable() {
                     @Override
-                    public void recordResult(final String url, Bitmap firstFrame) {
-                        CAMERA_STATE = STATE_WAIT;
-                        videoUrl = url;
-                        type = TYPE_VIDEO;
-                        JCameraView.this.firstFrame = firstFrame;
-                        new Thread(new Runnable() {
-                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-                            @Override
-                            public void run() {
-                                try {
-                                    if (mMediaPlayer == null) {
-                                        mMediaPlayer = new MediaPlayer();
-                                    } else {
-                                        mMediaPlayer.reset();
-                                    }
-                                    Log.i("CJT", "URL = " + url);
-                                    mMediaPlayer.setDataSource(url);
-                                    mMediaPlayer.setSurface(mVideoView.getHolder().getSurface());
-                                    mMediaPlayer.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
-                                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                                    mMediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer
-                                            .OnVideoSizeChangedListener() {
-                                        @Override
-                                        public void
-                                        onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-                                            updateVideoViewSize(mMediaPlayer.getVideoWidth(), mMediaPlayer
-                                                    .getVideoHeight());
-                                        }
-                                    });
-                                    mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                        @Override
-                                        public void onPrepared(MediaPlayer mp) {
-                                            mMediaPlayer.start();
-                                        }
-                                    });
-                                    mMediaPlayer.setLooping(true);
-                                    mMediaPlayer.prepare();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }).start();
+                    public void run() {
+                        machine.stopRecord(true, time);
                     }
-                });
+                }, 1500 - time);
+            }
+
+
+            @Override
+            public void recordEnd(long time) {
+                machine.stopRecord(false, time);
+//                CameraInterface.getInstance().stopRecord(false, new CameraInterface.StopRecordCallback() {
+//                    @Override
+//                    public void recordResult(final String url, Bitmap firstFrame) {
+//                        CAMERA_STATE = STATE_WAIT;
+//                        videoUrl = url;
+//                        type = TYPE_VIDEO;
+//                        JCameraView.this.firstFrame = firstFrame;
+//                        new Thread(new Runnable() {
+//                            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+//                            @Override
+//                            public void run() {
+//                                try {
+//                                    if (mMediaPlayer == null) {
+//                                        mMediaPlayer = new MediaPlayer();
+//                                    } else {
+//                                        mMediaPlayer.reset();
+//                                    }
+//                                    Log.i("CJT", "URL = " + url);
+//                                    mMediaPlayer.setDataSource(url);
+//                                    mMediaPlayer.setSurface(mVideoView.getHolder().getSurface());
+//                                    mMediaPlayer.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+//                                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//                                    mMediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer
+//                                            .OnVideoSizeChangedListener() {
+//                                        @Override
+//                                        public void
+//                                        onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+//                                            updateVideoViewSize(mMediaPlayer.getVideoWidth(), mMediaPlayer
+//                                                    .getVideoHeight());
+//                                        }
+//                                    });
+//                                    mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+//                                        @Override
+//                                        public void onPrepared(MediaPlayer mp) {
+//                                            mMediaPlayer.start();
+//                                        }
+//                                    });
+//                                    mMediaPlayer.setLooping(true);
+//                                    mMediaPlayer.prepare();
+//                                } catch (IOException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        }).start();
+//                    }
+//                });
             }
 
             @Override
             public void recordZoom(float zoom) {
-                CameraInterface.getInstance().setZoom(zoom, CameraInterface.TYPE_RECORDER);
+                machine.zoom(zoom, CameraInterface.TYPE_RECORDER);
+//                CameraInterface.getInstance().setZoom(zoom, CameraInterface.TYPE_RECORDER);
             }
 
             @Override
@@ -353,26 +308,30 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         mCaptureLayout.setTypeLisenter(new TypeLisenter() {
             @Override
             public void cancel() {
-                if (CAMERA_STATE == STATE_WAIT) {
-                    if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                        mMediaPlayer.stop();
-                        mMediaPlayer.release();
-                        mMediaPlayer = null;
-                    }
-                    handlerPictureOrVideo(type, false);
-                }
+                machine.cancle(mVideoView.getHolder(), screenProp);
+//                LogUtil.i("handlerPicure");
+//                handlerPictureOrVideo(type, false);
+//                if (CAMERA_STATE == STATE_WAIT) {
+//                    if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+//                        mMediaPlayer.stop();
+//                        mMediaPlayer.release();
+//                        mMediaPlayer = null;
+//                    }
+//                }
             }
 
             @Override
             public void confirm() {
-                if (CAMERA_STATE == STATE_WAIT) {
-                    if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                        mMediaPlayer.stop();
-                        mMediaPlayer.release();
-                        mMediaPlayer = null;
-                    }
-                    handlerPictureOrVideo(type, true);
-                }
+                machine.confirm();
+//                handlerPictureOrVideo(type, true);
+//                if (CAMERA_STATE == STATE_WAIT) {
+//                    if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+//                        mMediaPlayer.stop();
+//                        mMediaPlayer.release();
+//                        mMediaPlayer = null;
+//                    }
+//                    handlerPictureOrVideo(type, true);
+//                }
             }
         });
         mCaptureLayout.setReturnLisenter(new ReturnLisenter() {
@@ -475,7 +434,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
             mMediaPlayer = null;
         }
         CameraInterface.getInstance().unregisterSensorManager(mContext);
-        CameraInterface.getInstance().doStopCamera();
     }
 
     private boolean firstTouch = true;
@@ -518,7 +476,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
                     }
                     if ((int) (result - firstTouchLength) / 40 != 0) {
                         firstTouch = true;
-                        CameraInterface.getInstance().setZoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
+                        machine.zoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
                     }
                     Log.i("CJT", "result = " + (result - firstTouchLength));
                 }
@@ -534,42 +492,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
      * focusview animation
      */
     private void setFocusViewWidthAnimation(float x, float y) {
-        if (isBorrow) {
-            return;
-        }
-        if (y > mCaptureLayout.getTop()) {
-            return;
-        }
-        mFoucsView.setVisibility(VISIBLE);
-        if (x < mFoucsView.getWidth() / 2) {
-            x = mFoucsView.getWidth() / 2;
-        }
-        if (x > layout_width - mFoucsView.getWidth() / 2) {
-            x = layout_width - mFoucsView.getWidth() / 2;
-        }
-        if (y < mFoucsView.getWidth() / 2) {
-            y = mFoucsView.getWidth() / 2;
-        }
-        if (y > mCaptureLayout.getTop() - mFoucsView.getWidth() / 2) {
-            y = mCaptureLayout.getTop() - mFoucsView.getWidth() / 2;
-        }
-        CameraInterface.getInstance().handleFocus(mContext, x, y, new CameraInterface.FocusCallback() {
+        machine.foucs(x, y, new CameraInterface.FocusCallback() {
             @Override
             public void focusSuccess() {
                 mFoucsView.setVisibility(INVISIBLE);
             }
         });
-
-        mFoucsView.setX(x - mFoucsView.getWidth() / 2);
-        mFoucsView.setY(y - mFoucsView.getHeight() / 2);
-
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(mFoucsView, "scaleX", 1, 0.6f);
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(mFoucsView, "scaleY", 1, 0.6f);
-        ObjectAnimator alpha = ObjectAnimator.ofFloat(mFoucsView, "alpha", 1f, 0.3f, 1f, 0.3f, 1f, 0.3f, 1f);
-        AnimatorSet animSet = new AnimatorSet();
-        animSet.play(scaleX).with(scaleY).before(alpha);
-        animSet.setDuration(400);
-        animSet.start();
     }
 
     public void setJCameraLisenter(JCameraLisenter jCameraLisenter) {
@@ -578,45 +506,51 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void handlerPictureOrVideo(int type, boolean confirm) {
+        if (confirm) {
+            machine.confirm();
+        } else {
+            mPhoto.setVisibility(INVISIBLE);
+            machine.cancle(mVideoView.getHolder(), screenProp);
+        }
         if (jCameraLisenter == null || type == -1) {
             return;
         }
-        switch (type) {
-            case TYPE_PICTURE:
-                if (confirm && captureBitmap != null) {
-                    jCameraLisenter.captureSuccess(captureBitmap);
-                } else {
-                    mPhoto.setVisibility(INVISIBLE);
-                    if (captureBitmap != null) {
-                        captureBitmap.recycle();
-                    }
-                    captureBitmap = null;
-                }
-                break;
-            case TYPE_VIDEO:
-                Log.i("CJT", "TYPE VIDEO");
-                if (confirm) {
-                    //回调录像成功后的URL
-                    jCameraLisenter.recordSuccess(videoUrl, firstFrame);
-                } else {
-                    //删除视频
-                    File file = new File(videoUrl);
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
-                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-                mVideoView.setLayoutParams(videoViewParam);
-                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-                mSwitchCamera.setRotation(0);
-                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
-                break;
-        }
-        isBorrow = false;
-        mSwitchCamera.setVisibility(VISIBLE);
-        CAMERA_STATE = STATE_IDLE;
-        mFoucsView.setVisibility(VISIBLE);
-        mCaptureLayout.showTip();
+//        switch (type) {
+//            case TYPE_PICTURE:
+//                if (confirm && captureBitmap != null) {
+//                    jCameraLisenter.captureSuccess(captureBitmap);
+//                } else {
+//                    mPhoto.setVisibility(INVISIBLE);
+//                    if (captureBitmap != null) {
+//                        captureBitmap.recycle();
+//                    }
+//                    captureBitmap = null;
+//                }
+//                break;
+//            case TYPE_VIDEO:
+//                Log.i("CJT", "TYPE VIDEO");
+//                if (confirm) {
+//                    //回调录像成功后的URL
+//                    jCameraLisenter.recordSuccess(videoUrl, firstFrame);
+//                } else {
+//                    //删除视频
+//                    File file = new File(videoUrl);
+//                    if (file.exists()) {
+//                        file.delete();
+//                    }
+//                }
+//                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+//                mVideoView.setLayoutParams(videoViewParam);
+//                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+//                mSwitchCamera.setRotation(0);
+//                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
+//                break;
+//        }
+//        isBorrow = false;
+//        mSwitchCamera.setVisibility(VISIBLE);
+//        CAMERA_STATE = STATE_IDLE;
+//        mFoucsView.setVisibility(VISIBLE);
+//        mCaptureLayout.showTip();
         setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
     }
 
@@ -641,7 +575,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
 
 
     /**************************************************
-     * 对外提供的API                     *
+     *                对外提供的API                     *
      **************************************************/
 
     public void enableshutterSound(boolean enable) {
@@ -692,7 +626,132 @@ public class JCameraView extends FrameLayout implements CameraInterface.CamOpenO
         CameraInterface.getInstance().setMediaQuality(quality);
     }
 
+    @Override
+    public void reset(int type) {
+        switch (type) {
+            case TYPE_VIDEO:
+                stopVideo();
+                LayoutParams videoViewParam = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                mVideoView.setLayoutParams(videoViewParam);
+                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+//                mSwitchCamera.setRotation(0);
+//                CameraInterface.getInstance().setSwitchView(mSwitchCamera);
+                break;
+            case TYPE_PICTURE:
+                break;
+            case TYPE_SHORT:
+                break;
+        }
+        mCaptureLayout.resetCaptureLayout();
+    }
+
+    @Override
+    public void showPicture(Bitmap bitmap, boolean isVertical) {
+        if (isVertical)
+            mPhoto.setScaleType(ImageView.ScaleType.FIT_XY);
+        else
+            mPhoto.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        captureBitmap = bitmap;
+//        type = TYPE_PICTURE;
+//        isBorrow = true;
+//        CAMERA_STATE = STATE_WAIT;
+        mPhoto.setImageBitmap(bitmap);
+        mPhoto.setVisibility(VISIBLE);
+        mCaptureLayout.startAlphaAnimation();
+        mCaptureLayout.startTypeBtnAnimator();
+//        takePictureing = false;
+//        mSwitchCamera.setVisibility(INVISIBLE);
+//        CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+//        mCaptureLayout.setCaptureButtomState(CaptureButton.STATE_IDLE);
+    }
+
+    @Override
+    public void playVideo(Bitmap firstFrame, final String url) {
+        CAMERA_STATE = STATE_WAIT;
+        videoUrl = url;
+        type = TYPE_VIDEO;
+        JCameraView.this.firstFrame = firstFrame;
+        new Thread(new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void run() {
+                try {
+                    if (mMediaPlayer == null) {
+                        mMediaPlayer = new MediaPlayer();
+                    } else {
+                        mMediaPlayer.reset();
+                    }
+                    Log.i("CJT", "URL = " + url);
+                    mMediaPlayer.setDataSource(url);
+                    mMediaPlayer.setSurface(mVideoView.getHolder().getSurface());
+                    mMediaPlayer.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);
+                    mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mMediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer
+                            .OnVideoSizeChangedListener() {
+                        @Override
+                        public void
+                        onVideoSizeChanged(MediaPlayer mp, int width, int height) {
+                            updateVideoViewSize(mMediaPlayer.getVideoWidth(), mMediaPlayer
+                                    .getVideoHeight());
+                        }
+                    });
+                    mMediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            mMediaPlayer.start();
+                        }
+                    });
+                    mMediaPlayer.setLooping(true);
+                    mMediaPlayer.prepare();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    @Override
+    public void stopVideo() {
+        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+            mMediaPlayer.stop();
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
+    }
+
+    @Override
     public void setTip(String tip) {
         mCaptureLayout.setTip(tip);
+    }
+
+    @Override
+    public boolean handlerFoucs(float x, float y) {
+        LogUtil.i("handlerFouces```");
+        if (y > mCaptureLayout.getTop()) {
+            return false;
+        }
+        mFoucsView.setVisibility(VISIBLE);
+        if (x < mFoucsView.getWidth() / 2) {
+            x = mFoucsView.getWidth() / 2;
+        }
+        if (x > layout_width - mFoucsView.getWidth() / 2) {
+            x = layout_width - mFoucsView.getWidth() / 2;
+        }
+        if (y < mFoucsView.getWidth() / 2) {
+            y = mFoucsView.getWidth() / 2;
+        }
+        if (y > mCaptureLayout.getTop() - mFoucsView.getWidth() / 2) {
+            y = mCaptureLayout.getTop() - mFoucsView.getWidth() / 2;
+        }
+        mFoucsView.setX(x - mFoucsView.getWidth() / 2);
+        mFoucsView.setY(y - mFoucsView.getHeight() / 2);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(mFoucsView, "scaleX", 1, 0.6f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(mFoucsView, "scaleY", 1, 0.6f);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(mFoucsView, "alpha", 1f, 0.3f, 1f, 0.3f, 1f, 0.3f, 1f);
+        AnimatorSet animSet = new AnimatorSet();
+        animSet.play(scaleX).with(scaleY).before(alpha);
+        animSet.setDuration(400);
+        animSet.start();
+        return true;
     }
 }

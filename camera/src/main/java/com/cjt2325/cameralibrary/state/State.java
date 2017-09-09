@@ -13,11 +13,11 @@ import com.cjt2325.cameralibrary.CameraInterface;
  * 描    述：
  * =====================================
  */
-public interface CameraState {
+public interface State {
 
     void start(SurfaceHolder holder, float screenProp);
 
-    void shutdown();
+    void stop();
 
     void foucs(float x, float y, CameraInterface.FocusCallback callback);
 
@@ -29,9 +29,11 @@ public interface CameraState {
 
     void record(Surface surface);
 
-    void stopRecord(boolean isShort);
+    void stopRecord(boolean isShort,long time);
 
-    void cancle();
+    void cancle(SurfaceHolder holder, float screenProp);
 
     void confirm();
+
+    void zoom(float zoom,int type);
 }
