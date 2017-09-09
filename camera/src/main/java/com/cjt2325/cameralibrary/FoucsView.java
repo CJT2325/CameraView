@@ -3,7 +3,12 @@ package com.cjt2325.cameralibrary;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.support.annotation.Nullable;
+import android.util.AttributeSet;
 import android.view.View;
+
+import com.cjt2325.cameralibrary.util.DeviceUtil;
+import com.cjt2325.cameralibrary.util.ScreenUtils;
 
 /**
  * =====================================
@@ -20,20 +25,23 @@ public class FoucsView extends View {
     private int length;
     private Paint mPaint;
 
-    public FoucsView(Context context, int size) {
-        this(context);
-        this.size = size;
-        mPaint = new Paint();
-
-        mPaint.setAntiAlias(true);
-        mPaint.setDither(true);
-        mPaint.setColor(0xFF00CC00);
-        mPaint.setStrokeWidth(3);
-        mPaint.setStyle(Paint.Style.STROKE);
+    public FoucsView(Context context) {
+        this(context, null);
     }
 
-    private FoucsView(Context context) {
-        super(context);
+    public FoucsView(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public FoucsView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        this.size = ScreenUtils.getScreenWidth(context) / 6;
+        mPaint = new Paint();
+        mPaint.setAntiAlias(true);
+        mPaint.setDither(true);
+        mPaint.setColor(0xEE16AE16);
+        mPaint.setStrokeWidth(4);
+        mPaint.setStyle(Paint.Style.STROKE);
     }
 
     @Override
