@@ -1,7 +1,6 @@
 package com.cjt2325.cameralibrary.state;
 
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
@@ -77,7 +76,7 @@ public class PreviewState implements State {
             @Override
             public void recordResult(String url, Bitmap firstFrame) {
                 if (isShort) {
-                    machine.getView().reset(JCameraView.TYPE_SHORT);
+                    machine.getView().resetState(JCameraView.TYPE_SHORT);
                 } else {
                     machine.getView().playVideo(firstFrame, url);
                     machine.setState(machine.getBorrowVideoState());

@@ -294,8 +294,6 @@ public class CameraInterface implements Camera.PreviewCallback {
 
     public interface CameraOpenOverCallback {
         void cameraHasOpened();
-
-        void cameraSwitchSuccess();
     }
 
     private CameraInterface() {

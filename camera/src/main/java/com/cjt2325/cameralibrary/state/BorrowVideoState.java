@@ -1,12 +1,10 @@
 package com.cjt2325.cameralibrary.state;
 
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
 import com.cjt2325.cameralibrary.JCameraView;
-import com.cjt2325.cameralibrary.util.LogUtil;
 
 /**
  * =====================================
@@ -68,7 +66,7 @@ public class BorrowVideoState implements State {
     @Override
     public void cancle(SurfaceHolder holder, float screenProp) {
 //        CameraInterface.getInstance().doStartPreview(holder, screenProp);
-        machine.getView().reset(JCameraView.TYPE_VIDEO);
+        machine.getView().resetState(JCameraView.TYPE_VIDEO);
         machine.setState(machine.getPreviewState());
     }
 

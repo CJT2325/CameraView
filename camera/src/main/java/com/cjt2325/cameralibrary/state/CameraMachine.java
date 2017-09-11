@@ -1,12 +1,10 @@
 package com.cjt2325.cameralibrary.state;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
-import com.cjt2325.cameralibrary.util.LogUtil;
 import com.cjt2325.cameralibrary.view.CameraView;
 
 /**
@@ -29,7 +27,8 @@ public class CameraMachine implements State {
     private State borrowPictureState; //浏览图片
     private State borrowVideoState;   //浏览视频
 
-    public CameraMachine(Context context, CameraView view, CameraInterface.CameraOpenOverCallback cameraOpenOverCallback) {
+    public CameraMachine(Context context, CameraView view, CameraInterface.CameraOpenOverCallback
+            cameraOpenOverCallback) {
         this.context = context;
         previewState = new PreviewState(this);
         borrowPictureState = new BorrowPictureState(this);
@@ -119,7 +118,11 @@ public class CameraMachine implements State {
 
 
     @Override
-    public void zoom(float zoom,int type) {
+    public void zoom(float zoom, int type) {
 
+    }
+
+    public State getState() {
+        return this.state;
     }
 }

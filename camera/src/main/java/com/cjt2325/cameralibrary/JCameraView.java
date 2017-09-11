@@ -18,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -29,11 +28,13 @@ import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
 import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
 import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
 import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
+import com.cjt2325.cameralibrary.state.BorrowPictureState;
+import com.cjt2325.cameralibrary.state.BorrowVideoState;
 import com.cjt2325.cameralibrary.state.CameraMachine;
+import com.cjt2325.cameralibrary.state.PreviewState;
 import com.cjt2325.cameralibrary.util.LogUtil;
 import com.cjt2325.cameralibrary.view.CameraView;
 
-import java.io.File;
 import java.io.IOException;
 
 
@@ -45,7 +46,8 @@ import java.io.IOException;
  * 描    述：
  * =====================================
  */
-public class JCameraView extends FrameLayout implements CameraInterface.CameraOpenOverCallback, SurfaceHolder.Callback, CameraView {
+public class JCameraView extends FrameLayout implements CameraInterface.CameraOpenOverCallback, SurfaceHolder
+        .Callback, CameraView {
     private static final String TAG = "JCameraView";
 
     //Camera状态机
@@ -90,7 +92,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     private Bitmap firstFrame;      //第一帧图片
     private String videoUrl;        //视频URL
 
-    private int type = -1;
+    private int pauseType = -1;
+
+    public static final int PAUSER_DEFAULT = 0x201;    //默认退出界面调用onPause
+    public static final int PAUSER_PHOTO = 0x202;    //浏览照片时调用onPause
+    public static final int PAUSER_VIDEO = 0x203;    //浏览视频时调用onPause
+
     private boolean onlyPause = false;
 
 //    private int CAMERA_STATE = -1;
@@ -108,6 +115,10 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     private int iconMargin = 0;     //右上边距
     private int iconSrc = 0;        //图标资源
     private int duration = 0;       //录制时间
+
+    private boolean firstTouch = true;
+    private float firstTouchLength = 0;
+    private int zoomScale = 0;
 
     public JCameraView(Context context) {
         this(context, null);
@@ -150,15 +161,15 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         mSwitchCamera = (ImageView) view.findViewById(R.id.image_switch);
         mCaptureLayout = (CaptureLayout) view.findViewById(R.id.capture_layout);
         mFoucsView = (FoucsView) view.findViewById(R.id.fouce_view);
-
         mVideoView.getHolder().addCallback(this);
+        //切换摄像头
         mSwitchCamera.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 machine.swtich();
             }
         });
-        //START >>>>>>> captureLayout lisenter callback
+        //拍照 录像
         mCaptureLayout.setCaptureLisenter(new CaptureLisenter() {
             @Override
             public void takePictures() {
@@ -199,6 +210,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 }
             }
         });
+        //确认 取消
         mCaptureLayout.setTypeLisenter(new TypeLisenter() {
             @Override
             public void cancel() {
@@ -210,6 +222,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                 machine.confirm();
             }
         });
+        //退出
         mCaptureLayout.setReturnLisenter(new ReturnLisenter() {
             @Override
             public void onReturn() {
@@ -233,20 +246,20 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         CameraInterface.getInstance().doStartPreview(mVideoView.getHolder(), screenProp);
     }
 
-    private boolean switching = false;
-
-    @Override
-    public void cameraSwitchSuccess() {
-        switching = false;
-    }
-
-
-    //onResume
+    //生命周期onResume
     public void onResume() {
-        reset(TYPE_DEFAULT);
         LogUtil.i("JCameraView onResume");
+        //重置状态
+        resetState(TYPE_DEFAULT);
         CameraInterface.getInstance().registerSensorManager(mContext);
         CameraInterface.getInstance().setSwitchView(mSwitchCamera);
+        if (machine.getState() instanceof BorrowPictureState) {
+            machine.start(mVideoView.getHolder(), screenProp);
+        } else if (machine.getState() instanceof PreviewState) {
+            LogUtil.i("JCameraView PreviewState");
+        } else if (machine.getState() instanceof BorrowVideoState) {
+            LogUtil.i("JCameraView BorrowVideoState");
+        }
         if (onlyPause) {
             new Thread() {
                 @Override
@@ -261,18 +274,35 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     public void onPause() {
         LogUtil.i("JCameraView onPause");
         stopVideo();
-//        onlyPause = true;
-//        if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-//            mMediaPlayer.stop();
-//            mMediaPlayer.release();
-//            mMediaPlayer = null;
-//        }
+        resetState(TYPE_PICTURE);
+        onlyPause = false;
         CameraInterface.getInstance().unregisterSensorManager(mContext);
     }
 
-    private boolean firstTouch = true;
-    private float firstTouchLength = 0;
-    private int zoomScale = 0;
+
+    //SurfaceView生命周期
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        LogUtil.i("JCameraView SurfaceCreated");
+        new Thread() {
+            @Override
+            public void run() {
+                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
+            }
+        }.start();
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        LogUtil.i("JCameraView SurfaceDestroyed");
+        onlyPause = false;
+        CameraInterface.getInstance().doDestroyCamera();
+    }
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -329,20 +359,19 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         });
     }
 
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private void handlerPictureOrVideo(int type, boolean confirm) {
-        if (confirm) {
-            machine.confirm();
-        } else {
-            mPhoto.setVisibility(INVISIBLE);
-            machine.cancle(mVideoView.getHolder(), screenProp);
-        }
-        if (jCameraLisenter == null || type == -1) {
-            return;
-        }
-        setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
-    }
+//    @SuppressWarnings("ResultOfMethodCallIgnored")
+//    private void handlerPictureOrVideo(int type, boolean confirm) {
+//        if (confirm) {
+//            machine.confirm();
+//        } else {
+//            mPhoto.setVisibility(INVISIBLE);
+//            machine.cancle(mVideoView.getHolder(), screenProp);
+//        }
+//        if (jCameraLisenter == null || type == -1) {
+//            return;
+//        }
+//        setFocusViewWidthAnimation(getWidth() / 2, getHeight() / 2);
+//    }
 
 
     private void updateVideoViewSize(float videoWidth, float videoHeight) {
@@ -357,7 +386,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
 
     /**************************************************
-     *                对外提供的API                     *
+     * 对外提供的API                     *
      **************************************************/
 
 
@@ -376,27 +405,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         this.jCameraLisenter = jCameraLisenter;
     }
 
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-        LogUtil.i("surfaceCreated");
-        new Thread() {
-            @Override
-            public void run() {
-                CameraInterface.getInstance().doOpenCamera(JCameraView.this);
-            }
-        }.start();
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        onlyPause = false;
-        LogUtil.i("surfaceDestroyed");
-        CameraInterface.getInstance().doDestroyCamera();
-    }
 
     private ErrorLisenter errorLisenter;
 
@@ -417,10 +425,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     }
 
     @Override
-    public void reset(int type) {
+    public void resetState(int type) {
         switch (type) {
             case TYPE_VIDEO:
+                //停止播放
                 stopVideo();
+                //初始化VideoView
                 mVideoView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
                 CameraInterface.getInstance().doOpenCamera(JCameraView.this);
                 break;
@@ -459,7 +469,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     public void playVideo(Bitmap firstFrame, final String url) {
 //        CAMERA_STATE = STATE_WAIT;
         videoUrl = url;
-        type = TYPE_VIDEO;
+//        type = TYPE_VIDEO;
         JCameraView.this.firstFrame = firstFrame;
         new Thread(new Runnable() {
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)

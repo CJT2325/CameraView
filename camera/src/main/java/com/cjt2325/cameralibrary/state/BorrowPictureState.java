@@ -5,7 +5,6 @@ import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
 import com.cjt2325.cameralibrary.JCameraView;
-import com.cjt2325.cameralibrary.util.LogUtil;
 
 /**
  * =====================================
@@ -25,7 +24,8 @@ public class BorrowPictureState implements State {
 
     @Override
     public void start(SurfaceHolder holder, float screenProp) {
-
+        CameraInterface.getInstance().doStartPreview(holder, screenProp);
+        machine.setState(machine.getPreviewState());
     }
 
     @Override
@@ -65,7 +65,7 @@ public class BorrowPictureState implements State {
     @Override
     public void cancle(SurfaceHolder holder, float screenProp) {
         CameraInterface.getInstance().doStartPreview(holder, screenProp);
-        machine.getView().reset(JCameraView.TYPE_PICTURE);
+        machine.getView().resetState(JCameraView.TYPE_PICTURE);
         machine.setState(machine.getPreviewState());
     }
 
@@ -74,7 +74,7 @@ public class BorrowPictureState implements State {
     }
 
     @Override
-    public void zoom(float zoom,int type) {
+    public void zoom(float zoom, int type) {
 
     }
 

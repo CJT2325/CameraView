@@ -367,6 +367,5 @@ public class CaptureButton extends View {
     //设置状态
     public void resetState() {
         state = STATE_IDLE;
-        LogUtil.i("重制状态");
     }
 }

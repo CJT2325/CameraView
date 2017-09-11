@@ -11,7 +11,7 @@ import android.graphics.Bitmap;
  * =====================================
  */
 public interface CameraView {
-    void reset(int type);
+    void resetState(int type);
 
     void showPicture(Bitmap bitmap, boolean isVertical);
 
