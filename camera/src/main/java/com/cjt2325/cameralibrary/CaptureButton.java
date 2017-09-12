@@ -41,7 +41,7 @@ public class CaptureButton extends View {
     public static final int STATE_BAN = 0x005;         //禁止状态
 
     private int progress_color = 0xEE16AE16;            //进度条颜色
-    private int outside_color = 0xEECCCCCC;             //外圆背景色
+    private int outside_color = 0xEEDCDCDC;             //外圆背景色
     private int inside_color = 0xFFFFFFFF;              //内圆背景色
 
 

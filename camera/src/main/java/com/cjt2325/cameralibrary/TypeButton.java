@@ -64,7 +64,7 @@ public class TypeButton extends View{
         //如果类型为取消，则绘制内部为返回箭头
         if (button_type == TYPE_CANCEL) {
             mPaint.setAntiAlias(true);
-            mPaint.setColor(0xEECCCCCC);
+            mPaint.setColor(0xEEDCDCDC);
             mPaint.setStyle(Paint.Style.FILL);
             canvas.drawCircle(center_X, center_Y, button_radius, mPaint);
 

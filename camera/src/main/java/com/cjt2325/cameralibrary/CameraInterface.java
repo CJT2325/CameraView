@@ -27,6 +27,7 @@ import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 import com.cjt2325.cameralibrary.util.CheckPermission;
 import com.cjt2325.cameralibrary.util.DeviceUtil;
+import com.cjt2325.cameralibrary.util.FileUtil;
 import com.cjt2325.cameralibrary.util.LogUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
 
@@ -567,10 +568,10 @@ public class CameraInterface implements Camera.PreviewCallback {
 
         Camera.Size videoSize;
         if (mParams.getSupportedVideoSizes() == null) {
-            videoSize = CameraParamUtil.getInstance().getPreviewSize(mParams.getSupportedPreviewSizes(), 0,
+            videoSize = CameraParamUtil.getInstance().getPreviewSize(mParams.getSupportedPreviewSizes(), 600,
                     screenProp);
         } else {
-            videoSize = CameraParamUtil.getInstance().getPreviewSize(mParams.getSupportedVideoSizes(), 0,
+            videoSize = CameraParamUtil.getInstance().getPreviewSize(mParams.getSupportedVideoSizes(), 600,
                     screenProp);
         }
         Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
@@ -674,12 +675,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                 isRecorder = false;
             }
             if (isShort) {
-                boolean result = true;
-                File file = new File(videoFileAbsPath);
-                if (file.exists()) {
-                    result = file.delete();
-                }
-                if (result) {
+                if (FileUtil.deleteFile(videoFileAbsPath)) {
                     callback.recordResult(null, null);
                 }
                 return;

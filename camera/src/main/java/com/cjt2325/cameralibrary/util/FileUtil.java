@@ -51,6 +51,15 @@ public class FileUtil {
         }
     }
 
+    public static boolean deleteFile(String url) {
+        boolean result = false;
+        File file = new File(url);
+        if (file.exists()) {
+            result = file.delete();
+        }
+        return result;
+    }
+
     public static boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         if (Environment.MEDIA_MOUNTED.equals(state)) {

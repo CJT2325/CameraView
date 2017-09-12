@@ -213,7 +213,7 @@ public class CaptureLayout extends FrameLayout {
         });
 
         //返回按钮
-        btn_return = new ReturnButton(getContext(), button_size / 2);
+        btn_return = new ReturnButton(getContext(), (int) (button_size / 2.5f));
         LayoutParams btn_return_param = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         btn_return_param.gravity = Gravity.CENTER_VERTICAL;
         btn_return_param.setMargins(layout_width / 6, 0, 0, 0);
