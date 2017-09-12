@@ -54,7 +54,7 @@ public class BorrowPictureState implements State {
     }
 
     @Override
-    public void record(Surface surface) {
+    public void record(Surface surface,float screenProp) {
 
     }
 
@@ -71,6 +71,8 @@ public class BorrowPictureState implements State {
 
     @Override
     public void confirm() {
+        machine.getView().confirmState(JCameraView.TYPE_PICTURE);
+        machine.setState(machine.getPreviewState());
     }
 
     @Override

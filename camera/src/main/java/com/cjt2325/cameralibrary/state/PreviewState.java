@@ -31,7 +31,7 @@ public class PreviewState implements State {
 
     @Override
     public void stop() {
-        CameraInterface.getInstance().doStopCamera();
+        CameraInterface.getInstance().doStopPreview();
     }
 
 
@@ -66,8 +66,8 @@ public class PreviewState implements State {
     }
 
     @Override
-    public void record(Surface surface) {
-        CameraInterface.getInstance().startRecord(surface, null);
+    public void record(Surface surface, float screenProp) {
+        CameraInterface.getInstance().startRecord(surface, screenProp, null);
     }
 
     @Override

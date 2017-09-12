@@ -27,6 +27,7 @@ import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 import com.cjt2325.cameralibrary.util.CheckPermission;
 import com.cjt2325.cameralibrary.util.DeviceUtil;
+import com.cjt2325.cameralibrary.util.LogUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         return isPreviewing;
     }
 
-    private static CameraInterface mCameraInterface;
+    private volatile static CameraInterface mCameraInterface;
 
     public static void destroyCameraInterface() {
         if (mCameraInterface != null) {
@@ -304,9 +305,11 @@ public class CameraInterface implements Camera.PreviewCallback {
 
     //获取CameraInterface单例
     public static synchronized CameraInterface getInstance() {
-        if (mCameraInterface == null) {
-            mCameraInterface = new CameraInterface();
-        }
+        if (mCameraInterface == null)
+            synchronized (CameraInterface.class) {
+                if (mCameraInterface == null)
+                    mCameraInterface = new CameraInterface();
+            }
         return mCameraInterface;
     }
 
@@ -324,7 +327,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         callback.cameraHasOpened();
     }
 
-    private void openCamera(int id) {
+    private synchronized void openCamera(int id) {
         try {
             this.mCamera = Camera.open(id);
         } catch (Exception var3) {
@@ -349,7 +352,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         } else {
             SELECTED_CAMERA = CAMERA_POST_POSITION;
         }
-        doStopCamera();
+        doDestroyCamera();
         mCamera = Camera.open(SELECTED_CAMERA);
         if (Build.VERSION.SDK_INT > 17 && this.mCamera != null) {
             try {
@@ -367,6 +370,9 @@ public class CameraInterface implements Camera.PreviewCallback {
      * doStartPreview
      */
     public void doStartPreview(SurfaceHolder holder, float screenProp) {
+        if (isPreviewing) {
+            LogUtil.i("doStartPreview isPreviewing");
+        }
         if (this.screenProp < 0) {
             this.screenProp = screenProp;
         }
@@ -410,6 +416,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                 //启动浏览
                 mCamera.startPreview();
                 isPreviewing = true;
+                Log.i(TAG, "=== Start Preview ===");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -417,14 +424,12 @@ public class CameraInterface implements Camera.PreviewCallback {
 //                mCamera.stopPreview();
             }
         }
-
-        Log.i(TAG, "=== Start Preview ===");
     }
 
     /**
      * 停止预览，释放Camera
      */
-    public void doStopCamera() {
+    public void doStopPreview() {
         if (null != mCamera) {
             try {
                 mCamera.setPreviewCallback(null);
@@ -432,9 +437,9 @@ public class CameraInterface implements Camera.PreviewCallback {
                 //这句要在stopPreview后执行，不然会卡顿或者花屏
                 mCamera.setPreviewDisplay(null);
                 isPreviewing = false;
-                mCamera.release();
-                mCamera = null;
-                Log.i(TAG, "=== Stop Camera ===");
+//                mCamera.release();
+//                mCamera = null;
+                Log.i(TAG, "=== Stop Preview ===");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -510,7 +515,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     }
 
     //启动录像
-    public void startRecord(Surface surface, ErrorCallback callback) {
+    public void startRecord(Surface surface, float screenProp, ErrorCallback callback) {
         mCamera.setPreviewCallback(null);
         final int nowAngle = (angle + 90) % 360;
         //获取第一帧图片
@@ -562,15 +567,13 @@ public class CameraInterface implements Camera.PreviewCallback {
 
         Camera.Size videoSize;
         if (mParams.getSupportedVideoSizes() == null) {
-            videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedPreviewSizes(), 0,
+            videoSize = CameraParamUtil.getInstance().getPreviewSize(mParams.getSupportedPreviewSizes(), 0,
                     screenProp);
         } else {
-            videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedVideoSizes(), 0,
-                    screenProp);
-            videoSize = CameraParamUtil.getInstance().getPictureSize(mParams.getSupportedVideoSizes(), 0,
+            videoSize = CameraParamUtil.getInstance().getPreviewSize(mParams.getSupportedVideoSizes(), 0,
                     screenProp);
         }
-//        Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
+        Log.i(TAG, "setVideoSize    width = " + videoSize.width + "height = " + videoSize.height);
         if (videoSize.width == videoSize.height) {
             mediaRecorder.setVideoSize(preview_width, preview_height);
         } else {
@@ -681,7 +684,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                 }
                 return;
             }
-            doStopCamera();
+            doStopPreview();
             String fileName = saveVideoPath + File.separator + videoFileName;
             callback.recordResult(fileName, videoFirstFrame);
         }
@@ -803,5 +806,9 @@ public class CameraInterface implements Camera.PreviewCallback {
             sm = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         }
         sm.unregisterListener(sensorEventListener);
+    }
+
+    public void isPreview(boolean res) {
+        this.isPreviewing = res;
     }
 }

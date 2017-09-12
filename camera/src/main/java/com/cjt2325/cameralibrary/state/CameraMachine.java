@@ -97,8 +97,8 @@ public class CameraMachine implements State {
     }
 
     @Override
-    public void record(Surface surface) {
-        state.record(surface);
+    public void record(Surface surface, float screenProp) {
+        state.record(surface, screenProp);
     }
 
     @Override
