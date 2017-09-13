@@ -193,9 +193,12 @@ public class CaptureButton extends View {
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        if (hasWindowFocus) {
-            resetRecordAnim();  //重制按钮状态
-        }
+//        if (hasWindowFocus) {
+//            timer.cancel();
+//            resetRecordAnim();  //重制按钮状态
+//        } else {
+//            LogUtil.i("hasWindowFocus false");
+//        }
     }
 
     //录制结束
@@ -205,7 +208,6 @@ public class CaptureButton extends View {
                 captureLisenter.recordShort(recorded_time);//回调录制时间过短
             else
                 captureLisenter.recordEnd(recorded_time);  //回调录制结束
-
         }
         resetRecordAnim();  //重制按钮状态
     }

@@ -10,7 +10,6 @@ import android.media.MediaPlayer;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.VideoView;
@@ -31,6 +29,7 @@ import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
 import com.cjt2325.cameralibrary.state.CameraMachine;
 import com.cjt2325.cameralibrary.util.FileUtil;
 import com.cjt2325.cameralibrary.util.LogUtil;
+import com.cjt2325.cameralibrary.util.ScreenUtils;
 import com.cjt2325.cameralibrary.view.CameraView;
 
 import java.io.IOException;
@@ -46,7 +45,7 @@ import java.io.IOException;
  */
 public class JCameraView extends FrameLayout implements CameraInterface.CameraOpenOverCallback, SurfaceHolder
         .Callback, CameraView {
-    private static final String TAG = "JCameraView";
+//    private static final String TAG = "JCameraView";
 
     //Camera状态机
     private CameraMachine machine;
@@ -97,6 +96,9 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     private int iconSrc = 0;        //图标资源
     private int duration = 0;       //录制时间
 
+    //缩放梯度
+    private int zoomGradient = 0;
+
     private boolean firstTouch = true;
     private float firstTouchLength = 0;
 
@@ -125,13 +127,14 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     }
 
     private void initData() {
-        WindowManager manager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics outMetrics = new DisplayMetrics();
-        manager.getDefaultDisplay().getMetrics(outMetrics);
-        layout_width = outMetrics.widthPixels;
+//        WindowManager manager = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+//        DisplayMetrics outMetrics = new DisplayMetrics();
+//        manager.getDefaultDisplay().getMetrics(outMetrics);
+        layout_width = ScreenUtils.getScreenWidth(mContext);
+        zoomGradient = (int) (layout_width / 16f);
+        LogUtil.i("zoom = " + zoomGradient);
         machine = new CameraMachine(getContext(), this, this);
     }
-
 
     private void initView() {
         setWillNotDraw(false);
@@ -148,7 +151,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         mSwitchCamera.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                machine.swtich();
+                machine.swtich(mVideoView.getHolder(), screenProp);
             }
         });
         //拍照 录像
@@ -184,6 +187,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
             @Override
             public void recordZoom(float zoom) {
+                LogUtil.i("recordZoom");
                 machine.zoom(zoom, CameraInterface.TYPE_RECORDER);
             }
 
@@ -304,11 +308,11 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                         firstTouchLength = result;
                         firstTouch = false;
                     }
-                    if ((int) (result - firstTouchLength) / 40 != 0) {
+                    if ((int) (result - firstTouchLength) / zoomGradient != 0) {
                         firstTouch = true;
                         machine.zoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
                     }
-                    Log.i("CJT", "result = " + (result - firstTouchLength));
+//                    Log.i("CJT", "result = " + (result - firstTouchLength));
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -346,12 +350,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         CameraInterface.getInstance().setSaveVideoPath(path);
     }
 
-    public void enableshutterSound(boolean enable) {
-    }
-
-    public void forbiddenSwitchCamera(boolean forbiddenSwitch) {
-//        this.forbiddenSwitch = forbiddenSwitch;
-    }
 
     public void setJCameraLisenter(JCameraLisenter jCameraLisenter) {
         this.jCameraLisenter = jCameraLisenter;
@@ -452,7 +450,6 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                     } else {
                         mMediaPlayer.reset();
                     }
-                    Log.i("CJT", "URL = " + url);
                     mMediaPlayer.setDataSource(url);
                     mMediaPlayer.setSurface(mVideoView.getHolder().getSurface());
                     mMediaPlayer.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT);

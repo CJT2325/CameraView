@@ -5,6 +5,7 @@ import android.view.SurfaceHolder;
 
 import com.cjt2325.cameralibrary.CameraInterface;
 import com.cjt2325.cameralibrary.JCameraView;
+import com.cjt2325.cameralibrary.util.LogUtil;
 
 /**
  * =====================================
@@ -39,7 +40,7 @@ public class BorrowPictureState implements State {
     }
 
     @Override
-    public void swtich() {
+    public void swtich(SurfaceHolder holder, float screenProp) {
 
     }
 
@@ -77,7 +78,7 @@ public class BorrowPictureState implements State {
 
     @Override
     public void zoom(float zoom, int type) {
-
+        LogUtil.i(TAG, "zoom");
     }
 
 }

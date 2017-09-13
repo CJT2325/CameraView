@@ -52,17 +52,17 @@ public class CameraMachine implements State {
     }
 
     //获取浏览图片状态
-    public State getBorrowPictureState() {
+    State getBorrowPictureState() {
         return borrowPictureState;
     }
 
     //获取浏览视频状态
-    public State getBorrowVideoState() {
+    State getBorrowVideoState() {
         return borrowVideoState;
     }
 
     //获取空闲状态
-    public State getPreviewState() {
+    State getPreviewState() {
         return previewState;
     }
 
@@ -82,8 +82,8 @@ public class CameraMachine implements State {
     }
 
     @Override
-    public void swtich() {
-        state.swtich();
+    public void swtich(SurfaceHolder holder, float screenProp) {
+        state.swtich(holder, screenProp);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class CameraMachine implements State {
 
     @Override
     public void zoom(float zoom, int type) {
-
+        state.zoom(zoom, type);
     }
 
     public State getState() {

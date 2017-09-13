@@ -16,11 +16,12 @@ import com.cjt2325.cameralibrary.util.LogUtil;
  * 描    述：空闲状态
  * =====================================
  */
-public class PreviewState implements State {
-    private final String TAG = "PreviewState";
+class PreviewState implements State {
+    public static final String TAG = "PreviewState";
+
     private CameraMachine machine;
 
-    public PreviewState(CameraMachine machine) {
+    PreviewState(CameraMachine machine) {
         this.machine = machine;
     }
 
@@ -44,8 +45,8 @@ public class PreviewState implements State {
     }
 
     @Override
-    public void swtich() {
-        CameraInterface.getInstance().switchCamera(null);
+    public void swtich(SurfaceHolder holder, float screenProp) {
+        CameraInterface.getInstance().switchCamera(holder, screenProp);
     }
 
     @Override
@@ -97,6 +98,7 @@ public class PreviewState implements State {
 
     @Override
     public void zoom(float zoom, int type) {
+        LogUtil.i(TAG, "zoom");
         CameraInterface.getInstance().setZoom(zoom, type);
     }
 }
