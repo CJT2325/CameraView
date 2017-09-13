@@ -35,7 +35,7 @@
 
 > 最新版本（1.1.5）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.1.4'
+compile 'cjt.library.wheel:camera:1.1.5'
 //项目重构
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
