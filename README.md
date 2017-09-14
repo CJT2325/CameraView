@@ -1,6 +1,6 @@
-# JCameraView（1.1.5）  群：590205592
+# JCameraView（1.1.6）  群：590205592
 ## 使用方法
-- Gradle依赖：  compile 'cjt.library.wheel:camera :1.1.5'
+- Gradle依赖：  compile 'cjt.library.wheel:camera :1.1.6'
 - 引用源码  ：  clone源码后 引入lib -> camera
 - 尝试运行  ：  导入源码 运行cameraapplication这个model（！！！）
 - 扫描二维码：  apk比较旧
@@ -37,9 +37,9 @@
 
 **添加下列代码到 module gradle**
 
-> 最新版本（1.1.5）更新内容：
+> 最新版本（1.1.6）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.1.5'
+compile 'cjt.library.wheel:camera:1.1.6'
 //项目重构
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
