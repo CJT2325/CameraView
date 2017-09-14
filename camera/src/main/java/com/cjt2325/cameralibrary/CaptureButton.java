@@ -98,8 +98,9 @@ public class CaptureButton extends View {
 
         state = STATE_IDLE;                //初始化为空闲状态
         button_state = BUTTON_STATE_BOTH;  //初始化按钮为可录制可拍照
-
+        LogUtil.i("CaptureButtom start");
         duration = 10 * 1000;              //默认最长录制时间为10s
+        LogUtil.i("CaptureButtom end");
         min_duration = 1500;              //默认最短录制时间为1.5s
 
         center_X = (button_size + outside_add_size * 2) / 2;
@@ -334,6 +335,7 @@ public class CaptureButton extends View {
     //设置最长录制时间
     public void setDuration(int duration) {
         this.duration = duration;
+        timer = new RecordCountDownTimer(duration, duration / 360);    //录制定时器
     }
 
     //设置最短录制时间
