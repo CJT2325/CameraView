@@ -1,5 +1,9 @@
 # JCameraView（1.1.5）  群：590205592
-# 下载源码后运行cameraapplication这个model
+## 使用方法
+- Gradle依赖：  compile 'cjt.library.wheel:camera :1.1.5'
+- 引用源码  ：  clone源码后 引入lib -> camera
+- 尝试运行  ：  导入源码 运行cameraapplication这个model（！！！）
+- 扫描二维码：  apk比较旧
 
  [![Download](https://api.bintray.com/packages/cjt/maven/cameraView/images/download.svg)](https://bintray.com//cjt/maven/cameraView/_latestVersion) [![API 14+](https://img.shields.io/badge/API-14%2B-green.svg)](https://github.com/CJT2325/CameraView)
 
