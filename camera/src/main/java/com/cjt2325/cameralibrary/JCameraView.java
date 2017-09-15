@@ -493,6 +493,12 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     }
 
     @Override
+    public void startPreviewCallback() {
+        LogUtil.i("startPreviewCallback");
+        handlerFoucs(mFoucsView.getWidth() / 2, mFoucsView.getHeight() / 2);
+    }
+
+    @Override
     public boolean handlerFoucs(float x, float y) {
         if (y > mCaptureLayout.getTop()) {
             return false;

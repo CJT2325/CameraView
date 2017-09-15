@@ -95,8 +95,10 @@ public class CheckPermission {
             if (mCamera != null) {
                 mCamera.release();
             } else {
+                mCamera.release();
                 canUse = false;
             }
+            mCamera = null;
         }
         return canUse;
     }

@@ -23,5 +23,7 @@ public interface CameraView {
 
     void setTip(String tip);
 
+    void startPreviewCallback();
+
     boolean handlerFoucs(float x, float y);
 }

@@ -180,8 +180,11 @@ public class CaptureButton extends View {
             //当前是点击按下
             case STATE_PRESS:
                 if (captureLisenter != null && (button_state == BUTTON_STATE_ONLY_CAPTURE || button_state ==
-                        BUTTON_STATE_BOTH))
+                        BUTTON_STATE_BOTH)) {
                     startCaptureAnimation(button_inside_radius);
+                } else {
+                    state = STATE_IDLE;
+                }
                 break;
             //当前是长按状态
             case STATE_RECORDERING:
