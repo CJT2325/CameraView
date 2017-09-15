@@ -1,11 +1,11 @@
-package com.cjt2325.cameralibrary.lisenter;
+package com.cjt2325.cameralibrary.listener;
 
 /**
  * create by CJT2325
  * 445263848@qq.com.
  */
 
-public interface CaptureLisenter {
+public interface CaptureListener {
     void takePictures();
 
     void recordShort(long time);

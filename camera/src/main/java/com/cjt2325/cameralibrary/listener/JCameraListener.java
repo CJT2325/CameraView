@@ -1,4 +1,4 @@
-package com.cjt2325.cameralibrary.lisenter;
+package com.cjt2325.cameralibrary.listener;
 
 import android.graphics.Bitmap;
 
@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
  * 描    述：
  * =====================================
  */
-public interface JCameraLisenter {
+public interface JCameraListener {
 
     void captureSuccess(Bitmap bitmap);
 

@@ -21,11 +21,11 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
-import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
-import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
-import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
-import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
-import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
+import com.cjt2325.cameralibrary.listener.CaptureListener;
+import com.cjt2325.cameralibrary.listener.ErrorListener;
+import com.cjt2325.cameralibrary.listener.JCameraListener;
+import com.cjt2325.cameralibrary.listener.ReturnListener;
+import com.cjt2325.cameralibrary.listener.TypeListener;
 import com.cjt2325.cameralibrary.state.CameraMachine;
 import com.cjt2325.cameralibrary.util.FileUtil;
 import com.cjt2325.cameralibrary.util.LogUtil;
@@ -72,7 +72,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
 
     //回调监听
-    private JCameraLisenter jCameraLisenter;
+    private JCameraListener jCameraLisenter;
 
     private Context mContext;
     private VideoView mVideoView;
@@ -155,7 +155,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
             }
         });
         //拍照 录像
-        mCaptureLayout.setCaptureLisenter(new CaptureLisenter() {
+        mCaptureLayout.setCaptureLisenter(new CaptureListener() {
             @Override
             public void takePictures() {
                 mSwitchCamera.setVisibility(INVISIBLE);
@@ -199,7 +199,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
             }
         });
         //确认 取消
-        mCaptureLayout.setTypeLisenter(new TypeLisenter() {
+        mCaptureLayout.setTypeLisenter(new TypeListener() {
             @Override
             public void cancel() {
                 machine.cancle(mVideoView.getHolder(), screenProp);
@@ -211,7 +211,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
             }
         });
         //退出
-        mCaptureLayout.setReturnLisenter(new ReturnLisenter() {
+        mCaptureLayout.setReturnLisenter(new ReturnListener() {
             @Override
             public void onReturn() {
                 if (jCameraLisenter != null) {
@@ -351,15 +351,15 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     }
 
 
-    public void setJCameraLisenter(JCameraLisenter jCameraLisenter) {
+    public void setJCameraLisenter(JCameraListener jCameraLisenter) {
         this.jCameraLisenter = jCameraLisenter;
     }
 
 
-    private ErrorLisenter errorLisenter;
+    private ErrorListener errorLisenter;
 
     //启动Camera错误回调
-    public void setErrorLisenter(ErrorLisenter errorLisenter) {
+    public void setErrorLisenter(ErrorListener errorLisenter) {
         this.errorLisenter = errorLisenter;
         CameraInterface.getInstance().setErrorLinsenter(errorLisenter);
     }

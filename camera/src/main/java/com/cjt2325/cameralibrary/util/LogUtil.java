@@ -17,7 +17,7 @@ public class LogUtil {
     private static final String DEFAULT_TAG = "CJT";
 
     public static void i(String tag, String msg) {
-//        if (DEBUG)
+        if (DEBUG)
             Log.i(tag, msg);
     }
 

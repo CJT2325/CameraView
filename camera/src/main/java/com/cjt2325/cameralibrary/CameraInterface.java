@@ -22,7 +22,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.widget.ImageView;
 
-import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
+import com.cjt2325.cameralibrary.listener.ErrorListener;
 import com.cjt2325.cameralibrary.util.AngleUtil;
 import com.cjt2325.cameralibrary.util.CameraParamUtil;
 import com.cjt2325.cameralibrary.util.CheckPermission;
@@ -78,7 +78,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     private String videoFileAbsPath;
     private Bitmap videoFirstFrame = null;
 
-    private ErrorLisenter errorLisenter;
+    private ErrorListener errorLisenter;
 
     private ImageView mSwitchView;
 
@@ -713,7 +713,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         return x;
     }
 
-    void setErrorLinsenter(ErrorLisenter errorLisenter) {
+    void setErrorLinsenter(ErrorListener errorLisenter) {
         this.errorLisenter = errorLisenter;
     }
 

@@ -14,9 +14,9 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
-import com.cjt2325.cameralibrary.lisenter.ReturnLisenter;
-import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
+import com.cjt2325.cameralibrary.listener.CaptureListener;
+import com.cjt2325.cameralibrary.listener.ReturnListener;
+import com.cjt2325.cameralibrary.listener.TypeListener;
 
 
 /**
@@ -30,20 +30,20 @@ import com.cjt2325.cameralibrary.lisenter.TypeLisenter;
 
 public class CaptureLayout extends FrameLayout {
 
-    private CaptureLisenter captureLisenter;    //拍照按钮监听
-    private TypeLisenter typeLisenter;          //拍照或录制后接结果按钮监听
-    private ReturnLisenter returnLisenter;      //退出按钮监听
+    private CaptureListener captureLisenter;    //拍照按钮监听
+    private TypeListener typeLisenter;          //拍照或录制后接结果按钮监听
+    private ReturnListener returnListener;      //退出按钮监听
 
-    public void setTypeLisenter(TypeLisenter typeLisenter) {
+    public void setTypeLisenter(TypeListener typeLisenter) {
         this.typeLisenter = typeLisenter;
     }
 
-    public void setCaptureLisenter(CaptureLisenter captureLisenter) {
+    public void setCaptureLisenter(CaptureListener captureLisenter) {
         this.captureLisenter = captureLisenter;
     }
 
-    public void setReturnLisenter(ReturnLisenter returnLisenter) {
-        this.returnLisenter = returnLisenter;
+    public void setReturnLisenter(ReturnListener returnListener) {
+        this.returnListener = returnListener;
     }
 
     private CaptureButton btn_capture;      //拍照按钮
@@ -130,7 +130,7 @@ public class CaptureLayout extends FrameLayout {
         LayoutParams btn_capture_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         btn_capture_param.gravity = Gravity.CENTER;
         btn_capture.setLayoutParams(btn_capture_param);
-        btn_capture.setCaptureLisenter(new CaptureLisenter() {
+        btn_capture.setCaptureLisenter(new CaptureListener() {
             @Override
             public void takePictures() {
                 if (captureLisenter != null) {
@@ -222,8 +222,8 @@ public class CaptureLayout extends FrameLayout {
             @Override
             public void onClick(View v) {
                 if (captureLisenter != null) {
-                    if (returnLisenter != null) {
-                        returnLisenter.onReturn();
+                    if (returnListener != null) {
+                        returnListener.onReturn();
                     }
                 }
             }

@@ -1,4 +1,4 @@
-package com.cjt2325.cameralibrary.lisenter;
+package com.cjt2325.cameralibrary.listener;
 
 /**
  * =====================================
@@ -8,7 +8,7 @@ package com.cjt2325.cameralibrary.lisenter;
  * 描    述：
  * =====================================
  */
-public interface ErrorLisenter {
+public interface ErrorListener {
     void onError();
     void AudioPermissionError();
 }

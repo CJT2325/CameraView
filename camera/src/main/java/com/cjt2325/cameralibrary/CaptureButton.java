@@ -12,7 +12,7 @@ import android.os.CountDownTimer;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.cjt2325.cameralibrary.lisenter.CaptureLisenter;
+import com.cjt2325.cameralibrary.listener.CaptureListener;
 import com.cjt2325.cameralibrary.util.CheckPermission;
 import com.cjt2325.cameralibrary.util.LogUtil;
 
@@ -71,7 +71,7 @@ public class CaptureButton extends View {
     private RectF rectF;
 
     private LongPressRunnable longPressRunnable;    //长按后处理的逻辑Runnable
-    private CaptureLisenter captureLisenter;        //按钮回调接口
+    private CaptureListener captureLisenter;        //按钮回调接口
     private RecordCountDownTimer timer;             //计时器
 
     public CaptureButton(Context context) {
@@ -347,7 +347,7 @@ public class CaptureButton extends View {
     }
 
     //设置回调接口
-    public void setCaptureLisenter(CaptureLisenter captureLisenter) {
+    public void setCaptureLisenter(CaptureListener captureLisenter) {
         this.captureLisenter = captureLisenter;
     }
 
