@@ -276,9 +276,11 @@ public class CameraInterface implements Camera.PreviewCallback {
      * open Camera
      */
     void doOpenCamera(CameraOpenOverCallback callback) {
-        if (!CheckPermission.isCameraUseable(SELECTED_CAMERA) && this.errorLisenter != null) {
-            this.errorLisenter.onError();
-            return;
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            if (!CheckPermission.isCameraUseable(SELECTED_CAMERA) && this.errorLisenter != null) {
+                this.errorLisenter.onError();
+                return;
+            }
         }
         if (mCamera == null) {
             openCamera(SELECTED_CAMERA);
