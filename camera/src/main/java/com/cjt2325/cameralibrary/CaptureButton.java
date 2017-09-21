@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -43,10 +44,6 @@ public class CaptureButton extends View {
     private int progress_color = 0xEE16AE16;            //进度条颜色
     private int outside_color = 0xEEDCDCDC;             //外圆背景色
     private int inside_color = 0xFFFFFFFF;              //内圆背景色
-
-
-    private float event_Y;  //Touch_Event_Down时候记录的Y值
-
 
     private Paint mPaint;
 
@@ -141,6 +138,7 @@ public class CaptureButton extends View {
         }
     }
 
+    float lastLeght = -1;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -149,7 +147,6 @@ public class CaptureButton extends View {
                 LogUtil.i("state = " + state);
                 if (event.getPointerCount() > 1 || state != STATE_IDLE)
                     break;
-                event_Y = event.getY();     //记录Y值
                 state = STATE_PRESS;        //修改当前状态为点击按下
 
                 //判断按钮状态是否为可录制状态
@@ -157,16 +154,45 @@ public class CaptureButton extends View {
                     postDelayed(longPressRunnable, 500);    //同时延长500启动长按后处理的逻辑Runnable
                 break;
             case MotionEvent.ACTION_MOVE:
+                Log.e("TAg", event.getPointerCount() + "");
                 if (captureLisenter != null
                         && state == STATE_RECORDERING
                         && (button_state == BUTTON_STATE_ONLY_RECORDER || button_state == BUTTON_STATE_BOTH)) {
-                    //记录当前Y值与按下时候Y值的差值，调用缩放回调接口
-                    captureLisenter.recordZoom(event_Y - event.getY());
+                    if (event.getPointerCount() == 3) {
+                        //第一个点
+                        float point_2_X = event.getX(1);
+                        float point_2_Y = event.getY(1);
+                        //第二个点
+                        float point_3_X = event.getX(2);
+                        float point_3_Y = event.getY(2);
+                        float result = (float) Math.sqrt(Math.pow(point_2_X - point_3_X, 2) + Math.pow(point_2_Y -
+                                point_3_Y, 2));
+
+                        if (lastLeght == -1) {
+                            lastLeght = result;
+                            return true;
+                        }
+                        if (Math.abs(lastLeght - result) > 3) {
+                            if (lastLeght > result) {
+                                //缩小
+                                captureLisenter.recordZoom(-1);
+                            } else {
+                                //放大
+                                captureLisenter.recordZoom(1);
+                            }
+                            lastLeght = result;
+                        }
+                        Log.e("TAg", result + "");
+                    } else {
+                        lastLeght = -1;
+                    }
                 }
+
                 break;
             case MotionEvent.ACTION_UP:
                 //根据当前按钮的状态进行相应的处理
                 handlerUnpressByState();
+                lastLeght = -1;
                 break;
         }
         return true;

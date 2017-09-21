@@ -99,8 +99,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     //缩放梯度
     private int zoomGradient = 0;
 
-    private boolean firstTouch = true;
-    private float firstTouchLength = 0;
+    private float lastTouchLength = -1;
 
     public JCameraView(Context context) {
         this(context, null);
@@ -279,7 +278,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
+        switch (event.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 if (event.getPointerCount() == 1) {
                     //显示对焦指示器
@@ -289,10 +288,9 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
                     Log.i("CJT", "ACTION_DOWN = " + 2);
                 }
                 break;
+
             case MotionEvent.ACTION_MOVE:
-                if (event.getPointerCount() == 1) {
-                    firstTouch = true;
-                }
+
                 if (event.getPointerCount() == 2) {
                     //第一个点
                     float point_1_X = event.getX(0);
@@ -303,20 +301,26 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
 
                     float result = (float) Math.sqrt(Math.pow(point_1_X - point_2_X, 2) + Math.pow(point_1_Y -
                             point_2_Y, 2));
-
-                    if (firstTouch) {
-                        firstTouchLength = result;
-                        firstTouch = false;
+                    if (lastTouchLength == -1) {
+                        lastTouchLength = result;
+                        return true;
                     }
-                    if ((int) (result - firstTouchLength) / zoomGradient != 0) {
-                        firstTouch = true;
-                        machine.zoom(result - firstTouchLength, CameraInterface.TYPE_CAPTURE);
+                    if (Math.abs(lastTouchLength - result) > 3) {
+                        if (lastTouchLength > result) {
+                            //缩小
+                            machine.zoom(-1, CameraInterface.TYPE_CAPTURE);
+                        } else {
+                            //放大
+                            machine.zoom(1, CameraInterface.TYPE_CAPTURE);
+                        }
+                        lastTouchLength = result;
                     }
-//                    Log.i("CJT", "result = " + (result - firstTouchLength));
+                } else {
+                    lastTouchLength = -1;
                 }
                 break;
             case MotionEvent.ACTION_UP:
-                firstTouch = true;
+                lastTouchLength = -1;
                 break;
         }
         return true;

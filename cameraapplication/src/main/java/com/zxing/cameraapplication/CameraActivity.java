@@ -13,8 +13,8 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.cjt2325.cameralibrary.JCameraView;
-import com.cjt2325.cameralibrary.lisenter.ErrorLisenter;
-import com.cjt2325.cameralibrary.lisenter.JCameraLisenter;
+import com.cjt2325.cameralibrary.listener.ErrorListener;
+import com.cjt2325.cameralibrary.listener.JCameraListener;
 import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.FileUtil;
 
@@ -35,7 +35,7 @@ public class CameraActivity extends AppCompatActivity {
         jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
         jCameraView.setTip("JCameraView Tip");
         jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
-        jCameraView.setErrorLisenter(new ErrorLisenter() {
+        jCameraView.setErrorLisenter(new ErrorListener() {
             @Override
             public void onError() {
                 //错误监听
@@ -51,7 +51,7 @@ public class CameraActivity extends AppCompatActivity {
             }
         });
         //JCameraView监听
-        jCameraView.setJCameraLisenter(new JCameraLisenter() {
+        jCameraView.setJCameraLisenter(new JCameraListener() {
             @Override
             public void captureSuccess(Bitmap bitmap) {
                 //获取图片bitmap

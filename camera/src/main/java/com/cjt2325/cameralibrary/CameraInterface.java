@@ -206,26 +206,27 @@ public class CameraInterface implements Camera.PreviewCallback {
         if (mCamera == null) {
             return;
         }
-        if (mParams == null) {
-            mParams = mCamera.getParameters();
-        }
-        if (!mParams.isZoomSupported() || !mParams.isSmoothZoomSupported()) {
+        if (!mParams.isZoomSupported()) {
             return;
         }
+        int scaleRate = 1;
         switch (type) {
             case TYPE_RECORDER:
                 //如果不是录制视频中，上滑不会缩放
                 if (!isRecorder) {
                     return;
                 }
-                if (zoom >= 0) {
-                    //每移动50个像素缩放一个级别
-                    int scaleRate = (int) (zoom / 40);
-                    if (scaleRate <= mParams.getMaxZoom() && scaleRate >= nowScaleRate && recordScleRate != scaleRate) {
-                        mParams.setZoom(scaleRate);
-                        mCamera.setParameters(mParams);
-                        recordScleRate = scaleRate;
+                //每移动50个像素缩放一个级别
+                 scaleRate = (int) zoom;
+                if (scaleRate < mParams.getMaxZoom()) {
+                    nowScaleRate += scaleRate;
+                    if (nowScaleRate < 0) {
+                        nowScaleRate = 0;
+                    } else if (nowScaleRate > mParams.getMaxZoom()) {
+                        nowScaleRate = mParams.getMaxZoom();
                     }
+                    mParams.setZoom(nowScaleRate);
+                    mCamera.setParameters(mParams);
                 }
                 break;
             case TYPE_CAPTURE:
@@ -233,7 +234,7 @@ public class CameraInterface implements Camera.PreviewCallback {
                     return;
                 }
                 //每移动50个像素缩放一个级别
-                int scaleRate = (int) (zoom / 50);
+                 scaleRate = (int) zoom;
                 if (scaleRate < mParams.getMaxZoom()) {
                     nowScaleRate += scaleRate;
                     if (nowScaleRate < 0) {
@@ -345,29 +346,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         this.mHolder = holder;
         if (mCamera != null) {
             try {
-                mParams = mCamera.getParameters();
-                Camera.Size previewSize = CameraParamUtil.getInstance().getPreviewSize(mParams
-                        .getSupportedPreviewSizes(), 1000, screenProp);
-                Camera.Size pictureSize = CameraParamUtil.getInstance().getPictureSize(mParams
-                        .getSupportedPictureSizes(), 1200, screenProp);
-
-                mParams.setPreviewSize(previewSize.width, previewSize.height);
-
-                preview_width = previewSize.width;
-                preview_height = previewSize.height;
-
-                mParams.setPictureSize(pictureSize.width, pictureSize.height);
-
-                if (CameraParamUtil.getInstance().isSupportedFocusMode(
-                        mParams.getSupportedFocusModes(),
-                        Camera.Parameters.FOCUS_MODE_AUTO)) {
-                    mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-                }
-                if (CameraParamUtil.getInstance().isSupportedPictureFormats(mParams.getSupportedPictureFormats(),
-                        ImageFormat.JPEG)) {
-                    mParams.setPictureFormat(ImageFormat.JPEG);
-                    mParams.setJpegQuality(100);
-                }
+                setShootParams(screenProp);
                 mCamera.setParameters(mParams);
                 mParams = mCamera.getParameters();
                 mCamera.setPreviewDisplay(holder);  //SurfaceView
@@ -379,6 +358,32 @@ public class CameraInterface implements Camera.PreviewCallback {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void setShootParams(float screenProp) {
+        mParams = mCamera.getParameters();
+        Camera.Size previewSize = CameraParamUtil.getInstance().getPreviewSize(mParams
+                .getSupportedPreviewSizes(), 1000, screenProp);
+        Camera.Size pictureSize = CameraParamUtil.getInstance().getPictureSize(mParams
+                .getSupportedPictureSizes(), 1200, screenProp);
+
+        mParams.setPreviewSize(previewSize.width, previewSize.height);
+
+        preview_width = previewSize.width;
+        preview_height = previewSize.height;
+
+        mParams.setPictureSize(pictureSize.width, pictureSize.height);
+
+        if (CameraParamUtil.getInstance().isSupportedFocusMode(
+                mParams.getSupportedFocusModes(),
+                Camera.Parameters.FOCUS_MODE_AUTO)) {
+            mParams.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+        if (CameraParamUtil.getInstance().isSupportedPictureFormats(mParams.getSupportedPictureFormats(),
+                ImageFormat.JPEG)) {
+            mParams.setPictureFormat(ImageFormat.JPEG);
+            mParams.setJpegQuality(100);
         }
     }
 
