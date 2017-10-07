@@ -81,4 +81,9 @@ public class BorrowPictureState implements State {
         LogUtil.i(TAG, "zoom");
     }
 
+    @Override
+    public void flash(String mode) {
+
+    }
+
 }

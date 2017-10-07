@@ -122,6 +122,11 @@ public class CameraMachine implements State {
         state.zoom(zoom, type);
     }
 
+    @Override
+    public void flash(String mode) {
+        state.flash(mode);
+    }
+
     public State getState() {
         return this.state;
     }

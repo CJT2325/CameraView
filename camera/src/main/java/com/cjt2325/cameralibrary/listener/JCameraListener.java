@@ -16,6 +16,4 @@ public interface JCameraListener {
 
     void recordSuccess(String url, Bitmap firstFrame);
 
-    void quit();
-
 }

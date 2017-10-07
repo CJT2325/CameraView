@@ -1,5 +1,6 @@
 package com.cjt2325.cameralibrary;
 
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -81,6 +82,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     private ErrorListener errorLisenter;
 
     private ImageView mSwitchView;
+    private ImageView mFlashLamp;
 
     private int preview_width;
     private int preview_height;
@@ -109,8 +111,9 @@ public class CameraInterface implements Camera.PreviewCallback {
         return mCameraInterface;
     }
 
-    public void setSwitchView(ImageView mSwitchView) {
+    public void setSwitchView(ImageView mSwitchView, ImageView mFlashLamp) {
         this.mSwitchView = mSwitchView;
+        this.mFlashLamp = mFlashLamp;
         if (mSwitchView != null) {
             cameraAngle = CameraParamUtil.getInstance().getCameraDisplayOrientation(mSwitchView.getContext(),
                     SELECTED_CAMERA);
@@ -185,9 +188,12 @@ public class CameraInterface implements Camera.PreviewCallback {
                     }
                     break;
             }
-            ObjectAnimator anim = ObjectAnimator.ofFloat(mSwitchView, "rotation", start_rotaion, end_rotation);
-            anim.setDuration(500);
-            anim.start();
+            ObjectAnimator animC = ObjectAnimator.ofFloat(mSwitchView, "rotation", start_rotaion, end_rotation);
+            ObjectAnimator animF = ObjectAnimator.ofFloat(mFlashLamp, "rotation", start_rotaion, end_rotation);
+            AnimatorSet set = new AnimatorSet();
+            set.playTogether(animC, animF);
+            set.setDuration(500);
+            set.start();
             rotation = angle;
         }
     }
@@ -260,6 +266,14 @@ public class CameraInterface implements Camera.PreviewCallback {
         firstFrame_data = data;
     }
 
+    public void setFlashMode(String flashMode) {
+        if (mCamera == null)
+            return;
+        Camera.Parameters params = mCamera.getParameters();
+        params.setFlashMode(flashMode);
+        mCamera.setParameters(params);
+    }
+
 
     public interface CameraOpenOverCallback {
         void cameraHasOpened();
@@ -286,6 +300,12 @@ public class CameraInterface implements Camera.PreviewCallback {
             openCamera(SELECTED_CAMERA);
         }
         callback.cameraHasOpened();
+    }
+
+    private void setFlashModel() {
+        mParams = mCamera.getParameters();
+        mParams.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH); //设置camera参数为Torch模式
+        mCamera.setParameters(mParams);
     }
 
     private synchronized void openCamera(int id) {
@@ -409,6 +429,7 @@ public class CameraInterface implements Camera.PreviewCallback {
             try {
                 mCamera.setPreviewCallback(null);
                 mSwitchView = null;
+                mFlashLamp = null;
                 mCamera.stopPreview();
                 //这句要在stopPreview后执行，不然会卡顿或者花屏
                 mCamera.setPreviewDisplay(null);
@@ -696,8 +717,8 @@ public class CameraInterface implements Camera.PreviewCallback {
     private static Rect calculateTapArea(float x, float y, float coefficient, Context context) {
         float focusAreaSize = 300;
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
-        int centerX = (int) (x / ScreenUtils.getScreenHeight(context) * 2000 - 1000);
-        int centerY = (int) (y / ScreenUtils.getScreenWidth(context) * 2000 - 1000);
+        int centerX = (int) (x / ScreenUtils.getScreenWidth(context) * 2000 - 1000);
+        int centerY = (int) (y / ScreenUtils.getScreenHeight(context) * 2000 - 1000);
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int top = clamp(centerY - areaSize / 2, -1000, 1000);
         RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);

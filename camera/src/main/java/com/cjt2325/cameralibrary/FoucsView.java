@@ -7,7 +7,6 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.ScreenUtils;
 
 /**
@@ -35,7 +34,7 @@ public class FoucsView extends View {
 
     public FoucsView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.size = ScreenUtils.getScreenWidth(context) / 6;
+        this.size = ScreenUtils.getScreenWidth(context) / 3;
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
         mPaint.setDither(true);
