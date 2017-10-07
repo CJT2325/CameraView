@@ -104,6 +104,6 @@ class PreviewState implements State {
 
     @Override
     public void flash(String mode) {
-
+        CameraInterface.getInstance().setFlashMode(mode);
     }
 }
