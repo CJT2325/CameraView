@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.cjt2325.cameralibrary.listener.CaptureListener;
@@ -50,6 +51,7 @@ public class CaptureLayout extends FrameLayout {
     private TypeButton btn_confirm;         //确认按钮
     private TypeButton btn_cancel;          //取消按钮
     private ReturnButton btn_return;        //返回按钮
+    private ImageView iv_custom;            //右边自定义按钮
     private TextView txt_tip;               //提示文本
 
     private int layout_width;
@@ -93,14 +95,15 @@ public class CaptureLayout extends FrameLayout {
 
     public void initEvent() {
         //默认Typebutton为隐藏
-        btn_cancel.setVisibility(INVISIBLE);
-        btn_confirm.setVisibility(INVISIBLE);
+        btn_cancel.setVisibility(GONE);
+        btn_confirm.setVisibility(GONE);
     }
 
     public void startTypeBtnAnimator() {
         //拍照录制结果后的动画
-        btn_capture.setVisibility(INVISIBLE);
-        btn_return.setVisibility(INVISIBLE);
+        btn_capture.setVisibility(GONE);
+        btn_return.setVisibility(GONE);
+        iv_custom.setVisibility(GONE);
         btn_cancel.setVisibility(VISIBLE);
         btn_confirm.setVisibility(VISIBLE);
         btn_cancel.setClickable(false);
@@ -229,6 +232,12 @@ public class CaptureLayout extends FrameLayout {
             }
         });
 
+        iv_custom = new ImageView(getContext());
+        LayoutParams iv_custom_param = new LayoutParams((int) (button_size / 2.5f), (int) (button_size / 2.5f));
+        iv_custom_param.gravity = Gravity.CENTER_VERTICAL | Gravity.RIGHT;
+        iv_custom_param.setMargins(0, 0, layout_width / 6, 0);
+        iv_custom.setLayoutParams(iv_custom_param);
+        iv_custom.setImageResource(R.drawable.ic_photo);
 
         txt_tip = new TextView(getContext());
         LayoutParams txt_param = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -243,6 +252,7 @@ public class CaptureLayout extends FrameLayout {
         this.addView(btn_cancel);
         this.addView(btn_confirm);
         this.addView(btn_return);
+        this.addView(iv_custom);
         this.addView(txt_tip);
 
     }
@@ -252,10 +262,11 @@ public class CaptureLayout extends FrameLayout {
      **************************************************/
     public void resetCaptureLayout() {
         btn_capture.resetState();
-        btn_cancel.setVisibility(INVISIBLE);
-        btn_confirm.setVisibility(INVISIBLE);
+        btn_cancel.setVisibility(GONE);
+        btn_confirm.setVisibility(GONE);
         btn_capture.setVisibility(VISIBLE);
         btn_return.setVisibility(VISIBLE);
+        iv_custom.setVisibility(VISIBLE);
     }
 
 

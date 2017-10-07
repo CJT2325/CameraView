@@ -288,6 +288,12 @@ public class CameraInterface implements Camera.PreviewCallback {
         callback.cameraHasOpened();
     }
 
+    private void setFlashModel(){
+        mParams = mCamera.getParameters();
+        mParams.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH); //设置camera参数为Torch模式
+        mCamera.setParameters(mParams);
+    }
+
     private synchronized void openCamera(int id) {
         try {
             this.mCamera = Camera.open(id);
@@ -696,8 +702,8 @@ public class CameraInterface implements Camera.PreviewCallback {
     private static Rect calculateTapArea(float x, float y, float coefficient, Context context) {
         float focusAreaSize = 300;
         int areaSize = Float.valueOf(focusAreaSize * coefficient).intValue();
-        int centerX = (int) (x / ScreenUtils.getScreenHeight(context) * 2000 - 1000);
-        int centerY = (int) (y / ScreenUtils.getScreenWidth(context) * 2000 - 1000);
+        int centerX = (int) (x / ScreenUtils.getScreenWidth(context) * 2000 - 1000);
+        int centerY = (int) (y / ScreenUtils.getScreenHeight(context) * 2000 - 1000);
         int left = clamp(centerX - areaSize / 2, -1000, 1000);
         int top = clamp(centerY - areaSize / 2, -1000, 1000);
         RectF rectF = new RectF(left, top, left + areaSize, top + areaSize);

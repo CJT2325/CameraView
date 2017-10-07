@@ -27,13 +27,15 @@ public interface State {
 
     void capture();
 
-    void record(Surface surface,float screenProp);
+    void record(Surface surface, float screenProp);
 
-    void stopRecord(boolean isShort,long time);
+    void stopRecord(boolean isShort, long time);
 
     void cancle(SurfaceHolder holder, float screenProp);
 
     void confirm();
 
-    void zoom(float zoom,int type);
+    void zoom(float zoom, int type);
+
+    void flash(String mode);
 }
