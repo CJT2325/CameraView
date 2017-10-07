@@ -197,7 +197,7 @@ jCameraView.setJCameraLisenter(new JCameraLisenter() {
         Log.i("JCameraView", "bitmap = " + bitmap.getWidth());
     }
     @Override
-    public void recordSuccess(String url) {
+    public void recordSuccess(String url,Bitmap firstFrame) {
         //获取视频路径
         Log.i("CJT", "url = " + url);
      }
