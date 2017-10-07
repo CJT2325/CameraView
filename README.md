@@ -1,6 +1,6 @@
-# JCameraView（1.1.6）  群：590205592
+# JCameraView（1.1.9）  群：590205592
 ## 使用方法
-- Gradle依赖：  compile 'cjt.library.wheel:camera :1.1.6'
+- Gradle依赖：  compile 'cjt.library.wheel:camera :1.1.9'
 - 引用源码  ：  clone源码后 引入lib -> camera
 - 尝试运行  ：  导入源码 运行cameraapplication这个model（！！！）
 - 扫描二维码：  apk比较旧
@@ -37,10 +37,10 @@
 
 **添加下列代码到 module gradle**
 
-> 最新版本（1.1.6）更新内容：
+> 最新版本（1.1.9）更新内容：
 ```gradle
 compile 'cjt.library.wheel:camera:1.1.6'
-//项目重构
+//添加闪关灯,自定义左右按钮图标资源
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
 ```gradle
@@ -55,6 +55,11 @@ allprojects {
 ```
 
 ### 旧版本
+```gradle
+compile 'cjt.library.wheel:camera:1.1.6'
+//修复BUG
+```
+
 ```gradle
 compile 'cjt.library.wheel:camera:1.1.3'
 //fix bug
@@ -126,10 +131,13 @@ compile 'cjt.library.wheel:camera:0.0.3'
 iconSize | 右上角切换摄像头按钮的大小
 iconMargin | 右上角切换摄像头按钮到上、右边距
 iconSrc | 右上角切换摄像头按钮图片
+iconLeft | 左边按钮图片资源（1.1.9+）
+iconRight | 右边按钮图片资源（1.1.9+）
 duration_max | 设置最长录像时间（毫秒）
 
 ### AndroidManifest.xml中添加权限
 ```xml
+<uses-permission android:name="android.permission.FLASHLIGHT" />
 <uses-feature android:name="android.hardware.camera" />
 <uses-feature android:name="android.hardware.camera.autofocus" />
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -193,10 +201,22 @@ jCameraView.setJCameraLisenter(new JCameraLisenter() {
         //获取视频路径
         Log.i("CJT", "url = " + url);
      }
+    //@Override
+    //public void quit() {
+    //    (1.1.9+后用左边按钮的点击事件替换)
+    //}
+});
+//左边按钮点击事件
+jCameraView.setLeftClickListener(new ClickListener() {
     @Override
-    public void quit() {
-        //退出按钮
-        MainActivity.this.finish();
+    public void onClick() {
+        CameraActivity.this.finish();
+    }
+});
+//右边按钮点击事件
+jCameraView.setRightClickListener(new ClickListener() {
+    @Override
+        Toast.makeText(CameraActivity.this,"Right",Toast.LENGTH_SHORT).show();
     }
 });
 ```
