@@ -6,6 +6,7 @@
              android:orientation="vertical">
 
     <FrameLayout
+        android:id="@+id/layout_camera"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -19,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#000"
-            android:visibility="invisible"/>
+            android:visibility="visible"/>
     </FrameLayout>
 
 
@@ -30,6 +31,7 @@
         android:orientation="horizontal">
 
         <ImageView
+            android:visibility="gone"
             android:id="@+id/image_flash"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,6 +39,7 @@
             android:src="@drawable/ic_flash_on"/>
 
         <ImageView
+            android:visibility="gone"
             android:id="@+id/image_switch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

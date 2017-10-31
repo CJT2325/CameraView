@@ -3,13 +3,18 @@ package com.zxing.cameraapplication;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
+import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ListPopupWindow;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.cjt2325.cameralibrary.JCameraView;
@@ -20,9 +25,13 @@ import com.cjt2325.cameralibrary.util.DeviceUtil;
 import com.cjt2325.cameralibrary.util.FileUtil;
 
 import java.io.File;
+import java.util.List;
 
 public class CameraActivity extends AppCompatActivity {
     private JCameraView jCameraView;
+    private ListPopupWindow mListPop;
+    private PopupAdapter mPopupAdapter;
+    private List<Camera.Size> lists = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,10 +39,13 @@ public class CameraActivity extends AppCompatActivity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_camera);
+
+
         jCameraView = (JCameraView) findViewById(R.id.jcameraview);
         //设置视频保存路径
         jCameraView.setSaveVideoPath(Environment.getExternalStorageDirectory().getPath() + File.separator + "JCamera");
         jCameraView.setFeatures(JCameraView.BUTTON_STATE_BOTH);
+        jCameraView.setContinuousCapture(true);
         jCameraView.setTip("JCameraView Tip");
         jCameraView.setMediaQuality(JCameraView.MEDIA_QUALITY_MIDDLE);
         jCameraView.setErrorLisenter(new ErrorListener() {
@@ -65,10 +77,10 @@ public class CameraActivity extends AppCompatActivity {
             }
 
             @Override
-            public void recordSuccess(String url, Bitmap firstFrame) {
+            public void recordSuccess(String url, Bitmap firstFrame, long time) {
                 //获取视频路径
                 String path = FileUtil.saveBitmap("JCamera", firstFrame);
-                Log.i("CJT", "url = " + url + ", Bitmap = " + path);
+                Log.i("CJT", "url = " + url + ", Bitmap = " + path + ", time = " + time);
                 Intent intent = new Intent();
                 intent.putExtra("path", path);
                 setResult(101, intent);
@@ -85,11 +97,37 @@ public class CameraActivity extends AppCompatActivity {
         jCameraView.setRightClickListener(new ClickListener() {
             @Override
             public void onClick() {
-                Toast.makeText(CameraActivity.this,"Right",Toast.LENGTH_SHORT).show();
+                if (lists == null) {
+                    lists = jCameraView.getPreviewSizeList();
+                    mPopupAdapter.setData(lists);
+                }
+                mListPop.show();
+//                jCameraView.setScreenProp();
+//                Toast.makeText(CameraActivity.this,"Right",Toast.LENGTH_SHORT).show();
             }
         });
 
         Log.i("CJT", DeviceUtil.getDeviceModel());
+
+        initPopupWindow();
+    }
+
+    private void initPopupWindow() {
+
+        mListPop = new ListPopupWindow(this);
+        mPopupAdapter = new PopupAdapter(this, lists);
+        mListPop.setAdapter(mPopupAdapter);
+        mListPop.setWidth(400);
+        mListPop.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mListPop.setAnchorView(jCameraView.getmFlashLamp());//设置ListPopupWindow的锚点，即关联PopupWindow的显示位置和这个锚点
+        mListPop.setDropDownGravity(Gravity.TOP);
+        mListPop.setModal(true);//设置是否是模式
+        mListPop.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                jCameraView.setScreenProp(mPopupAdapter.getSize(position));
+            }
+        });
     }
 
     @Override

@@ -302,11 +302,6 @@ public class CameraInterface implements Camera.PreviewCallback {
         callback.cameraHasOpened();
     }
 
-    private void setFlashModel() {
-        mParams = mCamera.getParameters();
-        mParams.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH); //设置camera参数为Torch模式
-        mCamera.setParameters(mParams);
-    }
 
     private synchronized void openCamera(int id) {
         try {
@@ -535,6 +530,7 @@ public class CameraInterface implements Camera.PreviewCallback {
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+//        mediaRecorder.setAudioSource(-1);
 
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
@@ -776,5 +772,12 @@ public class CameraInterface implements Camera.PreviewCallback {
 
     void isPreview(boolean res) {
         this.isPreviewing = res;
+    }
+
+    List<Camera.Size> getPreviewSizeList() {
+        if (mCamera == null) {
+            return null;
+        }
+        return mCamera.getParameters().getSupportedPreviewSizes();
     }
 }

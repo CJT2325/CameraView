@@ -5,8 +5,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.RectF;
-import android.view.View;
+import android.graphics.drawable.VectorDrawable;
+import android.widget.ImageView;
 
 /**
  * =====================================
@@ -16,7 +18,7 @@ import android.view.View;
  * 描    述：拍照或录制完成后弹出的确认和返回按钮
  * =====================================
  */
-public class TypeButton extends View{
+public class TypeButton extends ImageView {
     public static final int TYPE_CANCEL = 0x001;
     public static final int TYPE_CONFIRM = 0x002;
     private int button_type;
@@ -33,6 +35,11 @@ public class TypeButton extends View{
     private float index;
     private RectF rectF;
 
+    private int iconID = 0;
+    VectorDrawable ddd;
+    private Rect src;
+    private RectF dst;
+
     public TypeButton(Context context) {
         super(context);
     }
@@ -44,7 +51,6 @@ public class TypeButton extends View{
         button_radius = size / 2.0f;
         center_X = size / 2.0f;
         center_Y = size / 2.0f;
-
         mPaint = new Paint();
         path = new Path();
         strokeWidth = size / 50f;
@@ -60,32 +66,31 @@ public class TypeButton extends View{
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
         //如果类型为取消，则绘制内部为返回箭头
         if (button_type == TYPE_CANCEL) {
             mPaint.setAntiAlias(true);
             mPaint.setColor(0xEEDCDCDC);
             mPaint.setStyle(Paint.Style.FILL);
             canvas.drawCircle(center_X, center_Y, button_radius, mPaint);
-
             mPaint.setColor(Color.BLACK);
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setStrokeWidth(strokeWidth);
-
-            path.moveTo(center_X - index / 7, center_Y + index);
-            path.lineTo(center_X + index, center_Y + index);
-
-            path.arcTo(rectF, 90, -180);
-            path.lineTo(center_X - index, center_Y - index);
-            canvas.drawPath(path, mPaint);
-            mPaint.setStyle(Paint.Style.FILL);
-            path.reset();
-            path.moveTo(center_X - index, (float) (center_Y - index * 1.5));
-            path.lineTo(center_X - index, (float) (center_Y - index / 2.3));
-            path.lineTo((float) (center_X - index * 1.6), center_Y - index);
-            path.close();
-            canvas.drawPath(path, mPaint);
-
+            if (iconID == 0) {
+                path.moveTo(center_X - index / 7, center_Y + index);
+                path.lineTo(center_X + index, center_Y + index);
+                path.arcTo(rectF, 90, -180);
+                path.lineTo(center_X - index, center_Y - index);
+                canvas.drawPath(path, mPaint);
+                mPaint.setStyle(Paint.Style.FILL);
+                path.reset();
+                path.moveTo(center_X - index, (float) (center_Y - index * 1.5));
+                path.lineTo(center_X - index, (float) (center_Y - index / 2.3));
+                path.lineTo((float) (center_X - index * 1.6), center_Y - index);
+                path.close();
+                canvas.drawPath(path, mPaint);
+            } else {
+                super.onDraw(canvas);
+            }
         }
         //如果类型为确认，则绘制绿色勾
         if (button_type == TYPE_CONFIRM) {
@@ -97,13 +102,22 @@ public class TypeButton extends View{
             mPaint.setStyle(Paint.Style.STROKE);
             mPaint.setColor(0xFF00CC00);
             mPaint.setStrokeWidth(strokeWidth);
-
-            path.moveTo(center_X - button_size / 6f, center_Y);
-            path.lineTo(center_X - button_size / 21.2f, center_Y + button_size / 7.7f);
-            path.lineTo(center_X + button_size / 4.0f, center_Y - button_size / 8.5f);
-            path.lineTo(center_X - button_size / 21.2f, center_Y + button_size / 9.4f);
-            path.close();
-            canvas.drawPath(path, mPaint);
+            if (iconID == 0) {
+                path.moveTo(center_X - button_size / 6f, center_Y);
+                path.lineTo(center_X - button_size / 21.2f, center_Y + button_size / 7.7f);
+                path.lineTo(center_X + button_size / 4.0f, center_Y - button_size / 8.5f);
+                path.lineTo(center_X - button_size / 21.2f, center_Y + button_size / 9.4f);
+                path.close();
+                canvas.drawPath(path, mPaint);
+            } else {
+                super.onDraw(canvas);
+            }
         }
+    }
+
+    public void setIconID(int iconID) {
+        this.iconID = iconID;
+        this.setImageResource(iconID);
+        this.setScaleType(ScaleType.CENTER);
     }
 }

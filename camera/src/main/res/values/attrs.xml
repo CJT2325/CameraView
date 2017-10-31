@@ -6,12 +6,18 @@
     <attr name="iconLeft" format="reference"/>
     <attr name="iconRight" format="reference"/>
     <attr name="duration_max" format="integer"/>
+    <attr name="iconResultLeft" format="reference"/>
+    <attr name="iconResultRight" format="reference"/>
+    <attr name="flashVisiable" format="boolean"/>
     <declare-styleable name="JCameraView">
         <attr name="iconSize"/>
         <attr name="iconMargin"/>
         <attr name="iconSrc"/>
         <attr name="iconLeft"/>
         <attr name="iconRight"/>
+        <attr name="iconResultLeft"/>
+        <attr name="iconResultRight"/>
+        <attr name="flashVisiable"/>
         <attr name="duration_max"/>
     </declare-styleable>
 </resources>

@@ -207,6 +207,7 @@ public class CaptureButton extends View {
 
     //重制状态
     private void resetRecordAnim() {
+        LogUtil.i("resetRecordAnim");
         state = STATE_BAN;
         progress = 0;       //重制进度
         invalidate();
@@ -274,6 +275,8 @@ public class CaptureButton extends View {
                         captureLisenter.recordStart();
                     state = STATE_RECORDERING;
                     timer.start();
+                } else if (state == STATE_BAN) {
+                    state = STATE_IDLE;
                 }
             }
         });

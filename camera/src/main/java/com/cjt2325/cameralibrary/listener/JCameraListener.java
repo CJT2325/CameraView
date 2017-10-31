@@ -14,6 +14,6 @@ public interface JCameraListener {
 
     void captureSuccess(Bitmap bitmap);
 
-    void recordSuccess(String url, Bitmap firstFrame);
+    void recordSuccess(String url, Bitmap firstFrame, long time);
 
 }

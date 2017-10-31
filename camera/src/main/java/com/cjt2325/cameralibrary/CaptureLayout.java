@@ -165,7 +165,6 @@ public class CaptureLayout extends FrameLayout {
                 if (captureLisenter != null) {
                     captureLisenter.recordStart();
                 }
-                startAlphaAnimation();
             }
 
             @Override
@@ -173,8 +172,6 @@ public class CaptureLayout extends FrameLayout {
                 if (captureLisenter != null) {
                     captureLisenter.recordEnd(time);
                 }
-                startAlphaAnimation();
-                startTypeBtnAnimator();
             }
 
             @Override
@@ -338,7 +335,7 @@ public class CaptureLayout extends FrameLayout {
         txt_tip.setVisibility(VISIBLE);
     }
 
-    public void setIconSrc(int iconLeft, int iconRight) {
+    public void setIconSrc(int iconLeft, int iconRight, int iconResultLeft, int iconResultRight) {
         this.iconLeft = iconLeft;
         this.iconRight = iconRight;
         if (this.iconLeft != 0) {
@@ -355,6 +352,8 @@ public class CaptureLayout extends FrameLayout {
         } else {
             iv_custom_right.setVisibility(GONE);
         }
+        btn_cancel.setIconID(iconResultLeft);
+        btn_confirm.setIconID(iconResultRight);
     }
 
     public void setLeftClickListener(ClickListener leftClickListener) {

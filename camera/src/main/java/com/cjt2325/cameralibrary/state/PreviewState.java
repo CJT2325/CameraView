@@ -67,20 +67,46 @@ class PreviewState implements State {
     }
 
     @Override
+    public void continuousCapture() {
+        CameraInterface.getInstance().takePicture(new CameraInterface.TakePictureCallback() {
+            @Override
+            public void captureResult(Bitmap bitmap, boolean isVertical) {
+                machine.getView().continuousCapture(bitmap);
+//                machine.setState(machine.getBorrowPictureState());
+                LogUtil.i("continuousCapture");
+            }
+        });
+    }
+
+    @Override
     public void record(Surface surface, float screenProp) {
         CameraInterface.getInstance().startRecord(surface, screenProp, null);
     }
 
     @Override
-    public void stopRecord(final boolean isShort, long time) {
+    public void stopRecord(final boolean isShort, final long time) {
         CameraInterface.getInstance().stopRecord(isShort, new CameraInterface.StopRecordCallback() {
             @Override
             public void recordResult(String url, Bitmap firstFrame) {
                 if (isShort) {
                     machine.getView().resetState(JCameraView.TYPE_SHORT);
                 } else {
-                    machine.getView().playVideo(firstFrame, url);
+                    machine.getView().playVideo(firstFrame, url, time);
                     machine.setState(machine.getBorrowVideoState());
+                }
+            }
+        });
+    }
+
+    @Override
+    public void continuousStopRecord(final boolean isShort, final long time) {
+        CameraInterface.getInstance().stopRecord(isShort, new CameraInterface.StopRecordCallback() {
+            @Override
+            public void recordResult(String url, Bitmap firstFrame) {
+                if (isShort) {
+                    machine.getView().resetState(JCameraView.TYPE_SHORT);
+                } else {
+                    machine.getView().continuousRecorder(firstFrame, url, time);
                 }
             }
         });
