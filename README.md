@@ -39,7 +39,7 @@
 
 > 最新版本（1.1.9）更新内容：
 ```gradle
-compile 'cjt.library.wheel:camera:1.1.6'
+compile 'cjt.library.wheel:camera:1.1.9'
 //添加闪关灯,自定义左右按钮图标资源
 ```
 **如果获取依赖失败则添加下列代码到 project gradle**
