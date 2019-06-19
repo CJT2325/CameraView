@@ -91,6 +91,8 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
     private CaptureLayout mCaptureLayout;
     private FoucsView mFoucsView;
     private MediaPlayer mMediaPlayer;
+    
+    public static ImageView flash_switch;
 
     private int layout_width;
     private float screenProp = 0f;
@@ -156,6 +158,7 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
         mSwitchCamera = (ImageView) view.findViewById(R.id.image_switch);
         mSwitchCamera.setImageResource(iconSrc);
         mFlashLamp = (ImageView) view.findViewById(R.id.image_flash);
+         flash_switch = (ImageView) view.findViewById(R.id.flash_switch);
         setFlashRes();
         mFlashLamp.setOnClickListener(new OnClickListener() {
             @Override
@@ -179,6 +182,38 @@ public class JCameraView extends FrameLayout implements CameraInterface.CameraOp
             }
         });
         //拍照 录像
+        
+        
+
+        flash_switch.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+
+                if(hasFlash)
+                {
+                    if (!isFlashOn) {
+
+                        CameraInterface.flashOn();
+//                        params.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+                        isFlashOn=true;
+//                        flash_switch.setImageResource(R.drawable.flash_on);
+
+                    }
+                    else{
+                        CameraInterface.flashOff();
+//                        params.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                        isFlashOn=false;
+//                        flash_switch.setImageResource(R.drawable.flash);
+                    }
+
+                }
+
+
+
+            }
+        });
         mCaptureLayout.setCaptureLisenter(new CaptureListener() {
             @Override
             public void takePictures() {
