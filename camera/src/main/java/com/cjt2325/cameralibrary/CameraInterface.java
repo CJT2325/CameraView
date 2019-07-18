@@ -64,6 +64,7 @@ public class CameraInterface implements Camera.PreviewCallback {
     private Camera mCamera;
     private Camera.Parameters mParams;
     private boolean isPreviewing = false;
+     private static boolean isFlashOn = false;
 
     private int SELECTED_CAMERA = -1;
     private int CAMERA_POST_POSITION = -1;
@@ -118,6 +119,34 @@ public class CameraInterface implements Camera.PreviewCallback {
             cameraAngle = CameraParamUtil.getInstance().getCameraDisplayOrientation(mSwitchView.getContext(),
                     SELECTED_CAMERA);
         }
+    }
+    
+     public static synchronized void flashOn() {
+
+
+        if (!isFlashOn) {
+
+            mParams.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            isFlashOn = true;
+            mCamera.setParameters(mParams);
+            flash_switch.setImageResource(R.drawable.flash_on);
+
+
+        }
+
+
+    }
+
+    public static synchronized void flashOff() {
+
+        if (isFlashOn) {
+
+            mParams.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+            isFlashOn = false;
+            mCamera.setParameters(mParams);
+            flash_switch.setImageResource(R.drawable.flash);
+        }
+
     }
 
     private SensorEventListener sensorEventListener = new SensorEventListener() {
